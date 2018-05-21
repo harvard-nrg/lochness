@@ -1,0 +1,68 @@
+<html>
+ <head>
+  <style>
+    #logo-box {
+     background-color: #f2f2f2;
+     border: 1px grey;
+     border-bottom: 1px black;
+     padding: 10px 10px 10px 10px;
+     vertical-align: left;
+    }
+    #title-box {
+     background-color: #f2f2f2;
+     border: 1px grey;
+     padding: 10px 10px 10px 10px;
+     vertical-align: middle;
+     font-size: 30px;
+     font-family: verdana;
+     color: #555555;
+     text-align: left;
+     width: 100%;
+    }
+    #message-box {
+     padding: 10px 10px 10px 10px;
+     background-color: #f2f2f2;
+     font-size: 12px
+    }
+    #message-text {
+     white-space: pre-wrap;
+     font-family: verdana;
+     color: #555555;
+    }
+    #main-table {
+     background-color: #f2f2f2;
+     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+     padding: 20px;
+    }
+  </style>
+ </head>
+ <body>
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center">
+   <tbody>
+    <tr>
+     <td>
+      <table id="main-table" cellpadding="0" cellspacing="0" border="0" width="620">
+       <tbody>
+        <tr>
+         <td id="logo-box">
+          <img height="60" src="https://harvard-nrg.github.io/img/shield.png" alt="shield" />
+         </td>
+        </tr>
+        <tr>
+         <td id="title-box">
+            Oops! There was an error.
+         </td>
+        </tr>
+        <tr>
+         <td id="message-box" colspan="2">
+          <pre id="message-text">${message}</pre>
+         </td>
+        </tr>
+       </tbody>
+      </table>
+     </td>
+    </tr>
+   </tbody>
+  </table>
+ </body>
+</html>

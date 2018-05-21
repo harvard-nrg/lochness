@@ -1,0 +1,63 @@
+actigraphy:
+  default: Actiwatch2
+  Actiwatch2:
+    make: Philips
+    model: Actiwatch 2
+  GENEActiv:
+    make: Activinsights
+    model: GENEActiv
+cogassess:
+  default: mytimedtest
+  mytimedtest:
+    make: iCognition
+    model: mytimedtest.org
+hearing:
+  default: audiometer
+  audiometer:
+    make: AMBCO
+    model: Audiometer 2500
+mri:
+  default: central
+  central:
+    make: XNAT
+    model: central.xnat.org
+mri_eye:
+  default: eyelink
+  eyelink:
+    make: SR Research
+    model: EyeLink 1000
+phone:
+  default: onnela
+  onnela:
+    make: Beiwe
+    model: studies.beiwe.org
+physio:
+  default: biopac
+  biopac:
+    make: BIOPAC
+    model: AcqKnowledge
+retroquest:
+  default: onlinescoring
+  onlinescoring:
+    make: OnlineScoring
+    model: onlinescoring.neuroinfo.org
+saliva:
+  default: demeditech
+  demeditech:
+    make: Demeditech
+    model: ELISA
+mri_behav:
+  default: cbsn
+  cbsn:
+    make: CNL Lab
+    model: Unknown
+surveys:
+  default: redcap.vanderbilt
+  redcap.vanderbilt:
+    make: REDCap
+    model: redcapdemo.vanderbilt.edu 
+onsite_interview:
+  default: recorder
+  recorder:
+    make: Unknown
+    model: Recorder.exe

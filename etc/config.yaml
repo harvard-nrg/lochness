@@ -1,0 +1,23 @@
+keyring_file: ~/.lochness.enc
+phoenix_root: ~/PHOENIX
+pid: /tmp/lochness.pid
+stderr: /tmp/lochness.stderr
+stdout: /tmp/lochness.stdout
+poll_interval: 86400
+ssh_user: jpepin
+ssh_host: login.domain.example
+sender: lochness@domain.example
+beiwe:
+    backfill_start: 2017-10-01T00:00:00
+dropbox:
+    baker:
+        base: /PHOENIX
+        delete_on_success: False
+hdd:
+    buckner:
+        base: /PHOENIX
+admins:
+    - myan@domain.example
+notify:
+    __global__:
+        - julia.child@domain.example

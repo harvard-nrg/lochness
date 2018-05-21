@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+pytest = "*"
+vcrpy = "*"
+
+[packages]
+six = "*"
+dropbox = "*"
+mano = ">=0.2"
+yaxil = "*"
+pyyaml = "*"
+paramiko = "*"
+requests = {extras = ["security"]}
+lochness = {path = ".", editable = true}
