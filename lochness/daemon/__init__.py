@@ -40,7 +40,7 @@ def daemonize(pidfile, stdin='/dev/null', stdout='/dev/null',
     try:
         pid = os.fork()
     except OSError as e:
-        raise DaemonError("first fork failed: %s" % e)
+        raise DaemonError('first fork failed: %s' % e)
     if pid > 0:
         sys.exit(0) # kill Parent
     # decouple from Parent enviornment
@@ -51,16 +51,16 @@ def daemonize(pidfile, stdin='/dev/null', stdout='/dev/null',
     try:
         pid = os.fork()
     except OSError as e:
-        raise DaemonError("second fork failed: %s" % e)
+        raise DaemonError('second fork failed: %s' % e)
     if pid > 0:
         sys.exit(0) # kill Child
 
     # redirect stdin, stdout, and stderr
     sys.stdout.flush()
     sys.stderr.flush()
-    stdin = file(stdin, "r")
-    stdout = file(stdout, "a+")
-    stderr = file(stderr, "a+", 0)
+    stdin = open(stdin, 'r')
+    stdout = open(stdout, 'a+')
+    stderr = open(stderr, 'a+', 0)
     os.dup2(stdin.fileno(), sys.stdin.fileno())
     os.dup2(stdout.fileno(), sys.stdout.fileno())
     os.dup2(stderr.fileno(), sys.stderr.fileno())
@@ -70,7 +70,7 @@ def daemonize(pidfile, stdin='/dev/null', stdout='/dev/null',
         signal.signal(signal.SIGTERM, lambda x,y: sys.exit(1))
     atexit.register(lambda: os.remove(pidfile))
     pid = str(os.getpid())
-    file(pidfile, "w+").write("%s" % pid)
+    open(pidfile, 'w+').write('%s' % pid)
 
 class DaemonError(Exception):
     pass
