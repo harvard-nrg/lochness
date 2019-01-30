@@ -65,16 +65,16 @@ decrypted version. You should only ever need to move around the encrypted
 version of this file.
 
 ### phoenix
-lochness will download your data into a directory structure informally known as 
-PHOENIX. lochness ships with a simple command line tool `phoenix-generator.py` 
-that can help you initialize the directory structure. For example, running the 
-following command
+lohness will download your data into a directory structure informally known as 
+PHOENIX. You can initialize the directory structure manually, or use the 
+`phoenix-generator.py` command line tool. Simply provide a study name using 
+the `-s|--study` argument and a filesystem location
 
 ```bash
-phoenix-generator.py -s StudyA ./PHOENIX
+phoenix-generator.py --study StudyA ./PHOENIX
 ```
 
-will generate the following directory structure
+The above command will generate the following directory tree
 
 ```bash
 PHOENIX/
@@ -85,11 +85,11 @@ PHOENIX/
     └── StudyA
 ```
 
-All file types that are not encrypted by lochness at rest will be saved under 
-the `GENERAL` folder and all encrypted file types will be saved under the 
-`PROTECTED` folder.
+All file types that are not encrypted at rest by lochness will be saved under 
+the `GENERAL` folder and all encrypted file will be saved under the `PROTECTED` 
+folder.
 
-Next, let's talk about the `StudyA_metadata.csv` file.
+Now let's talk about the `StudyA_metadata.csv` file, which is crucial.
 
 ### metadata files
 The lochness command line tool `sync.py` is primarily driven off the PHOENIX 
