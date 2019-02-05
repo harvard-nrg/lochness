@@ -73,7 +73,7 @@ def sync(Lochness, subject, dry):
     for dbx_sid in subject.dropbox[Module]:
         logger.debug('exploring {0}/{1}'.format(subject.study, subject.id))
         _passphrase = keyring.passphrase(Lochness, subject.study)
-        enc_key = cryptease.kdf(bytes(_passphrase))
+        enc_key = cryptease.kdf(_passphrase)
         api_token = keyring.dropbox_api_token(Lochness, Module)
         client = dropbox.Dropbox(api_token)
         for datatype,products in iter(CONFIG.items()):
@@ -93,7 +93,7 @@ def sync(Lochness, subject, dry):
                     output_base = subject.protected_folder if protect else subject.general_folder
                     output_base = tree.get(datatype, output_base)
                     lochness.dropbox.save(client, dbx_file, output_base, key=key,
-                                         compress=compress, delete=delete, dry=dry)
+                                          compress=compress, delete=delete, dry=dry)
            
 def _find_product(s, products, **kwargs):
     for product in products:

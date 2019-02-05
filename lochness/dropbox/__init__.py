@@ -64,7 +64,7 @@ def walk(client, top=''):
         for x in walk(client, new_path):
             yield x
 
-def save(client, dbx_file, out_base, key=None, compress=False, dry=False):
+def save(client, dbx_file, out_base, key=None, compress=False, delete=False, dry=False):
     '''save a dropbox file to an output directory'''
     dbx_head,dbx_tail = dbx_file
     dbx_fullfile = os.path.join(dbx_head, dbx_tail)

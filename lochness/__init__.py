@@ -2,10 +2,11 @@ import os
 import io
 import sys
 import csv
+import six
 import zlib
 import json
-import lochness
 import logging
+import lochness
 import itertools
 import lochness.email
 import datetime as dt
@@ -251,18 +252,22 @@ class KeyringError(Exception):
 class SoftError(Exception):
     pass
 
-def crc32(x):
-    return _crc32(io.BytesIO(x))
+def crc32(content, encoding='utf-8'):
+    if isinstance(content, six.string_types):
+        content = content.encode(encoding)
+    return _crc32bin(io.BytesIO(content))
 
 def crc32file(f):
-    with open(f) as fp:
-        return _crc32(fp)
+    with open(f, 'rb') as fo:
+        return _crc32bin(fo)
 
-def _crc32(f):
-    prev = 0
-    for line in f:
-        prev = zlib.crc32(line, prev)
-    return format(prev & 0xFFFFFFFF, '08x')
+def _crc32bin(content, buffersize=4096):
+    buffr = content.read(buffersize)
+    crc = 0
+    while len(buffr) > 0:
+        crc = zlib.crc32(buffr, crc)
+        buffr = content.read(buffersize)
+    return format(crc & 0xFFFFFFFF, '08x')
 
 def backup(f):
     '''
@@ -351,7 +356,7 @@ def iso8601(tz="UTC"):
     '''
     return dt.datetime.now(pytz.timezone(tz)).isoformat()
 
-def atomic_write(filename, content, overwrite=True, permissions=0o0644):
+def atomic_write(filename, content, overwrite=True, permissions=0o0644, encoding='utf-8'):
     '''
     Write a file atomically by writing the file content to a
     temporary location first, then renaming the file. 
@@ -376,7 +381,10 @@ def atomic_write(filename, content, overwrite=True, permissions=0o0644):
         raise WriteError("file already exists: %s" % filename)
     dirname = os.path.dirname(filename)
     with tf.NamedTemporaryFile(dir=dirname, prefix='.', delete=False) as tmp:
-        tmp.write(content)
+        if isinstance(content, six.string_types):
+            tmp.write(content.decode(encoding))
+        else:
+            tmp.write(content)
     os.chmod(tmp.name, permissions)
     os.rename(tmp.name, filename)
 

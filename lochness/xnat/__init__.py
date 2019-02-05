@@ -43,8 +43,10 @@ def sync(Lochness, subject, dry=False):
                 if not dry:
                     tmpdir = tf.mkdtemp(dir=dirname, prefix='.')
                     os.chmod(tmpdir, 0o0755)
-                    yaxil.download(auth, experiment.id, ['ALL'], tmpdir,
-                                  in_mem=False, attempts=3)
+                    yaxil.download(auth, experiment.label, 
+                                   project=experiment.project,
+                                   scan_ids=['ALL'], out_dir=tmpdir, 
+                                   in_mem=False, attempts=3)
                     logger.debug('saving .experiment file')
                     save_experiment_file(tmpdir, auth.url, experiment)
                     os.rename(tmpdir, dst)
@@ -67,11 +69,12 @@ class ConsistencyError(Exception):
 def save_experiment_file(d, url, experiment):
     '''save xnat experiment metadata to a file named .experiment'''
     experiment_file = os.path.join(d, '.experiment')
-    blob = experiment.__dict__
+    blob = experiment._asdict()
     blob['source'] = url.rstrip('/') + '/'
     blob['uuid'] = str(uuid.uuid4())
     with tf.NamedTemporaryFile(dir=d, delete=False) as fo:
-        fo.write(yaml.safe_dump(blob, default_flow_style=False))
+        content = yaml.safe_dump(blob, default_flow_style=False)
+        fo.write(content.encode('utf-8'))
     os.chmod(fo.name, 0o0644)
     os.rename(fo.name, experiment_file)
 
@@ -80,10 +83,11 @@ def experiments(auth, uid):
     try:
         project,subject = uid
         logger.info('searching xnat for {0}'.format(uid))
-        xnat_subject = yaxil.subject(auth, subject, project)
+        xnat_subject = yaxil.subjects(auth, subject, project)
     except yaxil.NullAccessionError as e:
         logger.info('no xnat subject registered for {0}'.format(uid))
         return
-    for _,label in xnat_subject.experiments:
-        yield yaxil.experiment(auth, label)
+    xnat_subject = next(xnat_subject)
+    for experiment in yaxil.experiments(auth, subject=xnat_subject):
+        yield experiment
 

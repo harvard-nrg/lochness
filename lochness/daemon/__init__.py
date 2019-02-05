@@ -34,6 +34,11 @@ def daemonize(pidfile, stdin='/dev/null', stdout='/dev/null',
     :param sigterm: Register a dummy SIGTERM handler
     :type sigterm: bool
     '''
+    # expand tildes
+    pidfile = os.path.expanduser(pidfile)
+    stdin = os.path.expanduser(stdin)
+    stdout = os.path.expanduser(stdout)
+    stderr = os.path.expanduser(stderr)
     # there is only a unified API for getting and setting a umask
     umask = os.umask(0)
     # fork Child
@@ -60,7 +65,7 @@ def daemonize(pidfile, stdin='/dev/null', stdout='/dev/null',
     sys.stderr.flush()
     stdin = open(stdin, 'r')
     stdout = open(stdout, 'a+')
-    stderr = open(stderr, 'a+', 0)
+    stderr = open(stderr, 'a+')
     os.dup2(stdin.fileno(), sys.stdin.fileno())
     os.dup2(stdout.fileno(), sys.stdout.fileno())
     os.dup2(stderr.fileno(), sys.stderr.fileno())

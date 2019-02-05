@@ -49,7 +49,7 @@ def sync(Lochness, subject, dry=False):
                     lochness.atomic_write(dst, content)
                 else:
                     # responses are not stored atomically in redcap
-                    crc_src = lochness.crc32(content)
+                    crc_src = lochness.crc32(content.decode('utf-8'))
                     crc_dst = lochness.crc32file(dst)
                     if crc_dst != crc_src:
                         logger.warn('file has changed {0}'.format(dst))
