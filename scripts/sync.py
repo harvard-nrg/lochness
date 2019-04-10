@@ -77,8 +77,8 @@ def main():
     if args.fork:
         logger.info('forking the current process')
         daemon.daemonize(Lochness['pid'], stdout=Lochness['stdout'],
-                         stderr=Lochness['stderr'], wdir=os.getcwd())  
-    
+                         stderr=Lochness['stderr'], wdir=os.getcwd())
+
     # pause execution until
     if args.until:
         logger.info('pausing execution until {0}'.format(args.until))
@@ -109,4 +109,3 @@ def do(args):
 
 if __name__ == '__main__':
     main()
-

@@ -10,11 +10,14 @@ sender: lochness@domain.example
 beiwe:
     backfill_start: 2017-10-01T00:00:00
 dropbox:
-    baker:
+    module_name:
         base: /PHOENIX
         delete_on_success: False
+redcap:
+    phoenix_project:
+        deidentify: True
 hdd:
-    buckner:
+    module_name:
         base: /PHOENIX
 admins:
     - myan@domain.example

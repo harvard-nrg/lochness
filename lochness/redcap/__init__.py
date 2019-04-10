@@ -13,28 +13,34 @@ logger = logging.getLogger(__name__)
 @net.retry(max_attempts=5)
 def sync(Lochness, subject, dry=False):
     logger.debug('exploring {0}/{1}'.format(subject.study, subject.id))
+    deidentify = deidentify_flag(Lochness, subject.study)
+    logger.debug('deidentify for study {0} is {1}'.format(subject.study, deidentify))
     for redcap_instance,redcap_subject in iterate(subject):
         for redcap_project,api_url,api_key in redcap_projects(Lochness, subject.study, redcap_instance):
-            data = {
+            _debug_tup = (redcap_instance, redcap_project, redcap_subject)
+            record_query = {
                 'token': api_key,
                 'content' : 'record',
                 'format': 'json',
                 'records': redcap_subject
             }
-            r = requests.post(api_url, data=data, stream=True, verify=False)
-            if r.status_code != requests.codes.OK:
-                raise REDCapError('redcap url {0} responded {1}'.format(r.url, r.status_code))
-            content = r.content
-            content_len = r.raw._fp_bytes_read # you need the number bytes read before any decoding
-            # verify response content integrity
-            _debug_tup = (redcap_instance, redcap_project, redcap_subject)
-            if 'content-length' not in r.headers:
-                logger.warn('server did not return a content-length header, can\'t verify response integrity for {0}'.format(_debug_tup))
-            else:
-                expected_len = int(r.headers['content-length'])
-                if content_len != expected_len:
-                    raise REDCapError('content length {0} does not match expected length {1} for {2}'.format(content_len, expected_len, _debug_tup))
-            # check if response body is nothing but an empty array
+            if deidentify:
+                # get fields that aren't identifiable and narrow record query by field name
+                metadata_query = {
+                    'token': api_key,
+                    'content' : 'metadata',
+                    'format': 'json'
+                }
+                content = post_to_redcap(api_url, metadata_query, _debug_tup)
+                metadata = json.loads(content)
+                field_names = []
+                for field in metadata:
+                    if field['identifier'] != 'y':
+                        field_names.append(field['field_name'])
+                record_query['fields'] = ','.join(field_names)
+            # post query to redcap
+            content = post_to_redcap(api_url, record_query, _debug_tup)
+            # check if response body is nothing but a sad empty array
             if content.strip() == '[]':
                 logger.info('no redcap data for {0}'.format(redcap_subject))
                 continue
@@ -87,12 +93,36 @@ def redcap_projects(Lochness, phoenix_study, redcap_instance):
         api_key = Keyring[redcap_instance]['API_TOKEN'][project]
         yield project,api_url,api_key
 
+def post_to_redcap(api_url, data, debug_tup):
+    r = requests.post(api_url, data=data, stream=True, verify=False)
+    if r.status_code != requests.codes.OK:
+        raise REDCapError('redcap url {0} responded {1}'.format(r.url, r.status_code))
+    content = r.content
+    content_len = r.raw._fp_bytes_read # you need the number bytes read before any decoding
+    # verify response content integrity
+    if 'content-length' not in r.headers:
+        logger.warn('server did not return a content-length header, can\'t verify response integrity for {0}'.format(debug_tup))
+    else:
+        expected_len = int(r.headers['content-length'])
+        if content_len != expected_len:
+            raise REDCapError('content length {0} does not match expected length {1} for {2}'.format(content_len, expected_len, debug_tup))
+    return content
+
 class KeyringError(Exception):
     pass
+
+def deidentify_flag(Lochness, study):
+    ''' get study specific deidentify flag with a safe default '''
+    value = Lochness.get('redcap', dict()) \
+                    .get(study, dict()) \
+                    .get('deidentify', False)
+    # if this is anything but a boolean, just return False
+    if not isinstance(value, bool):
+        return False
+    return value
 
 def iterate(subject):
     '''generator for redcap instance and subject'''
     for instance,ids in iter(subject.redcap.items()):
         for id in ids:
             yield instance,id
-
