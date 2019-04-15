@@ -52,7 +52,7 @@ def walk(client, top=''):
             logger.info('path does not exist {}'.format(top))
         else:
             raise e
-        raise StopIteration()
+        return
     for entry in listing.entries:
         if isinstance(entry, dropbox.files.FolderMetadata):
             dirs.append(os.path.basename(entry.path_display))

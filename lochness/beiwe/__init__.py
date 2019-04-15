@@ -31,6 +31,7 @@ def sync(Lochness, subject, dry=False):
     if str(backfill_start).strip().lower() == 'consent':
         backfill_start = subject.consent
     for alias,beiwe_uids in iter(subject.beiwe.items()):
+        logger.debug('getting {0} from keyring'.format(alias))
         Keyring = mano.keyring(alias, keyring_file=Lochness['keyring_file'], passphrase=config.load.passphrase)
         base_url = Keyring['URL']
         for uid in beiwe_uids:
@@ -42,7 +43,7 @@ def sync(Lochness, subject, dry=False):
             save_study_file(dst_beiwe_folder, study_id, study_name)
             # do backfill
             passphrase = Lochness['keyring']['lochness']['SECRETS'].get(subject.study, None)
-            mano.sync.backfill(Keyring, study_id, beiwe_id, dst_beiwe_folder, 
+            mano.sync.backfill(Keyring, study_id, beiwe_id, os.path.dirname(dst_beiwe_folder), 
                                str(backfill_start), PROTECT, passphrase)
             # check for registry file
             registry_file = os.path.join(dst_beiwe_folder, '.registry')
@@ -68,5 +69,5 @@ def save_study_file(d, study_id, study_name):
     writer.writerow([study_id, study_name])
     sio.seek(0)
     logger.debug('saving study file {0}'.format(study_file))
-    lochness.atomic_write(study_file, sio.read())
+    lochness.atomic_write(study_file, sio.read().encode('utf-8'))
 

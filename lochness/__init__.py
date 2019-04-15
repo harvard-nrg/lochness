@@ -234,7 +234,6 @@ def configure_logging(logger, args):
     logging.getLogger('requests').setLevel(logging.WARN)
     logging.getLogger('dropbox').setLevel(logging.WARN)
     logging.getLogger('paramiko').setLevel(logging.WARN)
-    logging.getLogger('pylib.xnat').setLevel(logging.DEBUG)
     logargs = {
         'level': logging.INFO,
         'format': '%(asctime)s - %(process)d - %(name)s - %(levelname)s - %(message)s'
@@ -242,6 +241,8 @@ def configure_logging(logger, args):
     if args.debug:
         logger.setLevel(logging.DEBUG)
         logging.getLogger('lochness').setLevel(logging.DEBUG)
+        logging.getLogger('mano').setLevel(logging.DEBUG)
+        logging.getLogger('yaxil').setLevel(logging.DEBUG)
     if args.log_file:
         logargs['filename'] = os.path.expanduser(args.log_file)
     logging.basicConfig(**logargs)

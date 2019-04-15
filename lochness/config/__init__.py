@@ -29,7 +29,7 @@ def load(f, archive_base=None):
         for chunk in crypt.decrypt(fp, key):
             content += chunk
         try:
-            Lochness['keyring'] = yaml.load(content)
+            Lochness['keyring'] = yaml.load(content, Loader=yaml.FullLoader)
         except yaml.reader.ReaderError:
             raise KeyringError('could not decrypt keyring {0} (wrong passphrase?)'.format(Lochness['keyring_file']))
     return Lochness
@@ -41,7 +41,7 @@ class KeyringError(Exception):
 def _read_config_file(fp):
     '''helper to read lochness configuration file'''
     try:
-        cfg = yaml.load(fp.read())
+        cfg = yaml.load(fp.read(), Loader=yaml.FullLoader)
     except Exception as e:
         raise ConfigError('failed to parse {0} with error: {1}'.format(fp.name, e))
     return cfg
