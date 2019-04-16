@@ -34,7 +34,7 @@ def sync(Lochness, subject, dry):
     for dbx_sid in subject.dropbox[Module]:
         logger.debug('exploring {0}/{1}'.format(subject.study, subject.id))
         _passphrase = keyring.passphrase(Lochness, subject.study)
-        enc_key = cryptease.kdf(bytes(_passphrase))
+        enc_key = cryptease.kdf(_passphrase)
         api_token = keyring.dropbox_api_token(Lochness, Module)
         client = dropbox.Dropbox(api_token)
         patterns = _batch_compile(CONFIG, dbx_sid)
@@ -54,7 +54,7 @@ def sync(Lochness, subject, dry):
                     dbx_file = dbx_head,dbx_tail
                     if patterns[datatype].match(dbx_tail):
                         key = enc_key if category == 'PROTECTED' else None
-                        lochness.dropbox.save(client, dbx_file, output_base, 
+                        lochness.dropbox.save(client, dbx_file, output_base,
                                              key=key, delete=delete, dry=dry)
 
 def _iterate(config):
@@ -71,4 +71,3 @@ def _batch_compile(patterns, sid):
             pattern = pattern.substitute(subject=sid)
             compiled[key] = re.compile(pattern)
     return compiled
-

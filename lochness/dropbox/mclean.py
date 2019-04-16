@@ -73,7 +73,7 @@ def sync(Lochness, subject, dry):
     for dbx_sid in subject.dropbox[Module]:
         logger.debug('exploring {0}/{1}'.format(subject.study, subject.id))
         _passphrase = keyring.passphrase(Lochness, subject.study)
-        enc_key = enc.kdf(bytes(_passphrase))
+        enc_key = enc.kdf(_passphrase)
         api_token = keyring.dropbox_api_token(Lochness, Module)
         client = dropbox.Dropbox(api_token)
         dbx_base = lochness.dropbox.base(Lochness, Basename)
