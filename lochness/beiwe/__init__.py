@@ -57,7 +57,7 @@ def sync(Lochness, subject, dry=False):
             # sync up to today
             logger.info('delta subject={0}, study={1}, url={2}'.format(beiwe_id, study_name, base_url))
             archive = mano.sync.download(Keyring, study_id, beiwe_id, registry=registry)
-            mano.sync.save(Keyring, archive, beiwe_id, dst_beiwe_folder, PROTECT, passphrase)
+            mano.sync.save(Keyring, archive, beiwe_id, os.path.dirname(dst_beiwe_folder), PROTECT, passphrase)
 
 def save_study_file(d, study_id, study_name):
     study_file = os.path.join(d, '.study')
