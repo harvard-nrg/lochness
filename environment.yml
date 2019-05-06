@@ -1,0 +1,8 @@
+name: lochness
+dependencies:
+  - six
+  - dropbox
+  - pyyaml
+  - paramiko
+  - requests
+  - pytz
