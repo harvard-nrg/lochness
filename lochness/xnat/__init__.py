@@ -84,10 +84,10 @@ def experiments(auth, uid):
         project,subject = uid
         logger.info('searching xnat for {0}'.format(uid))
         xnat_subject = yaxil.subjects(auth, subject, project)
-    except yaxil.NullAccessionError as e:
+        xnat_subject = next(xnat_subject)
+    except yaxil.AccessionError as e:
         logger.info('no xnat subject registered for {0}'.format(uid))
         return
-    xnat_subject = next(xnat_subject)
     for experiment in yaxil.experiments(auth, subject=xnat_subject):
         yield experiment
 

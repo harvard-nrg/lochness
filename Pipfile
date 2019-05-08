@@ -14,5 +14,6 @@ mano = ">=0.2"
 yaxil = "*"
 pyyaml = "*"
 paramiko = "*"
+pytz = "*"
 requests = {extras = ["security"]}
 lochness = {path = ".", editable = true}
