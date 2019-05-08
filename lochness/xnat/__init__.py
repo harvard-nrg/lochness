@@ -85,7 +85,11 @@ def experiments(auth, uid):
         logger.info('searching xnat for {0}'.format(uid))
         xnat_subject = yaxil.subjects(auth, subject, project)
         xnat_subject = next(xnat_subject)
-    except yaxil.AccessionError as e:
+    except yaxil.exceptions.AccessionError as e:
+        logger.info('no xnat subject registered for {0}'.format(uid))
+        logger.warn('double check your xnat credentials')
+        return
+    except yaxil.exceptions.NoSubjectsError as e:
         logger.info('no xnat subject registered for {0}'.format(uid))
         return
     for experiment in yaxil.experiments(auth, subject=xnat_subject):
