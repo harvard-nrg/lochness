@@ -10,7 +10,7 @@ vcrpy = "*"
 [packages]
 six = "*"
 dropbox = "*"
-mano = ">=0.2"
+mano = ">=0.4"
 yaxil = "*"
 pyyaml = "*"
 paramiko = "*"
