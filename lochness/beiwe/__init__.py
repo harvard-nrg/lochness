@@ -9,6 +9,7 @@ import mano.sync
 import getpass as gp
 import datetime as dt
 import cryptease as crypt
+import lochness.net as net
 import lochness.hdd as hdd
 import lochness.tree as tree
 import lochness.config as config
@@ -22,6 +23,7 @@ PROTECT = [
 
 logger = logging.getLogger(__name__)
 
+@net.retry(max_attempts=5)
 def sync(Lochness, subject, dry=False):
     '''
     Sync beiwe data
@@ -43,7 +45,7 @@ def sync(Lochness, subject, dry=False):
             save_study_file(dst_general_folder, study_id, study_name)
             protected_streams = set(PROTECT)
             general_streams = set(mano.DATA_STREAMS) - protected_streams
-            # begin backfill download of all general data streams
+            # begin backfill download of all GENERAL data streams
             logger.info('backfill general streams for subject={0}, study={1}, url={2}'.format(beiwe_id, study_name, base_url))
             mano.sync.backfill(
                 Keyring,
@@ -53,7 +55,7 @@ def sync(Lochness, subject, dry=False):
                 start_date=str(backfill_start),
                 data_streams=general_streams
             )
-            # begin backfill download of all protected data streams
+            # begin backfill download of all PROTECTED data streams
             passphrase = Lochness['keyring']['lochness']['SECRETS'].get(subject.study, None)
             logger.info('backfill protected streams for subject={0}, study={1}, url={2}'.format(beiwe_id, study_name, base_url))
             mano.sync.backfill(
@@ -66,14 +68,15 @@ def sync(Lochness, subject, dry=False):
                 lock=protected_streams,
                 passphrase=passphrase
             )
-            # begin delta download of all general data streams
+            # begin delta download of all GENERAL data streams
+            registry = None
             registry_file = os.path.join(dst_general_folder, '.registry')
-            logger.debug('reading in registry file {0}'.format(registry_file))
-            if not os.path.exists(registry_file):
-                logger.error('could not find registry file {0}'.format(registry_file))
-                continue
-            with open(registry_file) as fo:
-                registry = fo.read()
+            if os.path.exists(registry_file):
+                logger.debug('reading in registry file {0}'.format(registry_file))
+                with open(registry_file) as fo:
+                    registry = fo.read()
+            else:
+                logger.warn('no registry file on disk {0}'.format(registry_file))
             logger.info('delta download of general data streams for subject={0}, study={1}, url={2}'.format(beiwe_id, study_name, base_url))
             archive = mano.sync.download(
                 Keyring,
@@ -88,14 +91,15 @@ def sync(Lochness, subject, dry=False):
                 beiwe_id,
                 os.path.dirname(dst_general_folder)
             )
-            # begin delta download of all protected streams
+            # begin delta download of all PROTECTED streams
+            registry = None
             registry_file = os.path.join(dst_protected_folder, '.registry')
-            logger.debug('reading registry file {0}'.format(registry_file))
-            if not os.path.exists(registry_file):
-                logger.error('could not find registry file {0}'.format(registry_file))
-                continue
-            with open(registry_file) as fo:
-                registry = fo.read()
+            if os.path.exists(registry_file):
+                logger.debug('reading registry file {0}'.format(registry_file))
+                with open(registry_file) as fo:
+                    registry = fo.read()
+            else:
+                logger.warn('no registry file on disk {0}'.format(registry_file))
             logger.info('delta download of protected data streams for subject={0}, study={1}, url={2}'.format(beiwe_id, study_name, base_url))
             archive = mano.sync.download(
                 Keyring,

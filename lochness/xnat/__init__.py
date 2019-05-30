@@ -57,7 +57,7 @@ def check_consistency(d, experiment):
     if not os.path.exists(experiment_file):
         raise ConsistencyError('file not found {0}'.format(experiment_file))
     with open(experiment_file, 'r') as fo:
-        experiment_local = yaml.load(fo.read())
+        experiment_local = yaml.load(fo.read(), Loader=yaml.FullLoader)
     local_uid = experiment_local['id']
     remote_uid = experiment.id
     if local_uid != remote_uid:
