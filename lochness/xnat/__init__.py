@@ -75,6 +75,8 @@ def save_experiment_file(d, url, experiment):
     with tf.NamedTemporaryFile(dir=d, delete=False) as fo:
         content = yaml.safe_dump(blob, default_flow_style=False)
         fo.write(content.encode('utf-8'))
+        fo.flush()
+        os.fsync(fo.fileno())
     os.chmod(fo.name, 0o0644)
     os.rename(fo.name, experiment_file)
 

@@ -152,6 +152,8 @@ def _savetemp(content, dirname=None, compress=False):
         if not buf:
             break
         fo.write(buf)
+    fo.flush()
+    os.fsync(fo.fileno())
     fo.close()
     return fo.name
 

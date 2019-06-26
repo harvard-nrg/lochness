@@ -387,6 +387,8 @@ def atomic_write(filename, content, overwrite=True, permissions=0o0644, encoding
             tmp.write(content.decode(encoding))
         else:
             tmp.write(content)
+        tmp.flush()
+        os.fsync(tmp.fileno())
     os.chmod(tmp.name, permissions)
     os.rename(tmp.name, filename)
 
