@@ -9,7 +9,8 @@ requires = [
     'pyyaml',
     'mano',
     'yaxil',
-    'six'
+    'six',
+    'pytz'
 ]
 
 test_requirements = [
