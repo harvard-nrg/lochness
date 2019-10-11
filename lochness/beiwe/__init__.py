@@ -8,6 +8,7 @@ import logging
 import mano.sync
 import getpass as gp
 import datetime as dt
+import tempfile as tf
 import cryptease as crypt
 import lochness.net as net
 import lochness.hdd as hdd
@@ -39,6 +40,7 @@ def sync(Lochness, subject, dry=False):
         for uid in beiwe_uids:
             study_frag,beiwe_id = uid
             study_name,study_id = mano.expand_study_id(Keyring, study_frag)
+            study_name_enc = study_name.encode('utf-8')
             dst_general_folder = tree.get('phone', subject.general_folder, beiwe_id=beiwe_id)
             dst_protected_folder = tree.get('phone', subject.protected_folder, beiwe_id=beiwe_id)
             # save a hidden file with the study id, original name, and sanitized name
@@ -46,7 +48,7 @@ def sync(Lochness, subject, dry=False):
             protected_streams = set(PROTECT)
             general_streams = set(mano.DATA_STREAMS) - protected_streams
             # begin backfill download of all GENERAL data streams
-            logger.info('backfill general streams for subject={0}, study={1}, url={2}'.format(beiwe_id, study_name, base_url))
+            logger.info('backfill general streams for subject={0}, study={1}, url={2}'.format(beiwe_id, study_name_enc, base_url))
             mano.sync.backfill(
                 Keyring,
                 study_id,
@@ -57,7 +59,7 @@ def sync(Lochness, subject, dry=False):
             )
             # begin backfill download of all PROTECTED data streams
             passphrase = Lochness['keyring']['lochness']['SECRETS'].get(subject.study, None)
-            logger.info('backfill protected streams for subject={0}, study={1}, url={2}'.format(beiwe_id, study_name, base_url))
+            logger.info('backfill protected streams for subject={0}, study={1}, url={2}'.format(beiwe_id, study_name_enc, base_url))
             mano.sync.backfill(
                 Keyring,
                 study_id,
@@ -77,7 +79,7 @@ def sync(Lochness, subject, dry=False):
                     registry = fo.read()
             else:
                 logger.warn('no registry file on disk {0}'.format(registry_file))
-            logger.info('delta download of general data streams for subject={0}, study={1}, url={2}'.format(beiwe_id, study_name, base_url))
+            logger.info('delta download of general data streams for subject={0}, study={1}, url={2}'.format(beiwe_id, study_name_enc, base_url))
             archive = mano.sync.download(
                 Keyring,
                 study_id,
@@ -100,7 +102,7 @@ def sync(Lochness, subject, dry=False):
                     registry = fo.read()
             else:
                 logger.warn('no registry file on disk {0}'.format(registry_file))
-            logger.info('delta download of protected data streams for subject={0}, study={1}, url={2}'.format(beiwe_id, study_name, base_url))
+            logger.info('delta download of protected data streams for subject={0}, study={1}, url={2}'.format(beiwe_id, study_name_enc, base_url))
             archive = mano.sync.download(
                 Keyring,
                 study_id,
@@ -124,8 +126,12 @@ def save_study_file(d, study_id, study_name):
     sio = six.StringIO()
     writer = csv.writer(sio)
     writer.writerow(['ID', 'Name'])
-    writer.writerow([study_id, study_name])
+    writer.writerow([study_id.encode('utf-8'), study_name.encode('utf-8')])
     sio.seek(0)
     logger.debug('saving study file {0}'.format(study_file))
-    lochness.atomic_write(study_file, sio.read().encode('utf-8'))
-
+    with tf.NamedTemporaryFile(dir=d, prefix='.', delete=False) as tmp:
+        tmp.write(sio.read())
+        tmp.flush()
+        os.fsync(tmp.fileno())
+    os.chmod(tmp.name, 0o0644)
+    os.rename(tmp.name, study_file)
