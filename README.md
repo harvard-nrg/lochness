@@ -12,7 +12,7 @@ services is also a fairly simple process too!
 
 ## Table of contents
 1. [Installation](#installation)
-2. [Documentation](#documentation)
+2. [Documentation](http://docs.neuroinfo.org/lochness/en/latest/)
 
 ## Installation
 Just use `pip`
@@ -22,5 +22,4 @@ pip install lochness
 ```
 
 ## Documentation
-For complete documentation, head on over to [readthedocs](https://neuroinformatics-research-group-lochness.readthedocs-hosted.com/en/latest)!
-
+You can find the documentation [here](http://docs.neuroinfo.org/lochness/en/latest/)
