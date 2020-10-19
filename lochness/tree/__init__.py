@@ -46,6 +46,10 @@ Templates = {
         'raw': Template('${base}/saliva/raw'),
         'processed': Template('${base}/saliva/processed')
     },
+    'offsite_interview': {
+        'raw': Template('${base}/offsite_interview/raw'),
+        'processed': Template('${base}/offsite_interview/processed')
+    },
     'onsite_interview': {
         'raw': Template('${base}/onsite_interview/raw'),
         'processed': Template('${base}/onsite_interview/processed')

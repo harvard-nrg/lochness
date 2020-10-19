@@ -45,6 +45,14 @@ CONFIG = {
             'pattern': string.Template('${subject}_.*\.acq')
         }
     ],
+    'offsite_interview': [
+        {
+            'vendor': 'Zoom',
+            'product': 'ZoomVideoConference',
+            'pattern': string.Template('.*/zoom_0\.mp4'),
+            'protect': True
+        },
+    ],
     'onsite_interview': [
         {
             'vendor': 'Amir Zadeh (CMU)',
