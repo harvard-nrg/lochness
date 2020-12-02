@@ -18,30 +18,24 @@ should be a simple filesystem location ::
 
     phoenix_root: /data/PHOENIX
 
-ssh_user
---------
-Occasionally, you will receive data on an external hard drive or flash drive.
-If you wish to use Lochness to systematically transfer this data to your PHOENIX 
-filesystem, you can do this over ``rsync+ssh``. The ``ssh_user`` field determines 
-the username that will be used for this ::
-
-    ssh_user: example
-
-ssh_host
---------
-Occasionally, you will receive data on an external hard drive or flash drive.
-If you wish to use Lochness to systematically transfer this data to your PHOENIX
-filesystem, you can do this over ``rsync+ssh``. The ``ssh_host`` field determines 
-the server or workstation you will connect to for this ::
-
-    ssh_host: host.example.org
-
-sender
+stdout
 ------
-Whenever there is an error in Lochness, an email will be sent. You use this 
-field to determine the email sender address ::
+This field determines the location of the Lochness process standard output
 
-    sender: lochness@host.example.org
+    stdout: /logs/lochness.out
+
+stderr
+------
+This field determines the location of the Lochness process standard error
+
+    stderr: /logs/lochness.err
+
+poll_interval
+-------------
+This field determines the frequency at which Lochness will poll external data
+sources for incoming data (in seconds)
+
+    poll_interval: 43200
 
 beiwe
 -----
@@ -57,12 +51,18 @@ was initially released ::
     2015-10-01T00:00:00
 
 If you set the ``backfill_start`` field to the string ``consent``, Lochness will use 
-the subject ``Consent Date`` from the PHOENIX `metadata file <phoenix.html#metadata-files>`_. 
+the subject ``Consent Date`` from the PHOENIX `metadata file <phoenix.html#metadata-files>`_
+as the backfill starting point.
 
-A valid ``backfill_start`` field should look something like this ::
+A valid ``backfill_start`` field should look like this ::
 
     beiwe:
       backfill_start: consent
+
+or like this ::
+
+    beiwe:
+      backfill_start: 2020-01-01
 
 dropbox
 -------
@@ -71,7 +71,7 @@ downloading data from `Dropbox <https://dropbox.com>`_.
 
 delete on success
 ~~~~~~~~~~~~~~~~~
-You can add a ``delete_on_success: True`` field to indicate that any data *successfully* 
+You can add a ``delete_on_success: True`` field to indicate that any data successfully
 downloaded from a specific Dropbox account should be subsequently deleted from Dropbox 
 to save space. You can configure ``delete_on_success`` for each Dropbox account defined 
 in your ``keyring``. 
@@ -96,9 +96,9 @@ The resulting section should look as follows ::
 redcap
 ------
 For each PHOENIX study, you may add an entry to the ``redcap`` section indicating 
-that data should be *de-identified* before being downloaded and saved to the filesystem. 
+that data should be de-identified before being downloaded and saved to PHOENIX.
 
-Assuming your PHOENIX study is named ``StudyA`` the end result should look as follows ::
+Assuming your PHOENIX study is named ``StudyA`` this field would look like so ::
 
     redcap:
       StudyA:
@@ -132,4 +132,29 @@ section ::
     notify:
       __global__:
         - admin1@email.com
+
+sender
+------
+Whenever an email is sent by Lochness, use this field to determine the sender
+address ::
+
+    sender: lochness@host.example.org
+
+ssh_user
+--------
+Occasionally, you may receive data on an external hard drive or flash drive.
+If you want to use Lochness to transfer this data to your PHOENIX filesystem,
+you can do this over ``rsync+ssh``. The ``ssh_user`` field determines the
+username that will be used for this ::
+
+    ssh_user: example
+
+ssh_host
+--------
+Occasionally, you may receive data on an external hard drive or flash drive.
+If you want to use Lochness to transfer this data to your PHOENIXfilesystem,
+you can do this over ``rsync+ssh``. The ``ssh_host`` field determines the
+destination host you will connect to for this ::
+
+    ssh_host: host.example.org
 

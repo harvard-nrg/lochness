@@ -1,5 +1,5 @@
 Lochness: Sync data from all over the cloud to a local directory
-===============================================================
+================================================================
 Lochness is a data management tool designed to periodically poll and 
 download data from various data archives into a local directory. This 
 is often referred to as building a "data lake" (hence the name).
@@ -20,4 +20,4 @@ pip install lochness
 ```
 
 ## Documentation
-You can find all the documentation you will ever need [here](http://docs.neuroinfo.org/lochness/en/latest/)
+You can find all the documentation you will ever need [here](https://lochness.readthedocs.io/en/latest/)
