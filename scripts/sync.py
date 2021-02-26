@@ -14,6 +14,7 @@ import lochness.xnat as XNAT
 import lochness.beiwe as Beiwe
 import lochness.redcap as REDCap
 import lochness.dropbox as Dropbox
+import lochness.box as Box
 import lochness.scheduler as scheduler
 import lochness.icognition as iCognition
 import lochness.onlinescoring as OnlineScoring
@@ -23,6 +24,7 @@ SOURCES = {
     'beiwe': Beiwe,
     'redcap': REDCap,
     'dropbox': Dropbox,
+    'box': Box,
     'icognition': iCognition,
     'onlinescoring': OnlineScoring
 }
