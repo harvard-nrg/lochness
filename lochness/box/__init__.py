@@ -107,27 +107,27 @@ def walk_from_folder_object(root: str, box_folder_object) -> \
     yield root, box_folder_objects, box_file_objects
 
     for box_dir_object in box_folder_objects:
-        root = os.path.join(root, box_dir_object.name)
-        for x in walk_from_folder_object(root, box_dir_object):
+        new_root = os.path.join(root, box_dir_object.name)
+        for x in walk_from_folder_object(new_root, box_dir_object):
             yield x
 
 
 def save(box_file_object: boxsdk.object.file,
-         bx_file: Tuple[str, str],
+         box_path_tuple: Tuple[str, str],
          out_base: str,
          key=None,
          compress=False, delete=False, dry=False):
     '''save a box file to an output directory'''
     # file path
-    bx_head, bx_tail = bx_file
-    box_fullpath = os.path.join(bx_head, bx_tail)
+    box_path_root, box_path_name = box_path_tuple
+    box_fullpath = os.path.join(box_path_root, box_path_name)
 
     # extension
     ext = '.lock' if key else ''
     ext = ext + '.gz' if compress else ext
 
     # local path
-    local_fullfile = os.path.join(out_base, bx_tail + ext)
+    local_fullfile = os.path.join(out_base, box_path_name + ext)
 
     if os.path.exists(local_fullfile):
         return
