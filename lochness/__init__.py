@@ -29,6 +29,7 @@ Subject = col.namedtuple('Subject', [
     'xnat',
     'redcap',
     'dropbox',
+    'box',
     'general_folder',
     'protected_folder'
 ])
@@ -100,13 +101,22 @@ def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
             dropbox = dict()
             if 'Dropbox' in row:
                 dropbox = _parse_dropbox(row['Dropbox'], phoenix_id)
+
+            box = dict()
+            if 'Box' in row:
+                print('='*80)
+                print('Box here')
+                box = _parse_box(row['Box'], phoenix_id)
+                print(box)
+                print('='*80)
+
             # sanity check on very critical bits of information
             if not phoenix_id or not phoenix_study:
                 raise StudyMetadataError('bad row in metadata file {0}'.format(meta_basename))
             general = os.path.join(general_folder, phoenix_study, phoenix_id)
             protected = os.path.join(protected_folder, phoenix_study, phoenix_id)
             subject = Subject(active, phoenix_study, phoenix_id, consent, beiwe,
-                              icognition, saliva, xnat, redcap, dropbox,
+                              icognition, saliva, xnat, redcap, dropbox, box,
                               general, protected)
             logger.debug('subject metadata blob:\n{0}'.format(json.dumps(subject._asdict(), indent=2)))
             yield subject
@@ -118,6 +128,11 @@ def _parse_saliva(value, default_id=None):
 def _parse_dropbox(value, default_id=None):
     '''helper function to parse a dropbox value'''
     default = 'dropbox.cbsn:{ID}'.format(ID=default_id)
+    return _simple_parser(value, default=default)
+
+def _parse_box(value, default_id=None):
+    '''helper function to parse a box value'''
+    default = 'box.mclean:{ID}'.format(ID=default_id)
     return _simple_parser(value, default=default)
  
 def _parse_xnat(value, default_id=None):
@@ -234,6 +249,7 @@ def configure_logging(logger, args):
     '''configure all the loggers for all things'''
     logging.getLogger('requests').setLevel(logging.WARN)
     logging.getLogger('dropbox').setLevel(logging.WARN)
+    logging.getLogger('box').setLevel(logging.WARN)
     logging.getLogger('paramiko').setLevel(logging.WARN)
     logargs = {
         'level': logging.INFO,
