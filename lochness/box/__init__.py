@@ -8,6 +8,7 @@ import tempfile as tf
 import cryptease as crypt
 import lochness.net as net
 from typing import Generator, Tuple
+from pathlib import Path
 # from . import hash as hash
 
 logger = logging.getLogger(__name__)
@@ -49,7 +50,7 @@ def get(module):
         raise ImportError(msg)
 
 
-def get_id_for_box_folder_name(client:boxsdk.client,
+def get_box_object_based_on_name(client:boxsdk.client,
                                box_folder_name: str,
                                box_path_id: str = '0') -> boxsdk.object.folder:
     '''Return Box folder object for the given folder name
@@ -70,6 +71,8 @@ def get_id_for_box_folder_name(client:boxsdk.client,
     Returns:
         box_folder_object
     '''
+    box_folder_name = str(box_folder_name)
+
     # get list of files and directories under the top directory
     root_dir = client.folder(folder_id=box_path_id).get()
 
@@ -194,12 +197,14 @@ def _save(box_file_object, box_fullpath, local_fullfile, key, compress):
             raise e
     local_dirname = os.path.dirname(local_fullfile)
     logger.info(f'saving {box_fullpath} to {local_fullfile} ')
+
     # write the file content to a temporary location
     if key:
         _stream = crypt.encrypt(content, key, chunk_size=CHUNK_SIZE)
-        tmp_name = _savetemp(crypt.buffer(_stream),
-                             local_dirname,
-                             compress=compress)
+        tmp_name = _savetemp(content, local_dirname, compress=compress)
+        # tmp_name = _savetemp(crypt.buffer(_stream),
+                             # local_dirname,
+                             # compress=compress)
     else:
         tmp_name = _savetemp(content, local_dirname, compress=compress)
 
