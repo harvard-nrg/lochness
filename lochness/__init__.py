@@ -101,14 +101,9 @@ def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
             dropbox = dict()
             if 'Dropbox' in row:
                 dropbox = _parse_dropbox(row['Dropbox'], phoenix_id)
-
             box = dict()
             if 'Box' in row:
-                print('='*80)
-                print('Box here')
                 box = _parse_box(row['Box'], phoenix_id)
-                print(box)
-                print('='*80)
 
             # sanity check on very critical bits of information
             if not phoenix_id or not phoenix_study:
