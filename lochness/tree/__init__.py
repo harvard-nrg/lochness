@@ -93,8 +93,10 @@ def return_local_path(data_type, base, **kwargs):
 
     if 'raw' in Templates[data_type]:
         raw_folder = Templates[data_type]['raw'].substitute(base=base, **kwargs)
+
     if 'processed' in Templates[data_type]:
         processed_folder = Templates[data_type]['processed'].substitute(base=base, **kwargs)
+
     if kwargs.get('makedirs', True):
         if raw_folder and not os.path.exists(raw_folder):
             logger.debug('creating raw folder {0}'.format(raw_folder))
@@ -104,12 +106,8 @@ def return_local_path(data_type, base, **kwargs):
             os.makedirs(processed_folder)
             os.chmod(processed_folder, 0o01777)
 
-    if kwargs.get('processed', True):
-        preprocessed = kwargs.get('processed')
-        if preprocessed:
-            return processed_folder
-        else:
-            return raw_folder
+    if kwargs.get('processed', False):
+        return processed_folder
     else:
         return raw_folder
 
