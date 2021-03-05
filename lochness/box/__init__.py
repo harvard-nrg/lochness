@@ -1,4 +1,4 @@
-import os
+import os, sys
 import gzip
 import dropbox
 import logging
@@ -9,11 +9,15 @@ import cryptease as crypt
 import lochness.net as net
 from typing import Generator, Tuple
 from pathlib import Path
+import hashlib
+from io import BytesIO
+
 # from . import hash as hash
 
 logger = logging.getLogger(__name__)
 
 CHUNK_SIZE = 1024
+CHUNK_SIZE = 65536
 
 def delete_on_success(Lochness, module_name):
     ''' get module-specific delete_on_success flag with a safe default '''
@@ -187,8 +191,8 @@ def _save(box_file_object, box_fullpath, local_fullfile, key, compress):
     # request the file from box.com
     try:
         # md, resp = client.files_download(box_fullpath)
-        # content = client.file(file_id).content()
-        content = box_file_object.content()
+        # content = box_file_object.content()
+        content = BytesIO(box_file_object.content())
     except dropbox.exceptions.ApiError as e:
         if e.error.is_path() and e.error.get_path().is_not_found():
             msg = f'error downloading file {box_fullpath}'
@@ -201,16 +205,15 @@ def _save(box_file_object, box_fullpath, local_fullfile, key, compress):
     # write the file content to a temporary location
     if key:
         _stream = crypt.encrypt(content, key, chunk_size=CHUNK_SIZE)
-        tmp_name = _savetemp(content, local_dirname, compress=compress)
-        # tmp_name = _savetemp(crypt.buffer(_stream),
-                             # local_dirname,
-                             # compress=compress)
+        tmp_name = _savetemp(crypt.buffer(_stream),
+                             local_dirname,
+                             compress=compress)
     else:
         tmp_name = _savetemp(content, local_dirname, compress=compress)
 
     # verify the file and rename to final local destination
     logger.debug(f'verifying temporary file {tmp_name}')
-    # verify(tmp_name, md.content_hash, key=key, compress=compress)
+    verify(tmp_name, box_file_object.sha1, key=key, compress=compress)
     os.chmod(tmp_name, 0o0644)
     os.rename(tmp_name, local_fullfile)
 
@@ -227,11 +230,12 @@ def _savetemp(content, dirname=None, compress=False):
     if compress:
         fo = gzip.GzipFile(fileobj=fo, mode='wb')
 
-    # while 1:
-        # buf = content.read(CHUNK_SIZE)
-        # if not buf:
-            # break
-    fo.write(content)
+    while 1:
+        buf = content.read(CHUNK_SIZE)
+        if not buf:
+            break
+        fo.write(buf)
+    # box_file_object.download_to(fo)
 
     fo.flush()
     os.fsync(fo.fileno())
@@ -241,7 +245,9 @@ def _savetemp(content, dirname=None, compress=False):
 
 def verify(f, content_hash, key=None, compress=False):
     '''compute dropboxbox hash of a local file and compare to content_hash'''
-    hasher = hash.DropboxContentHasher()
+    # hasher = hash.DropboxContentHasher()
+    hasher = hashlib.sha1()
+    CHUNK_SIZE = 65536
     fo = open(f, 'rb')
     if compress:
         fo = gzip.GzipFile(fileobj=fo, mode='rb')
