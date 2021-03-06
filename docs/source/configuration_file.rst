@@ -93,6 +93,34 @@ The resulting section should look as follows ::
       example:
         base: /PHOENIX
 
+box
+-------
+The ``box`` section is used to configure how Lochness will behave when 
+downloading data from `Box <https://box.com>`_.
+
+delete on success
+~~~~~~~~~~~~~~~~~
+You can add a ``delete_on_success: True`` field to indicate that any data successfully
+downloaded from a specific Box account should be subsequently deleted from Box 
+to save space. You can configure ``delete_on_success`` for each Box account defined 
+in your ``config.yml``. 
+
+The resulting section should look as follows ::
+
+    box:
+      xxxxx:
+        delete_on_success: True
+
+box base
+~~~~~~~~~~~~
+For each Box account, you may add a ``base`` field to the configuration file to 
+indicate that Lochness should begin searching Box starting at that location. 
+
+The resulting section should look as follows ::
+
+    box:
+      xxxxx:
+        base: /PHOENIX
 redcap
 ------
 For each PHOENIX study, you may add an entry to the ``redcap`` section indicating 
