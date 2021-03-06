@@ -127,7 +127,7 @@ def _parse_dropbox(value, default_id=None):
 
 def _parse_box(value, default_id=None):
     '''helper function to parse a box value'''
-    default = 'box.mclean:{ID}'.format(ID=default_id)
+    default = 'box.*:{ID}'.format(ID=default_id)
     return _simple_parser(value, default=default)
  
 def _parse_xnat(value, default_id=None):
