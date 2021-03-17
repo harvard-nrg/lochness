@@ -1,6 +1,5 @@
 import os, sys
 import gzip
-import dropbox
 import logging
 import importlib
 import boxsdk
@@ -12,11 +11,9 @@ from pathlib import Path
 import hashlib
 from io import BytesIO
 
-# from . import hash as hash
 
 logger = logging.getLogger(__name__)
 
-CHUNK_SIZE = 1024
 CHUNK_SIZE = 65536
 
 def delete_on_success(Lochness, module_name):
@@ -104,7 +101,6 @@ def walk_from_folder_object(root: str, box_folder_object) -> \
         box_file_object: box file objects, list
     '''
     box_folder_objects, box_file_objects = [], []
-    # for entry in listing.entries:
     for file_or_folder in box_folder_object.get_items():
         if file_or_folder.type == 'folder':
             box_folder_objects.append(file_or_folder)
@@ -178,7 +174,8 @@ class HashRetryError(Exception):
 def _delete(box_file_object: boxsdk.object.file, box_fullpath: str):
     try:
         md = box_file_object.delete()
-    except dropbox.exceptions.ApiError as e:
+
+    except boxsdk.BoxAPIException as e:
         raise DeletionError(f'error deleting file {box_fullpath}')
 
 
@@ -190,10 +187,8 @@ class DeletionError(Exception):
 def _save(box_file_object, box_fullpath, local_fullfile, key, compress):
     # request the file from box.com
     try:
-        # md, resp = client.files_download(box_fullpath)
-        # content = box_file_object.content()
         content = BytesIO(box_file_object.content())
-    except dropbox.exceptions.ApiError as e:
+    except boxsdk.BoxAPIException as e:
         if e.error.is_path() and e.error.get_path().is_not_found():
             msg = f'error downloading file {box_fullpath}'
             raise DownloadError(msg)
@@ -235,7 +230,6 @@ def _savetemp(content, dirname=None, compress=False):
         if not buf:
             break
         fo.write(buf)
-    # box_file_object.download_to(fo)
 
     fo.flush()
     os.fsync(fo.fileno())
@@ -244,8 +238,7 @@ def _savetemp(content, dirname=None, compress=False):
 
 
 def verify(f, content_hash, key=None, compress=False):
-    '''compute dropboxbox hash of a local file and compare to content_hash'''
-    # hasher = hash.DropboxContentHasher()
+    '''compute box hash of a local file and compare to content_hash'''
     hasher = hashlib.sha1()
     CHUNK_SIZE = 65536
     fo = open(f, 'rb')
