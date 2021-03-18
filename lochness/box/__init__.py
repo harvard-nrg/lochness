@@ -3,6 +3,7 @@ import gzip
 import logging
 import importlib
 import boxsdk
+import lochness
 import tempfile as tf
 import cryptease as crypt
 import lochness.net as net
@@ -10,9 +11,18 @@ from typing import Generator, Tuple
 from pathlib import Path
 import hashlib
 from io import BytesIO
+import lochness.keyring as keyring
+import lochness.net as net
+import lochness.tree as tree
+from os.path import join, basename
+from boxsdk import Client, OAuth2
+import cryptease as enc
+import re
 
 
 logger = logging.getLogger(__name__)
+Module = lochness.lchop(__name__, 'lochness.')
+Basename = lochness.lchop(__name__, 'lochness.box.')
 
 CHUNK_SIZE = 65536
 
@@ -34,26 +44,10 @@ def base(Lochness, module_name):
                    .get('base', '')
 
 
-@net.retry(max_attempts=5)
-def sync(Lochness, subject, dry):
-    '''call sync on the correct sub-module'''
-    for module in subject.box:
-        get(module).sync(Lochness, subject, dry)
-
-
-def get(module):
-    '''return a specific box module'''
-    try:
-        module = '.' + module
-        return importlib.import_module(module, 'lochness')
-    except ImportError:
-        msg = f'no module {module} in package lochness.box'
-        raise ImportError(msg)
-
-
 def get_box_object_based_on_name(client:boxsdk.client,
-                               box_folder_name: str,
-                               box_path_id: str = '0') -> boxsdk.object.folder:
+                                 box_folder_name: str,
+                                 box_path_id: str = '0') \
+                                         -> boxsdk.object.folder:
     '''Return Box folder object for the given folder name
 
     Currently, there is no api function to get box folder objects using
@@ -262,3 +256,110 @@ class BoxHashError(Exception):
         super(BoxHashError, self).__init__(message)
         self.filename = filename
 
+
+@net.retry(max_attempts=5)
+def sync_module(Lochness: 'lochness.config',
+                subject: 'subject.metadata',
+                module_name: 'box.module_name',
+                dry: bool):
+    '''Sync box data for the subject'''
+
+    # only the module_name string without 'box.'
+    module_basename = module_name.split('.')[1]
+
+    # delete on success
+    delete = delete_on_success(Lochness, module_basename)
+    logger.debug(f'delete_on_success for {module_basename} is {delete}')
+
+    for bx_sid in subject.box[module_name]:
+        logger.debug(f'exploring {subject.study}/{subject.id}')
+        _passphrase = keyring.passphrase(Lochness, subject.study)
+        enc_key = enc.kdf(_passphrase)
+
+        client_id, client_secret, api_token = keyring.box_api_token(
+                Lochness, module_name)
+
+        # box authentication
+        auth = OAuth2(
+            client_id=client_id,
+            client_secret=client_secret,
+            access_token=api_token,
+        )
+        client = Client(auth)
+
+        bx_base = base(Lochness, module_basename)
+
+        # get the id of the bx_base path in box
+        bx_base_obj = get_box_object_based_on_name(
+                client, bx_base, '0')
+
+        print(bx_base)
+        # loop through the items defined for the BOX data
+        for datatype, products in iter(
+                Lochness['box'][module_basename]['file patterns'].items()):
+            print(datatype, products)
+            print(datatype, products)
+            print(datatype, products)
+            subject_obj = get_box_object_based_on_name(
+                    client, bx_sid, bx_base_obj.id)
+            datatype_obj = get_box_object_based_on_name(
+                    client, datatype, subject_obj.id)
+
+            # full path
+            bx_head = join(bx_base,
+                           datatype,
+                           bx_sid)
+
+            logger.debug('walking %s', bx_head)
+
+            # if the directory is empty
+            if datatype_obj == None:
+                continue
+
+            # walk through the root directory
+            for root, dirs, files in walk_from_folder_object(
+                    bx_head, datatype_obj):
+
+                for box_file_object in files:
+                    bx_tail = join(basename(root), box_file_object.name)
+                    product = _find_product(bx_tail, products, subject=bx_sid)
+                    if not product:
+                        continue
+
+                    protect = product.get('protect', False)
+                    compress = product.get('compress', False)
+                    key = enc_key if protect else None
+                    output_base = subject.protected_folder \
+                                  if protect else subject.general_folder
+
+                    if 'processed' in root:
+                        processed = True
+                    else:
+                        processed = False
+
+                    # output_base = tree.get(datatype, output_base)
+                    output_base = tree.get(
+                            datatype,
+                            output_base,
+                            processed=processed)
+
+                    save(box_file_object,
+                         (root, box_file_object.name),
+                         output_base, key=key,
+                         compress=False, delete=False,
+                         dry=False)
+
+
+def _find_product(s, products, **kwargs):
+    for product in products:
+        pattern = product['pattern'].safe_substitute(**kwargs)
+        if re.match(pattern, s):
+            return product
+    return None
+
+
+@net.retry(max_attempts=5)
+def sync(Lochness, subject, dry):
+    '''call sync on the correct sub-module'''
+    for module_name in subject.box:
+        sync_module(Lochness, subject, module_name, dry)
