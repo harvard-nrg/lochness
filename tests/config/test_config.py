@@ -78,8 +78,6 @@ admins:
 notify:
     __global__:
         - kevincho@bwh.harvard.edu
-
-
 '''
     fp = tempfile.TemporaryFile()
 
