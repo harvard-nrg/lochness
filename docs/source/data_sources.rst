@@ -233,16 +233,17 @@ create keyring section
 ~~~~~~~~~~~~~~~~~~~~~~
 Next, you need to create a new ``keyring`` section for your Box instance. 
 This section must be named ``box.xxxxx`` where ``xxxxx`` can be any 
-string that is both valid JSON *and* valid as a `lochness.box` module name.
+string that is both valid JSON *and* match `box` column values in the
+metadata.csv. 
 Behind the scenes, Lochness will use this string to import a module from 
 `lochness.box`. Within your new section, you must add your Box CLIENT_ID,
 CLIENT_SECRET and API_TOKEN  ::
 
     {
       "box.xxxxx": {
-        "CLIENT_ID": "XXX",
-        "CLIENT_SECRET": "XXX",
-        "API_TOKEN": "XXX"
+        "CLIENT_ID": "...",
+        "CLIENT_SECRET": "...",
+        "API_TOKEN": "..."
         }
     }
 
