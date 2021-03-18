@@ -41,6 +41,7 @@ def read_phoenix_metadata(Lochness, studies=None):
     # check for GENERAL folder
     general_folder = os.path.join(Lochness['phoenix_root'], 'GENERAL')
     protected_folder = os.path.join(Lochness['phoenix_root'], 'PROTECTED')
+
     # list studies (locally or remotely)
     if not studies:
         studies = lochness.listdir(Lochness, general_folder)
