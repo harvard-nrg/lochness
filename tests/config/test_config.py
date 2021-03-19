@@ -106,3 +106,90 @@ def test_return_box_patterns_str_template():
                 assert config_example == orig_example
                 print('pass')
 
+def test_new_load():
+    '''Test including the box file patterns in the config.yaml
+
+    {'mclean':
+        {'base': 'codmtg',
+        'delete_on_success': False,
+        'file patterns':
+            {'actigraphy':
+                [{'vendor': 'Philips',
+                  'product': 'Actiwatch 2',
+                  'pattern': '.*\\.csv'},
+                 {'vendor': 'Activinsights',
+                  'product': 'GENEActiv',
+                  'pattern': 'GENEActiv/.*(\\.csv|\\.bin)',
+                  'compress': True}],
+             'mri _eye':
+                [{'vendor': 'SR Research',
+                  'product': 'EyeLink 1000',
+                  'pattern': '.*\\.mov'}],
+             'behav_qc':
+                [{'vendor': 'CNL Lab',
+                  'product': 'unknown',
+                  'pattern': '.*'}],
+             'physio':
+                [{'vendor': 'BIOPAC',
+                  'product': 'AcqKnowledge',
+                  'pattern': '.*\\.acq'}],
+             'offsite_interview':
+                [{'vendor': 'Zoom',
+                  'product' : 'ZoomVideoConference',
+                  'pattern': '.*/zoom_0\\.mp4', 'protect': True}],
+             'onsite_interview':
+                [{'vendor': 'Amir Zadeh (CMU)',
+                  'product': 'Recorder.exe',
+                  'pattern': '.*',
+                  'protect': True},
+                 {'vendor': 'Zoom',
+                  'product': 'unknown',
+                  'pattern': '.*(\\.MOV|\\.WAV)$',
+                  'protect': True}]}},
+     'otherStudy':
+        {'base': 'codmtg2',
+         'delete_on_success': False,
+         'file patterns':
+            {'actigraphy':
+                [{'vendor': 'Philips',
+                  'product': 'Actiwatch 2',
+                  'pattern': '.*\\.csv'},
+                 {'vendor': 'Activinsights',
+                  'product': 'GENEActiv',
+                  'pattern': 'GENEActiv/.*(\\.csv|\\.bin)',
+                  'compress': True}]}}}
+
+    '''
+    config_string, fp = create_config()
+    cfg = lochness.config._read_config_file(fp)
+
+    for _,study_dict in cfg['box'].items():
+      for _,modality_values in study_dict['file patterns'].items():
+        for modality_dict in modality_values:
+          modality_dict['pattern'] = string.Template(modality_dict['pattern'])
+
+    for example_study_name, example_study_dict in cfg['box'].items():
+        print(example_study_name)
+        for var in example_study_dict['file patterns'].keys():
+            config_example = example_study_dict\
+                    ['file patterns'][var][0]['pattern'].template
+            orig_example = box_mclean.CONFIG[var][0]['pattern'].template
+            assert config_example == orig_example
+            print('pass')
+
+
+    # if 'box' in cfg.keys():
+        # print(cfg['box'])
+        # for example_study_name, example_study_dict in cfg['box'].items():
+            # print(example_study_name)
+            # example_study_dict['file patterns'] = \
+                    # lochness.config._return_box_patterns_str_template(
+                        # example_study_dict['file patterns'])
+
+            # for var in example_study_dict['file patterns'].keys():
+                # config_example = example_study_dict\
+                        # ['file patterns'][var][0]['pattern'].template
+                # orig_example = box_mclean.CONFIG[var][0]['pattern'].template
+                # assert config_example == orig_example
+                # print('pass')
+
