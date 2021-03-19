@@ -106,9 +106,10 @@ def test_return_box_patterns_str_template():
                 assert config_example == orig_example
                 print('pass')
 
-def test_new_load():
+def test_box_file_pattern_string_templatenize():
     '''Test including the box file patterns in the config.yaml
 
+    Example `box_patterns` input
     {'mclean':
         {'base': 'codmtg',
         'delete_on_success': False,
