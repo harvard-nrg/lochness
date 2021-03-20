@@ -82,7 +82,9 @@ def walk_from_folder_object(root: str, box_folder_object) -> \
         Generator[str, list, list]:
     '''top-down os.path.walk that operates on a Box folder object
 
-    Box does not support getting files with path strings.
+    Box does not support getting file or folder IDs with path strings,
+    but only supports recursively searching files and folders under
+    a folder with specific box ID.
 
     Key Arguments:
         root: path of the folder, str
