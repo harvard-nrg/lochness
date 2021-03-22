@@ -26,11 +26,12 @@ def load(f, archive_base=None):
 
     # box file pattern strings from the config to string template
     # regardless of the selected study in the args
-    for _, study_dict in Lochness['box'].items():
-        for _, modality_values in study_dict['file patterns'].items():
-            for modality_dict in modality_values:
-                modality_dict['pattern'] = \
-                    string.Template(modality_dict['pattern'])
+    if 'box' in Lochness:
+        for _, study_dict in Lochness['box'].items():
+            for _, modality_values in study_dict['file patterns'].items():
+                for modality_dict in modality_values:
+                    modality_dict['pattern'] = \
+                        string.Template(modality_dict['pattern'])
 
     with open(Lochness['keyring_file'], 'rb') as fp:
         logger.info('reading keyring file {0}'.format(Lochness['keyring_file']))
