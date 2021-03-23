@@ -1,48 +1,50 @@
 import lochness
 from lochness import config
 from config.test_config import create_config
-import pytest
+from mock_args import LochnessArgs, mock_load
 
-
-class Args(object):
-    def __init__(self):
-        self.source = ['xnat', 'box', 'redcap']
-        self.config = 'suggest_config.yml'
-        self.archive_base = None
-    def __str__(self):
-        return 'haha'
-
-@pytest.fixture
-def simple_args():
-    arg = Args()
-    return arg
 
 def test_do():
-    args = Args()
-    Lochness = config.load(args.config, args.archive_base)
+    args = LochnessArgs()
+    Lochness = mock_load(args.config, args.archive_base)
 
 def test_read_phoenix_data():
-    args = Args()
+    args = LochnessArgs()
     args.source = ['xnat', 'box']
-    args.studies = ['mclean']
+    args.studies = ['StudyA']
     args.dry = [False]
-    Lochness = config.load(args.config, args.archive_base)
+    Lochness = mock_load(args.config, args.archive_base)
     for subject in lochness.read_phoenix_metadata(Lochness, args.studies):
         print(subject)
 
 def test_read_phoenix_metadata():
-    args = Args()
-    args.source = ['xnat', 'box']
-    args.studies = ['mclean']
+    args = LochnessArgs()
+    args.source = ['xnat', 'box', 'redcap']
+    args.studies = ['StudyA']
     args.dry = [False]
     config_string, fp = create_config()
-    # cfg = lochness.config._read_config_file(fp)
 
-    Lochness = config.load(args.config, args.archive_base)
-    print(Lochness)
-    for subject in lochness.read_phoenix_metadata(Lochness):
-        print(subject)
-        print(subject.box['box.mclean'])
-        for module in subject.box:
-            print(module)
+    Lochness = mock_load(args.config, args.archive_base)
+    for subject in lochness.read_phoenix_metadata(Lochness, args.studies):
+        # Subject(active=1,
+                # study='StudyA', id='EXAMPLE', consent='1979-01-01',
+                # beiwe=defaultdict(<class 'list'>,
+                    # {'beiwe': [('5432', 'abcde')]}),
+                # icognition={},
+                # saliva={},
+                # xnat=defaultdict(<class 'list'>,
+                    # {'xnat.hcpep': [('HCPEP-BWH', '1001')]}),
+                # redcap=defaultd ict(<class 'list'>,
+                    # {'redcap.hcpep': ['1001_1']}),
+                # dropbox={},
+                # box=defaultdict(<class 'list'>,
+                    # {'box.mclean': ['O1234']}),
+                # general_folder='./PHOENIX/GENERAL/StudyA/EXAMPLE',
+                # protected_folder='./PHOENIX/PROTECTED/StudyA/EXAMPLE')
+
+        assert subject.study == 'StudyA'
+        assert subject.general_folder == './PHOENIX/GENERAL/StudyA/EXAMPLE'
+        assert list(subject.xnat.keys())[0] == 'xnat.hcpep'
+        assert list(subject.xnat.values())[0][0][0] == 'HCPEP-BWH'
+
 

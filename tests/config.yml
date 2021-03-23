@@ -1,16 +1,16 @@
-keyring_file: ~/.lochness.enc
-phoenix_root: /Users/kc244/lochness/tests/PHOENIX
-pid: /tmp/lochness.pid
-stderr: /tmp/lochness.stderr
-stdout: /tmp/lochness.stdout
+keyring_file: lochness.json
+phoenix_root: ./PHOENIX
+pid: lochness.pid
+stderr: lochness.stderr
+stdout: lochness.stdout
 poll_interval: 86400
 ssh_user: kc244
-ssh_host: rgs09.research.partners.org
-sender: sky8671@gmail.com
+ssh_host: eristwo.partners.org
+sender: kevincho@bwh.harvard.edu
 beiwe:
     backfill_start: 2017-10-01T00:00:00
 box:
-    mclean: 
+    StudyA: 
         base: codmtg
         delete_on_success: False
         file patterns:

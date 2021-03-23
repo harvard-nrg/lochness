@@ -1,0 +1,31 @@
+{
+    "lochness": {
+        "REDCAP": {
+            "StudyA": {
+                "redcap.hcpep": ["hcpep"]
+            }
+        }
+    },
+            
+
+    "xnat.hcpep": {
+        "URL": "https://hcpep-xnat.bwh.harvard.edu",
+        "USERNAME": "kc244",
+        "PASSWORD": "hahahaha"
+    },
+
+
+    "redcap.hcpep": {
+        "URL": "https://redcap.partners.org/redcap",
+        "API_TOKEN": {
+            "hcpep": "377F16*****"
+        }
+    },
+
+    "box.StudyA": {
+        "CLIENT_ID": "IDIDIDIDI",
+        "CLIENT_SECRET": "SECSECSEC",
+        "API_TOKEN": "TOKTOKTOK"
+    }
+}
+
