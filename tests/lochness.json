@@ -6,12 +6,11 @@
             }
         }
     },
-            
 
     "xnat.hcpep": {
         "URL": "https://hcpep-xnat.bwh.harvard.edu",
         "USERNAME": "kc244",
-        "PASSWORD": "hahahaha"
+        "PASSWORD": "haha****"
     },
 
 
@@ -23,9 +22,9 @@
     },
 
     "box.StudyA": {
-        "CLIENT_ID": "IDIDIDIDI",
-        "CLIENT_SECRET": "SECSECSEC",
-        "API_TOKEN": "TOKTOKTOK"
+        "CLIENT_ID": "f7jktsqa5m4ru66t****",
+        "CLIENT_SECRET": "6w53M484x8dG2B****",
+        "API_TOKEN": "vuP1OfSkMYbwPm9****"
     }
 }
 

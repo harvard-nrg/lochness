@@ -1,7 +1,9 @@
 import lochness
 from lochness import config
+from lochness import box
 from config.test_config import create_config
 from mock_args import LochnessArgs, mock_load
+import boxsdk
 
 
 def test_do():
@@ -44,7 +46,27 @@ def test_read_phoenix_metadata():
 
         assert subject.study == 'StudyA'
         assert subject.general_folder == './PHOENIX/GENERAL/StudyA/EXAMPLE'
-        assert list(subject.xnat.keys())[0] == 'xnat.hcpep'
+        assert list(subject.xnat.keys())[0] == 'xnat.StudyA'
         assert list(subject.xnat.values())[0][0][0] == 'HCPEP-BWH'
 
+
+def test_box_module():
+    args = LochnessArgs()
+    args.source = ['xnat', 'box', 'redcap']
+    args.studies = ['StudyA']
+    args.dry = [False]
+    config_string, fp = create_config()
+
+    Lochness = mock_load(args.config, args.archive_base)
+    Lochness['keyring']['lochness']['SECRETS'] = {}
+    Lochness['keyring']['lochness']['SECRETS']['StudyA'] = 'ha'
+    for subject in lochness.read_phoenix_metadata(Lochness, args.studies):
+        print(subject.study)
+        for module in subject.box:
+            print(module)
+            print(module)
+            try:
+                box.sync_module(Lochness, subject, module, dry=True)
+            except boxsdk.BoxAPIException as e:
+                print('ha')
 
