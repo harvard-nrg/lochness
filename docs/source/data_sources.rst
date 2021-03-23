@@ -216,3 +216,56 @@ dropbox base
 You can configure Lochness to begin searching your Dropbox account starting from 
 a specific subdirectory. For details, please refer to the
 `dropbox base configuration file documentation <configuration_file.html#dropbox-base>`_.
+
+
+Box
+-------
+To have Lochness download data automatically from Box, you need a few
+things.
+
+create access token
+~~~~~~~~~~~~~~~~~~~
+First, you need to get CLIENT_ID, CLIENT_SECRET and API Access Token from the 
+app created on the `https://app.box.com/developers/console`. The token should be a
+32-character alphanumeric string.
+
+create keyring section
+~~~~~~~~~~~~~~~~~~~~~~
+Next, you need to create a new ``keyring`` section for your Box instance. 
+This section must be named ``box.xxxxx`` where ``xxxxx`` can be any 
+string that is both valid JSON *and* match `box` column values in the
+metadata.csv. 
+Behind the scenes, Lochness will use this string to import a module from 
+`lochness.box`. Within your new section, you must add your Box CLIENT_ID,
+CLIENT_SECRET and API_TOKEN  ::
+
+    {
+      "box.xxxxx": {
+        "CLIENT_ID": "...",
+        "CLIENT_SECRET": "...",
+        "API_TOKEN": "..."
+        }
+    }
+
+metadata file entry
+~~~~~~~~~~~~~~~~~~~
+A valid metadata file entry should look as follows ::
+
+    Active,...,Box,...
+    1,...,box.xxxxx:SUBJECT,...
+
+Where ``box.xxxxx`` would be a valid ``keyring`` section and ``SUBJECT`` 
+would be a valid Subject folder name in Box. This folder name does not 
+necessarily have to match the PHOENIX subject.
+
+delete on success
+~~~~~~~~~~~~~~~~~
+You can configure Lochness to delete files from Box on successful download. 
+For details, please refer to the 
+`box delete_on_success configuration file documentation <configuration_file.html#delete-on-success>`_
+
+box base
+~~~~~~~~~~~~
+You can configure Lochness to begin searching your Box account starting from 
+a specific subdirectory. For details, please refer to the
+`box base configuration file documentation <configuration_file.html#box-base>`_.

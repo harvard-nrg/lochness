@@ -62,16 +62,20 @@ Templates = {
 
 logger = logging.getLogger(__name__)
 
-def get(type, base, **kwargs):
-    '''get phoenix folder for a subject and datatype'''
-    if type not in Templates:
-        raise TreeError('no tree templates defined for {0}'.format(type))
+def get(data_type, base, **kwargs):
+    '''get phoenix folder for a subject and data_type'''
+    if data_type not in Templates:
+        raise TreeError('no tree templates defined for {0}'.format(data_type))
+
     raw_folder = None
     processed_folder = None
-    if 'raw' in Templates[type]:
-        raw_folder = Templates[type]['raw'].substitute(base=base, **kwargs)
-    if 'processed' in Templates[type]:
-        processed_folder = Templates[type]['processed'].substitute(base=base, **kwargs)
+
+    if 'raw' in Templates[data_type]:
+        raw_folder = Templates[data_type]['raw'].substitute(base=base, **kwargs)
+
+    if 'processed' in Templates[data_type]:
+        processed_folder = Templates[data_type]['processed'].substitute(base=base, **kwargs)
+
     if kwargs.get('makedirs', True):
         if raw_folder and not os.path.exists(raw_folder):
             logger.debug('creating raw folder {0}'.format(raw_folder))
@@ -80,7 +84,12 @@ def get(type, base, **kwargs):
             logger.debug('creating processed folder {0}'.format(processed_folder))
             os.makedirs(processed_folder)
             os.chmod(processed_folder, 0o01777)
-    return raw_folder
+
+    if kwargs.get('processed', False):
+        return processed_folder
+    else:
+        return raw_folder
+
 
 class TreeError(Exception):
     pass

@@ -93,6 +93,59 @@ The resulting section should look as follows ::
       example:
         base: /PHOENIX
 
+box
+-------
+The ``box`` section is used to configure how Lochness will behave when 
+downloading data from `Box <https://box.com>`_.
+
+delete on success
+~~~~~~~~~~~~~~~~~
+You can add a ``delete_on_success: True`` field to indicate that any data successfully
+downloaded from a specific Box account should be subsequently deleted from Box 
+to save space. You can configure ``delete_on_success`` for each Box account defined 
+in your ``config.yml``. 
+
+The resulting section should look as follows ::
+
+    box:
+      xxxxx:
+        delete_on_success: True
+
+box base
+~~~~~~~~~~~~
+For each Box account, you may add a ``base`` field to the configuration file to 
+indicate that Lochness should begin searching Box starting at that location. 
+``file patterns`` field will have the name of directory under the `base`
+directory, with subfields. 
+
+The subfields are 
+- ``vendor``, ``product``: currently not used by `lochness`.
+- ``pattern``: string pattern of the files in interest. The files with matching
+               names will be pulled.
+- ``compress``: if True, the matching files will be downloaded and compressed.
+- ``protect``: if True, the files are downloaded under the `PROTECTED` directory.
+
+The resulting section should look as follows ::
+
+    box:
+        xxxxx: 
+            base: xxxxx_dir
+            delete_on_success: False
+            file patterns:                 
+                actigraphy:
+                       - vendor: Philips
+                         product: Actiwatch 2
+                         pattern: '.*\.csv'
+                       - vendor: Activinsights
+                         product: GENEActiv
+                         pattern: 'GENEActiv/.*(\.csv|\.bin)'
+                         compress: True
+                mri_eye:
+                       - vendor: SR Research
+                         product: EyeLink 1000
+                         pattern: '.*\.mov'
+
+
 redcap
 ------
 For each PHOENIX study, you may add an entry to the ``redcap`` section indicating 

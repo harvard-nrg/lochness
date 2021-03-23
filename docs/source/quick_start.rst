@@ -4,7 +4,7 @@ Lochness provides a single command line tool (daemon) to periodically poll
 and download data from various web services into a local directory. Out of
 the box there is support for pulling data from a multitude of 
 `data sources <data_sources.html>`_ including Beiwe, XNAT, REDCap, 
-Dropbox, external hard drives, and more.
+Dropbox, Box, external hard drives, and more.
 
 Installation
 ------------
@@ -26,11 +26,24 @@ the *keyring*. Here's an example of a decrypted keyring file ::
           "StudyA": "quick brown fox jumped over lazy dog"
         }
       },
+
       "beiwe.example": {
         "URL": "https://beiwe.example.org",
         "ACCESS_KEY": "...",
         "SECRET_KEY": "..."
       }
+
+      "xnat.example": {
+        "URL": "https://chpe-xnat.example.harvard.edu",
+        "USERNAME": "...",
+        "PASSWORD": "..."
+      },
+
+      "box.xxxxx": {
+        "CLIENT_ID": "...",
+        "CLIENT_SECRET": "...",
+        "API_TOKEN": "..."
+        }
     }
 
 This file must be encrypted using a passphrase. At the moment, Lochness only
@@ -98,6 +111,7 @@ you want to restrict Lochness to only download specific data sources, you can
 provide the ``--source`` argument ::
 
     sync.py -c config.yml --source beiwe
+    sync.py -c config.yml --source xnat box
 
 additional help
 ~~~~~~~~~~~~~~~

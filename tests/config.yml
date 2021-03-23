@@ -1,0 +1,61 @@
+keyring_file: lochness.json
+phoenix_root: ./PHOENIX
+pid: lochness.pid
+stderr: lochness.stderr
+stdout: lochness.stdout
+poll_interval: 86400
+ssh_user: kc244
+ssh_host: eristwo.partners.org
+sender: kevincho@bwh.harvard.edu
+beiwe:
+    backfill_start: 2017-10-01T00:00:00
+box:
+    StudyA: 
+        base: codmtg
+        delete_on_success: False
+        file patterns:
+            actigraphy:
+                   - vendor: Philips
+                     product: Actiwatch 2
+                     pattern: '.*\.csv'
+                   - vendor: Activinsights
+                     product: GENEActiv
+                     pattern: 'GENEActiv/.*(\.csv|\.bin)'
+                     compress: True
+            mri_eye:
+                   - vendor: SR Research
+                     product: EyeLink 1000
+                     pattern: '.*\.mov'
+            behav_qc:
+                   - vendor: CNL Lab
+                     product: unknown
+                     pattern: '.*'
+            physio:
+                   - vendor: BIOPAC
+                     product: AcqKnowledge
+                     pattern: '.*\.acq'
+            offsite_interview:
+                   - vendor: Zoom
+                     product: ZoomVideoConference
+                     pattern: '.*/zoom_0\.mp4'
+                     protect: True
+            onsite_interview:
+                   - vendor: Amir Zadeh (CMU)
+                     product: Recorder.exe
+                     pattern: '.*'
+                     protect: True
+                   - vendor: Zoom
+                     product: unknown
+                     pattern: '.*(\.MOV|\.WAV)$'
+                     protect: True
+redcap:
+    phoenix_project:
+        deidentify: True
+hdd:
+    module_name:
+        base: /PHOENIX
+admins:
+    - kevincho@bwh.harvard.edu
+notify:
+    __global__:
+        - kevincho@bwh.harvard.edu
