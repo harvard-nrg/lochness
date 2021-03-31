@@ -1,2 +1,2 @@
-Active,Consent,Subject ID,Beiwe,XNAT,REDCap,Box
-1,1979-01-01,EXAMPLE,beiwe:5432:abcde,xnat.StudyA:HCPEP-BWH:1001,redcap.hcpep:1001_1,box.StudyA:O1234
+Active,Consent,Subject ID,Beiwe,XNAT,REDCap,Box,Mindlamp
+1,1979-01-01,EXAMPLE,beiwe:5432:abcde,xnat.StudyA:HCPEP-BWH:1001,redcap.hcpep:1001_1,box.StudyA:O1234,mindlamp.StudyA:U6867655808
