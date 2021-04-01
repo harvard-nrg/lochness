@@ -1,6 +1,7 @@
 import lochness
 from lochness import config
 from lochness import box
+from lochness import mindlamp
 from config.test_config import create_config
 from mock_args import LochnessArgs, mock_load
 import boxsdk
@@ -70,3 +71,17 @@ def test_box_module():
             except boxsdk.BoxAPIException as e:
                 print('ha')
 
+
+def test_mindlamp_module():
+    args = LochnessArgs()
+    args.source = ['xnat', 'mindlamp']
+    args.studies = ['StudyA']
+    args.dry = [False]
+    config_string, fp = create_config()
+
+    Lochness = mock_load(args.config, args.archive_base)
+    for subject in lochness.read_phoenix_metadata(Lochness, args.studies):
+        print(subject.study)
+        for module in subject.mindlamp:
+            assert module == 'mindlamp.StudyA'
+            mindlamp.sync(Lochness, subject, dry=True)
