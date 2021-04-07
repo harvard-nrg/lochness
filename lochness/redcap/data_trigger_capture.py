@@ -91,6 +91,9 @@ def save_post_from_redcap(body: str, db_location: str):
 
     '''
 
+    body = re.sub('%2F', '/', body)
+    body = re.sub('%3A', ':', body)
+
     columns = ['timestamp', 'project_url', 'project_id',
                'redcap_username', 'record', 'instrument']
     if Path(db_location).is_file():
