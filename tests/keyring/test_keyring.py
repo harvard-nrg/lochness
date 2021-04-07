@@ -1,6 +1,6 @@
 import lochness
 from pathlib import Path
-from lochness.keyring import print_key_ring
+from lochness.keyring import print_keyring
 
 import sys
 scripts_dir = Path(lochness.__path__[0]).parent / 'tests'
@@ -23,4 +23,4 @@ def test_read_phoenix_data():
     args.dry = [False]
     Lochness = mock_load(args.config, args.archive_base)
 
-    print_key_ring(Lochness)
+    print_keyring(Lochness)
