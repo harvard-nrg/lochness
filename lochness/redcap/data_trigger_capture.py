@@ -46,7 +46,7 @@ class S(BaseHTTPRequestHandler):
                 str(self.path), str(self.headers), post_data.decode('utf-8'))
 
         self._set_response()
-        self.wfile.write(f"POST request for {self.path.encode('utf-8')}")
+        # self.wfile.write(f"POST request for {self.path.encode('utf-8')}")
 
         if self.n_post == self.back_up_after_n_post:
             back_up_db(self.db_location)
@@ -60,10 +60,10 @@ def run(db_location: str = 'db.csv',
     # register db_location
     class redcap_handler(handler_class):
         def __init__(self, *args, **kwargs):
-            handler_class.__init__(self, *args, **kwargs)
             self.db_location = db_location
             self.n_post = 0
             self.back_up_after_n_post = 50
+            handler_class.__init__(self, *args, **kwargs)
 
     logging.basicConfig(
             level=logging.INFO,
