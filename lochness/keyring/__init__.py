@@ -102,7 +102,7 @@ def mediaflux_api_token(Lochness, key):
     return mflux_cfg
 
 
-def print_key_ring(Lochness):
+def print_keyring(Lochness):
     '''Print the structure of the Lochness['keyring'] without sensitive info'''
     keyring_dict = Lochness['keyring']
 
