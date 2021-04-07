@@ -57,24 +57,29 @@ def run(db_location: str = 'db.csv',
         server_class=HTTPServer,
         handler_class=S, port=8080):
 
+    # register db_location
+    class redcap_handler(handler_class):
+        def __init__(self, *args, **kwargs):
+            handler_class.__init__(self, *args, **kwargs)
+            self.db_location = db_location
+            self.n_post = 0
+            self.back_up_after_n_post = 50
+
     logging.basicConfig(
             level=logging.INFO,
             filename=Path(db_location).parent / 'data_trigger_capture.log')
 
     server_address = ('', port)
-    httpd = server_class(server_address, handler_class)
+    httpd = server_class(server_address, redcap_handler)
 
-    # register db_location
-    httpd.db_location = db_location
-    httpd.n_post = 0
-    httpd.back_up_after_n_post = 50
-
+    logging.info(f'** {time.time()}')
     logging.info('Listening to REDCap POST...\n')
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
         pass
     httpd.server_close()
+    logging.info(f'** {time.time()}')
     logging.info('Stopping httpd...\n')
 
 

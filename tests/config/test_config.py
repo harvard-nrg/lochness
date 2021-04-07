@@ -1,12 +1,11 @@
 import lochness.config
 import tempfile
-import lochness.box.mclean as box_mclean
 import re
 import string
 
 def create_config():
     config_string = b'''keyring_file: ~/.lochness.enc
-phoenix_root: ~/PHOENIX
+phoenix_root: /Users/kc244/lochness/tests/PHOENIX
 pid: /tmp/lochness.pid
 stderr: /tmp/lochness.stderr
 stdout: /tmp/lochness.stdout

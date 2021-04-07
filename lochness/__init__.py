@@ -51,6 +51,7 @@ def read_phoenix_metadata(Lochness, studies=None):
         f = os.path.join(general_folder, study_name, '{0}_metadata.csv'.format(study_name))
         if not os.path.exists(f):
             logger.error('metadata file does not exist {0}'.format(f))
+            print('no meta')
             continue
         logger.debug('reading metadata file {0}'.format(f))
         try:

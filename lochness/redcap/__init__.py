@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 import json
 import lochness
@@ -21,6 +22,10 @@ def sync(Lochness, subject, dry=False):
         for redcap_project, api_url, api_key in redcap_projects(
                 Lochness, subject.study, redcap_instance):
             _debug_tup = (redcap_instance, redcap_project, redcap_subject)
+
+            print(_debug_tup)
+
+            sys.exit()
             record_query = {
                 'token': api_key,
                 'content': 'record',
@@ -47,15 +52,17 @@ def sync(Lochness, subject, dry=False):
 
             # post query to redcap
             content = post_to_redcap(api_url, record_query, _debug_tup)
+
             # check if response body is nothing but a sad empty array
             if content.strip() == '[]':
                 logger.info(f'no redcap data for {redcap_subject}')
                 continue
             # process the response content
             _redcap_project = re.sub(r'[\W]+', '_', redcap_project.strip())
-            dst_folder = tree.get('surveys', subject.general_folder)
-            fname = os.path.join(dst_folder,
-                                 f'{redcap_subject}.{_redcap_project}.json')
+
+            # default location to protected folder
+            dst_folder = tree.get('surveys', subject.protected_folder)
+            fname = f'{redcap_subject}.{_redcap_project}.json'
             dst = os.path.join(dst_folder, fname)
 
             if not dry:
