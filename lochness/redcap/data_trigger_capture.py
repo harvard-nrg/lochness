@@ -91,9 +91,11 @@ def save_post_from_redcap(body: str, db_location: str):
 
     '''
 
-    body = re.sub('%2F', '/', body)
-    body = re.sub('%3A', ':', body)
-
+    body = re.sub("%3A", ":", body)
+    body = re.sub("%2F", "/", body)
+    body = re.sub("%3F", "?", body)
+    body = re.sub("%3D", "=", body)
+    
     columns = ['timestamp', 'project_url', 'project_id',
                'redcap_username', 'record', 'instrument']
     if Path(db_location).is_file():
@@ -123,7 +125,7 @@ def save_post_from_redcap(body: str, db_location: str):
 
 
 def get_info_from_post_body(var_name, body):
-    pattern_catcher = '([A-Za-z%0-9\.]+)'
+    pattern_catcher = '([A-Za-z%0-9:\./?\=_]+)'
     return re.search(f'{var_name}={pattern_catcher}', body).group(1)
 
 
