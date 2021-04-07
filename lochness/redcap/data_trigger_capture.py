@@ -90,13 +90,14 @@ def save_post_from_redcap(body: str, db_location: str):
       - "Data Entry Trigger" from REDCap configuration
 
     '''
+
+    columns = ['timestamp', 'project_url', 'project_id',
+               'redcap_username', 'record', 'instrument']
     if Path(db_location).is_file():
         db_df = pd.read_csv(db_location, index_col=0)
 
     else:
-        db_df = pd.DataFrame(
-            columns=['timestamp', 'project_url', 'project_id',
-                     'redcap_username', 'record', 'instrument'])
+        db_df = pd.DataFrame(columns=columns)
 
     redcap_url = get_info_from_post_body('redcap_url', body)
     project_url = get_info_from_post_body('project_url', body)
@@ -115,7 +116,7 @@ def save_post_from_redcap(body: str, db_location: str):
         'instrument': instrument})
 
     db_df = db_df.append(df_tmp)
-    db_df.to_csv(db_location)
+    db_df[columns].to_csv(db_location)
 
 
 def get_info_from_post_body(var_name, body):
