@@ -118,7 +118,7 @@ def print_keyring(Lochness):
                 new_dict['lochness'][modality][study_name] = {}
                 for redcap_name, project_name in key_dict.items():
                     new_dict['lochness'][modality]\
-                            [study_name][redcap_name]  = project_name
+                            [study_name][redcap_name] = project_name
 
     for modality, modal_dict in keyring_dict.items():
         if modality != 'lochness':

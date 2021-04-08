@@ -2,6 +2,7 @@ from lochness.config import _read_config_file, ConfigError, yaml
 import os
 import string
 
+
 class LochnessArgs(object):
     def __init__(self):
         self.source = ['xnat', 'box', 'redcap']
@@ -9,6 +10,7 @@ class LochnessArgs(object):
         self.archive_base = None
     def __str__(self):
         return 'haha'
+
 
 def mock_load(f, archive_base=None):
     '''load configuration file and keyring for test

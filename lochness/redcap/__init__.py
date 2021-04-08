@@ -8,12 +8,53 @@ import requests
 import lochness.net as net
 import collections as col
 import lochness.tree as tree
+from pathlib import Path
+import pandas as pd
+import datetime
 
 logger = logging.getLogger(__name__)
 
 
+def check_if_modified(subject_id: str,
+                      existing_json: str,
+                      df: pd.DataFrame) -> bool:
+    '''check if subject data has been modified in the data entry trigger db'''
+
+    json_modified_time = Path(existing_json).stat().st_mtime
+
+    if subject_id in df['record'].unique():
+        subject_df = df[df.record == subject_id]
+
+        lastest_update_time = subject_df.loc[
+                subject_df['timestamp'].idxmax()].timestamp
+        
+        if lastest_update_time > json_modified_time:
+            return True
+        else:
+            return False
+
+    else:
+        return False
+
+
+def get_data_entry_trigger_df(Lochness: 'Lochness') -> pd.DataFrame:
+    '''Read Data Entry Trigger database as dataframe'''
+    if 'redcap' in Lochness:
+        if 'data_entry_trigger_csv' in Lochness['redcap']:
+            db_loc = Lochness['redcap']['data_entry_trigger_csv']
+            db_df = pd.read_csv(db_loc)
+            return db_df
+
+    db_df = pd.DataFrame()
+    return db_df
+
+
 @net.retry(max_attempts=5)
 def sync(Lochness, subject, dry=False):
+
+    # load dataframe for redcap data entry trigger
+    db_df = get_data_entry_trigger_df(Lochness)
+    
     logger.debug(f'exploring {subject.study}/{subject.id}')
     deidentify = deidentify_flag(Lochness, subject.study)
     logger.debug(f'deidentify for study {subject.study} is {deidentify}')
@@ -21,11 +62,25 @@ def sync(Lochness, subject, dry=False):
     for redcap_instance, redcap_subject in iterate(subject):
         for redcap_project, api_url, api_key in redcap_projects(
                 Lochness, subject.study, redcap_instance):
+            # process the response content
+            _redcap_project = re.sub(r'[\W]+', '_', redcap_project.strip())
+
+            # default location to protected folder
+            dst_folder = tree.get('surveys', subject.protected_folder)
+            fname = f'{redcap_subject}.{_redcap_project}.json'
+            dst = Path(dst_folder) / fname
+
+
+            # check if the data has been updated by checking the redcap data
+            # entry trigger db
+            if dst.is_file():
+                if check_if_modified(subject, dst, db_df):  # if modified
+                    pass
+                else:
+                    break  # if not modified break
+
             _debug_tup = (redcap_instance, redcap_project, redcap_subject)
 
-            print(_debug_tup)
-
-            sys.exit()
             record_query = {
                 'token': api_key,
                 'content': 'record',
@@ -57,13 +112,6 @@ def sync(Lochness, subject, dry=False):
             if content.strip() == '[]':
                 logger.info(f'no redcap data for {redcap_subject}')
                 continue
-            # process the response content
-            _redcap_project = re.sub(r'[\W]+', '_', redcap_project.strip())
-
-            # default location to protected folder
-            dst_folder = tree.get('surveys', subject.protected_folder)
-            fname = f'{redcap_subject}.{_redcap_project}.json'
-            dst = os.path.join(dst_folder, fname)
 
             if not dry:
                 if not os.path.exists(dst):
@@ -78,6 +126,7 @@ def sync(Lochness, subject, dry=False):
                         lochness.backup(dst)
                         logger.debug(f'saving {dst}')
                         lochness.atomic_write(dst, content)
+
 
 
 class REDCapError(Exception):

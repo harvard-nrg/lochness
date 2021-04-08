@@ -4,7 +4,7 @@ import re
 import string
 
 def create_config():
-    config_string = b'''keyring_file: ~/.lochness.enc
+    config_string = '''keyring_file: /Users/kc244/lochness/tests/lochness.json
 phoenix_root: /Users/kc244/lochness/tests/PHOENIX
 pid: /tmp/lochness.pid
 stderr: /tmp/lochness.stderr
@@ -69,6 +69,7 @@ box:
 redcap:
     phoenix_project:
         deidentify: True
+    data_entry_trigger_csv: /Users/kc244/lochness/tests/redcap/ha.csv
 hdd:
     module_name:
         base: /PHOENIX
@@ -78,10 +79,17 @@ notify:
     __global__:
         - kevincho@bwh.harvard.edu
 '''
-    fp = tempfile.TemporaryFile()
 
-    fp.write(config_string)
-    fp.seek(0)
+    with tempfile.NamedTemporaryFile(delete=False,
+                                     suffix='tmp.json') as tmpfilename:
+        with open(tmpfilename.name, 'w') as f:
+            f.write(config_string)
+
+    fp = tmpfilename.name
+    # fp = tempfile.TemporaryFile()
+    # fp.write(config_string)
+    # fp.seek(0)
+
     return config_string, fp
 
 

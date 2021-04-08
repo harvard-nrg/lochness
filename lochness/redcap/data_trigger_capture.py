@@ -145,7 +145,7 @@ def back_up_db(db_location) -> None:
     ''''Back up the db file'''
 
     db_dir = Path(db_location).parent
-    db_backup_file = db_dir / f".{Path(db_location).name}"
+    db_backup_file = db_dir / f".back_{Path(db_location).name}"
 
     if db_backup_file.is_file():
         with open(db_location, 'rb') as f:

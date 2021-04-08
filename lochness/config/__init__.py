@@ -9,7 +9,7 @@ import string
 logger = logging.getLogger(__name__)
 
 
-def load(f, archive_base=None):
+def load(f: 'location', archive_base=None):
     '''load configuration file and keyring'''
     logger.debug('loading configuration')
 
