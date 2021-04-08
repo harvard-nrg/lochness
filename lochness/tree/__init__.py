@@ -59,8 +59,8 @@ Templates = {
         'processed': Template('${base}/surveys/processed')
     },
     'mindlamp': {
-        'raw': Template('${base}/mindlamp/raw'),
-        'processed': Template('${base}/mindlamp/processed')
+        'raw': Template('${base}/phone/raw'),
+        'processed': Template('${base}/phone/processed')
     }
 }
 
