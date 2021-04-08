@@ -15,14 +15,14 @@ def parse_args(args):
             "--database_csv", "-dbc",
             type=str,
             required=True,
-            help='CSV path to save data entry records')
+            help='CSV path to store REDCap data entry trigger records')
 
     argparser.add_argument(
             "--port", "-p",
             type=int,
             required=True,
             default=8080,
-            help='CSV path to save data entry records')
+            help='port number to listen')
     
     return argparser.parse_args(args)
 
