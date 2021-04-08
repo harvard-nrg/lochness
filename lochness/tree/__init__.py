@@ -6,7 +6,7 @@ Templates = {
     'actigraphy': {
         'raw': Template('${base}/actigraphy/raw'),
         'processed': Template('${base}/actigraphy/processed')
-    }, 
+    },
     'mri': {
         'raw': Template('${base}/mri/raw'),
         'processed': Template('${base}/mri/processed')
