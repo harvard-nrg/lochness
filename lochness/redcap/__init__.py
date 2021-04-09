@@ -25,6 +25,9 @@ def check_if_modified(subject_id: str,
     if subject_id in df['record'].unique():
         subject_df = df[df.record == subject_id]
 
+        if len(subject_df) < 1:
+            return False
+
         lastest_update_time = subject_df.loc[
                 subject_df['timestamp'].idxmax()].timestamp
         
@@ -44,6 +47,8 @@ def get_data_entry_trigger_df(Lochness: 'Lochness') -> pd.DataFrame:
             db_loc = Lochness['redcap']['data_entry_trigger_csv']
             db_df = pd.read_csv(db_loc)
             return db_df
+        else:
+            db_df = pd.DataFrame({'record':[]})
 
     db_df = pd.DataFrame()
     return db_df
@@ -74,8 +79,8 @@ def sync(Lochness, subject, dry=False):
             # check if the data has been updated by checking the redcap data
             # entry trigger db
             if dst.is_file():
-                if check_if_modified(subject, dst, db_df):  # if modified
-                    pass
+                if check_if_modified(redcap_subject, dst, db_df):
+                    pass  # if modified, carry on
                 else:
                     break  # if not modified break
 
