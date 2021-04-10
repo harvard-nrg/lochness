@@ -22,22 +22,19 @@ def check_if_modified(subject_id: str,
 
     json_modified_time = Path(existing_json).stat().st_mtime
 
-    if subject_id in df['record'].unique():
-        subject_df = df[df.record == subject_id]
+    subject_df = df[df.record == subject_id]
 
-        if len(subject_df) < 1:
-            return False
+    if len(subject_df) < 1:
+        return False
 
-        lastest_update_time = subject_df.loc[
-                subject_df['timestamp'].idxmax()].timestamp
-        
-        if lastest_update_time > json_modified_time:
-            return True
-        else:
-            return False
-
+    lastest_update_time = subject_df.loc[
+            subject_df['timestamp'].idxmax()].timestamp
+    
+    if lastest_update_time > json_modified_time:
+        return True
     else:
         return False
+
 
 
 def get_data_entry_trigger_df(Lochness: 'Lochness') -> pd.DataFrame:
@@ -45,12 +42,13 @@ def get_data_entry_trigger_df(Lochness: 'Lochness') -> pd.DataFrame:
     if 'redcap' in Lochness:
         if 'data_entry_trigger_csv' in Lochness['redcap']:
             db_loc = Lochness['redcap']['data_entry_trigger_csv']
-            db_df = pd.read_csv(db_loc)
-            return db_df
-        else:
-            db_df = pd.DataFrame({'record':[]})
+            if Path(db_loc).is_file():
+                db_df = pd.read_csv(db_loc)
+                db_df['record'] = db_df['record'].astype(str)
+                return db_df
 
-    db_df = pd.DataFrame()
+    db_df = pd.DataFrame({'record':[]})
+    # db_df = pd.DataFrame()
     return db_df
 
 
@@ -82,8 +80,14 @@ def sync(Lochness, subject, dry=False):
                 if check_if_modified(redcap_subject, dst, db_df):
                     pass  # if modified, carry on
                 else:
+                    print("\n----")
+                    print("No updates - not downloading REDCap data")
+                    print("----\n")
                     break  # if not modified break
 
+            print("\n----")
+            print("Downloading REDCap data")
+            print("----\n")
             _debug_tup = (redcap_instance, redcap_project, redcap_subject)
 
             record_query = {
@@ -126,7 +130,9 @@ def sync(Lochness, subject, dry=False):
                     # responses are not stored atomically in redcap
                     crc_src = lochness.crc32(content.decode('utf-8'))
                     crc_dst = lochness.crc32file(dst)
+
                     if crc_dst != crc_src:
+                        print('different - crc32: downloading data')
                         logger.warn(f'file has changed {dst}')
                         lochness.backup(dst)
                         logger.debug(f'saving {dst}')
