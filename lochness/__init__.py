@@ -30,6 +30,7 @@ Subject = col.namedtuple('Subject', [
     'redcap',
     'dropbox',
     'box',
+    'mediaflux',
     'general_folder',
     'protected_folder'
 ])
@@ -105,6 +106,9 @@ def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
             box = dict()
             if 'Box' in row:
                 box = _parse_box(row['Box'], phoenix_id)
+            mediaflux = dict()
+            if 'Mediaflux' in row:
+                mediaflux = _parse_mediaflux(row['Mediaflux'], phoenix_id)
 
             # sanity check on very critical bits of information
             if not phoenix_id or not phoenix_study:
@@ -112,7 +116,8 @@ def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
             general = os.path.join(general_folder, phoenix_study, phoenix_id)
             protected = os.path.join(protected_folder, phoenix_study, phoenix_id)
             subject = Subject(active, phoenix_study, phoenix_id, consent, beiwe,
-                              icognition, saliva, xnat, redcap, dropbox, box,
+                              icognition, saliva, xnat, redcap, dropbox,
+                              box, mediaflux,
                               general, protected)
             logger.debug('subject metadata blob:\n{0}'.format(json.dumps(subject._asdict(), indent=2)))
             yield subject
@@ -129,6 +134,11 @@ def _parse_dropbox(value, default_id=None):
 def _parse_box(value, default_id=None):
     '''helper function to parse a box value'''
     default = 'box.*:{ID}'.format(ID=default_id)
+    return _simple_parser(value, default=default)
+
+def _parse_mediaflux(value, default_id=None):
+    '''helper function to parse a mediaflux value'''
+    default = 'mediaflux.*:{ID}'.format(ID=default_id)
     return _simple_parser(value, default=default)
  
 def _parse_xnat(value, default_id=None):
@@ -246,6 +256,7 @@ def configure_logging(logger, args):
     logging.getLogger('requests').setLevel(logging.WARN)
     logging.getLogger('dropbox').setLevel(logging.WARN)
     logging.getLogger('box').setLevel(logging.WARN)
+    logging.getLogger('mediaflux').setLevel(logging.WARN)
     logging.getLogger('paramiko').setLevel(logging.WARN)
     logargs = {
         'level': logging.INFO,
