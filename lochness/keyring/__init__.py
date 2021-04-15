@@ -27,7 +27,7 @@ def box_api_token(Lochness, key):
 
 
 def mediaflux_api_token(Lochness, key):
-    '''get box api token from keyring'''
+    '''get mediaflux api token from keyring'''
     if key not in Lochness['keyring']:
         raise KeyringError('\'{0}\' not in keyring'.format(key))
 

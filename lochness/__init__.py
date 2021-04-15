@@ -65,7 +65,7 @@ def read_phoenix_metadata(Lochness, studies=None):
 
 def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
     meta_basename = os.path.basename(metadata_file)
-    # read the study metadata fiile (local or remote)
+    # read the study metadata file (local or remote)
     with lochness.openfile(Lochness, metadata_file, 'r') as fo:
         reader = csv.reader(fo)
         headers = next(reader)
@@ -142,7 +142,7 @@ def _parse_mediaflux(value, default_id=None):
     return _simple_parser(value, default=default)
  
 def _parse_xnat(value, default_id=None):
-    '''helper function to parse a xnat value'''
+    '''helper function to parse an xnat value'''
     default = 'cbscentral:Buckner_P:{ID}'.format(ID=default_id)
     result = col.defaultdict(list)
     # split all values on semicolon
