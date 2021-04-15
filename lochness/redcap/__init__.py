@@ -11,6 +11,9 @@ import lochness.tree as tree
 from pathlib import Path
 import pandas as pd
 import datetime
+from lochness.redcap.process_piis import load_raw_return_proc_json
+from lochness.redcap.process_piis import read_pii_mapping_to_dict
+
 
 logger = logging.getLogger(__name__)
 
@@ -130,6 +133,22 @@ def sync(Lochness, subject, dry=False):
                 if not os.path.exists(dst):
                     logger.debug(f'saving {dst}')
                     lochness.atomic_write(dst, content)
+
+                    # process PII here
+                    pii_str_proc_dict = read_pii_mapping_to_dict(
+                            Lochness.pii_table_loc)
+                    processed_content = load_raw_return_proc_json(
+                            dst, pii_str_proc_dict)
+
+                    # save processed content to general processed
+                    proc_folder = tree.get('surveys',
+                                           subject.general_folder,
+                                           processed=True)
+                    fname = f'{redcap_subject}.{_redcap_project}.json'
+                    proc_dst = Path(proc_folder) / fname
+                    lochness.atomic_write(proc_dst, processed_content)
+
+                    
                 else:
                     # responses are not stored atomically in redcap
                     crc_src = lochness.crc32(content.decode('utf-8'))
@@ -141,6 +160,20 @@ def sync(Lochness, subject, dry=False):
                         lochness.backup(dst)
                         logger.debug(f'saving {dst}')
                         lochness.atomic_write(dst, content)
+
+                        # process PII here
+                        pii_str_proc_dict = read_pii_mapping_to_dict(
+                                Lochness.pii_table_loc)
+                        processed_content = load_raw_return_proc_json(
+                                dst, pii_str_proc_dict)
+
+                        # save processed content to general processed
+                        proc_folder = tree.get('surveys',
+                                               subject.genereal_folder,
+                                               processed=True)
+                        fname = f'{redcap_subject}.{_redcap_project}.json'
+                        proc_dst = Path(proc_folder) / fname
+                        lochness.atomic_write(proc_dst, processed_content)
 
 
 
