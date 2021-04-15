@@ -18,18 +18,22 @@ logger = logging.getLogger(__name__)
 def check_if_modified(subject_id: str,
                       existing_json: str,
                       df: pd.DataFrame) -> bool:
-    '''check if subject data has been modified in the data entry trigger db'''
+    '''check if subject data has been modified in the data entry trigger db
 
-    json_modified_time = Path(existing_json).stat().st_mtime
+    Comparing unix times of the json modification and lastest redcap update
+    '''
+
+    json_modified_time = Path(existing_json).stat().st_mtime  # in unix time
 
     subject_df = df[df.record == subject_id]
 
+    # if the subject does not exist in the DET_DB, return False
     if len(subject_df) < 1:
         return False
 
     lastest_update_time = subject_df.loc[
             subject_df['timestamp'].idxmax()].timestamp
-    
+
     if lastest_update_time > json_modified_time:
         return True
     else:
@@ -57,7 +61,7 @@ def sync(Lochness, subject, dry=False):
 
     # load dataframe for redcap data entry trigger
     db_df = get_data_entry_trigger_df(Lochness)
-    
+
     logger.debug(f'exploring {subject.study}/{subject.id}')
     deidentify = deidentify_flag(Lochness, subject.study)
     logger.debug(f'deidentify for study {subject.study} is {deidentify}')
