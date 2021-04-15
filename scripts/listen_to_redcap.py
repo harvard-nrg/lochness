@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from lochness.redcap import data_trigger_capture
 import sys
 import argparse
