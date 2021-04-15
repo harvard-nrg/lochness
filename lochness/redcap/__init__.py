@@ -134,9 +134,10 @@ def sync(Lochness, subject, dry=False):
                     logger.debug(f'saving {dst}')
                     lochness.atomic_write(dst, content)
 
+
                     # process PII here
                     pii_str_proc_dict = read_pii_mapping_to_dict(
-                            Lochness.pii_table_loc)
+                            get_PII_table_loc(Lochness, subject.study))
                     processed_content = load_raw_return_proc_json(
                             dst, pii_str_proc_dict)
 
@@ -163,7 +164,7 @@ def sync(Lochness, subject, dry=False):
 
                         # process PII here
                         pii_str_proc_dict = read_pii_mapping_to_dict(
-                                Lochness.pii_table_loc)
+                                get_PII_table_loc(Lochness, subject.study))
                         processed_content = load_raw_return_proc_json(
                                 dst, pii_str_proc_dict)
 
@@ -248,9 +249,34 @@ def deidentify_flag(Lochness, study):
     value = Lochness.get('redcap', dict()) \
                     .get(study, dict()) \
                     .get('deidentify', False)
+
     # if this is anything but a boolean, just return False
     if not isinstance(value, bool):
         return False
+    return value
+
+
+def deidentify_flag(Lochness, study):
+    ''' get study specific deidentify flag with a safe default '''
+    value = Lochness.get('redcap', dict()) \
+                    .get(study, dict()) \
+                    .get('deidentify', False)
+
+    # if this is anything but a boolean, just return False
+    if not isinstance(value, bool):
+        return False
+    return value
+
+
+def get_PII_table_loc(Lochness, study):
+    ''' get study specific deidentify flag with a safe default '''
+    value = Lochness.get('redcap', dict()) \
+                    .get(study, dict()) \
+                    .get('pii_table', False)
+
+    # if this is anything but a boolean, just return False
+    if not isinstance(value, bool):
+        return ''
     return value
 
 

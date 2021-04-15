@@ -111,6 +111,7 @@ def save_post_from_redcap(body: str, db_location: str):
     record = get_info_from_post_body('record', body)
     instrument = get_info_from_post_body('instrument', body)
 
+    # here the time stamp is created in the server (unix time)
     df_tmp = pd.DataFrame({
         'timestamp': [time.time()],
         'redcap_url': redcap_url,
