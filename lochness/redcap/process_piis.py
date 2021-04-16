@@ -8,6 +8,10 @@ from typing import List
 import re
 
 
+class PiiTableError(Exception):
+    pass
+
+
 def read_pii_mapping_to_dict(pii_table_loc: str) -> pd.DataFrame:
     '''Read PII process table and return as dict
 
@@ -28,7 +32,16 @@ def read_pii_mapping_to_dict(pii_table_loc: str) -> pd.DataFrame:
 
     if Path(pii_table_loc).is_file():
         df = pd.read_csv(pii_table_loc)
-        pii_string_process_dict = df.set_index('pii_label_string')['process'].to_dict()
+
+        # make sure the df is in the correct format
+        if df.columns != ['pii_label_string', 'process']:
+            raise PiiTableError('pii_table is not in the right format')
+
+        if len(df) < 1:
+            raise PiiTableError('pii_table is not in the right format')
+
+        pii_string_process_dict = df.set_index(
+                'pii_label_string')['process'].to_dict()
     else:
         pii_string_process_dict = {}
 
