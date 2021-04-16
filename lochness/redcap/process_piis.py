@@ -28,8 +28,7 @@ def read_pii_mapping_to_dict(pii_table_loc: str) -> pd.DataFrame:
 
     if Path(pii_table_loc).is_file():
         df = pd.read_csv(pii_table_loc)
-        pii_string_process_dict = df.set_index('pii_label_string').to_dcit()
-
+        pii_string_process_dict = df.set_index('pii_label_string')['process'].to_dict()
     else:
         pii_string_process_dict = {}
 
@@ -48,15 +47,40 @@ def load_raw_return_proc_json(json_loc: str,
         for field_name, field_value in instrument.items():
             for pii_label_string, process in pii_str_proc_dict.items():
                 if re.search(pii_label_string, field_name):
-                    new_value = process_pii_string(field_name, process)
+                    new_value = process_pii_string(field_value, process)
                     processed_instrument[field_name] = new_value
                     break
                 else:
                     processed_instrument[field_name] = field_value
+        processed_json.append(processed_instrument)
 
     processed_content = json.dumps(processed_json).encode()
 
     return processed_content
+
+
+def get_shuffle_dict_for_type(string_type: string, input_str: str) -> dict:
+    '''Return strings randomised using random mapping of given string_type
+
+    Key Arguments:
+        string_type: string types, eg) string.digits or string.ascii_lowercase
+        input_str: str
+
+    Returns
+        input_str: randomised str
+    '''
+
+    from_alphabet = ''.join(
+            random.choice(string_type) for i in range(26))
+    to_alphabet = ''.join(
+            random.choice(string_type) for i in range(26))
+    old_2_new_dict = dict(zip(from_alphabet,
+                              to_alphabet))
+
+    for old, new in old_2_new_dict.items():
+        input_str = re.sub(old, new, input_str)
+
+    return input_str
 
 
 def process_pii_string(pii_string: str, process: str) -> str:
@@ -75,7 +99,6 @@ def process_pii_string(pii_string: str, process: str) -> str:
         process_pii_string('patient_name': 'random_string')
     '''
 
-    string_len = len(pii_string)
 
     if process == 'remove':
         return ''
@@ -95,15 +118,11 @@ def process_pii_string(pii_string: str, process: str) -> str:
 
     elif process == 'random_number':
         digits = string.digits
-        new_string = ''.join(
-                random.choice(digits) for i in range(string_len))
-        return new_string
+        return get_shuffle_dict_for_type(digits, pii_string)
 
     elif process == 'random_string':
         letters = string.ascii_lowercase
-        new_string = ''.join(
-                random.choice(letters) for i in range(string_len))
-        return new_string
+        return get_shuffle_dict_for_type(letters, pii_string)
 
     else:
         return pii_string
