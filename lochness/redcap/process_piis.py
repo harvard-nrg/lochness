@@ -133,9 +133,19 @@ def process_pii_string(pii_string: str, process: str) -> str:
         digits = string.digits
         return get_shuffle_dict_for_type(digits, pii_string)
 
-    elif process == 'random_string':
+    elif process == 'random_small_letters':
         letters = string.ascii_lowercase
         return get_shuffle_dict_for_type(letters, pii_string.lower())
+
+    elif process == 'random_capital_letters':
+        letters = string.ascii_uppercase
+        return get_shuffle_dict_for_type(letters, pii_string.upper())
+
+    elif process == 'random_string':
+        letters = string.ascii_lowercase
+        new_string = ''.join(
+            random.choice(letters) for i in range(len(pii_string)))
+        return new_string
 
     else:
         return pii_string
