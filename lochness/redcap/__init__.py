@@ -59,6 +59,30 @@ def get_data_entry_trigger_df(Lochness: 'Lochness') -> pd.DataFrame:
     return db_df
 
 
+def process_and_copy_json(Lochness, subject, dst,
+                          redcap_subject, _redcap_project):
+    '''Process PII and copy the json to GENERAL/survey/processed'''
+    pii_table_loc = get_PII_table_loc(Lochness, subject.study)
+
+    # don't run this if the pii_table in the config.yml is missing
+    if pii_table_loc != '':
+        # process PII here
+        pii_str_proc_dict = read_pii_mapping_to_dict(pii_table_loc)
+        processed_content = load_raw_return_proc_json(dst, pii_str_proc_dict)
+
+        # save processed content to general processed
+        proc_folder = tree.get('surveys',
+                               subject.general_folder,
+                               processed=True)
+        fname = f'{redcap_subject}.{_redcap_project}.json'
+        proc_dst = Path(proc_folder) / fname
+
+        # double check the pii string processing dict once more
+        # if it's empty, don't copy it over to general
+        if pii_str_proc_dict != {}:
+            lochness.atomic_write(proc_dst, processed_content)
+
+
 @net.retry(max_attempts=5)
 def sync(Lochness, subject, dry=False):
 
@@ -67,6 +91,7 @@ def sync(Lochness, subject, dry=False):
 
     logger.debug(f'exploring {subject.study}/{subject.id}')
     deidentify = deidentify_flag(Lochness, subject.study)
+
     logger.debug(f'deidentify for study {subject.study} is {deidentify}')
 
     for redcap_instance, redcap_subject in iterate(subject):
@@ -133,23 +158,9 @@ def sync(Lochness, subject, dry=False):
                 if not os.path.exists(dst):
                     logger.debug(f'saving {dst}')
                     lochness.atomic_write(dst, content)
-
-
-                    # process PII here
-                    pii_str_proc_dict = read_pii_mapping_to_dict(
-                            get_PII_table_loc(Lochness, subject.study))
-                    processed_content = load_raw_return_proc_json(
-                            dst, pii_str_proc_dict)
-
-                    # save processed content to general processed
-                    proc_folder = tree.get('surveys',
-                                           subject.general_folder,
-                                           processed=True)
-                    fname = f'{redcap_subject}.{_redcap_project}.json'
-                    proc_dst = Path(proc_folder) / fname
-                    if pii_str_proc_dict != {}:
-                        lochness.atomic_write(proc_dst, processed_content)
-
+                    process_and_copy_json(Lochness, subject, dst,
+                                          redcap_subject,
+                                          _redcap_project)
                     
                 else:
                     # responses are not stored atomically in redcap
@@ -162,22 +173,9 @@ def sync(Lochness, subject, dry=False):
                         lochness.backup(dst)
                         logger.debug(f'saving {dst}')
                         lochness.atomic_write(dst, content)
-
-                        # process PII here
-                        pii_str_proc_dict = read_pii_mapping_to_dict(
-                                get_PII_table_loc(Lochness, subject.study))
-                        processed_content = load_raw_return_proc_json(
-                                dst, pii_str_proc_dict)
-
-                        # save processed content to general processed
-                        proc_folder = tree.get('surveys',
-                                               subject.genereal_folder,
-                                               processed=True)
-                        fname = f'{redcap_subject}.{_redcap_project}.json'
-                        proc_dst = Path(proc_folder) / fname
-                        if pii_str_proc_dict != {}:
-                            lochness.atomic_write(proc_dst, processed_content)
-
+                        process_and_copy_json(Lochness, subject, dst,
+                                              redcap_subject,
+                                              _redcap_project)
 
 
 class REDCapError(Exception):
