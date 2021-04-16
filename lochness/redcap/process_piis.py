@@ -122,7 +122,7 @@ def process_pii_string(pii_string: str, process: str) -> str:
 
     elif process == 'random_string':
         letters = string.ascii_lowercase
-        return get_shuffle_dict_for_type(letters, pii_string)
+        return get_shuffle_dict_for_type(letters, pii_string.lower())
 
     else:
         return pii_string

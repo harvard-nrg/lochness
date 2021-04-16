@@ -147,7 +147,8 @@ def sync(Lochness, subject, dry=False):
                                            processed=True)
                     fname = f'{redcap_subject}.{_redcap_project}.json'
                     proc_dst = Path(proc_folder) / fname
-                    lochness.atomic_write(proc_dst, processed_content)
+                    if pii_str_proc_dict != {}:
+                        lochness.atomic_write(proc_dst, processed_content)
 
                     
                 else:
@@ -174,7 +175,8 @@ def sync(Lochness, subject, dry=False):
                                                processed=True)
                         fname = f'{redcap_subject}.{_redcap_project}.json'
                         proc_dst = Path(proc_folder) / fname
-                        lochness.atomic_write(proc_dst, processed_content)
+                        if pii_str_proc_dict != {}:
+                            lochness.atomic_write(proc_dst, processed_content)
 
 
 
