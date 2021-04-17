@@ -1,4 +1,6 @@
-import pprint
+from jsonpath_ng import parse
+import tempfile
+import json
 
 
 def passphrase(Lochness, study):
@@ -27,7 +29,6 @@ def box_api_token(Lochness, key):
     return (Lochness['keyring'][key]['CLIENT_ID'],
             Lochness['keyring'][key]['CLIENT_SECRET'],
             Lochness['keyring'][key]['API_TOKEN'])
-
 
 def mediaflux_api_token(Lochness, key):
     """
@@ -102,38 +103,47 @@ def mediaflux_api_token(Lochness, key):
     return mflux_cfg
 
 
-def print_keyring(Lochness):
+def search_and_hide_keys(input_dict, a={}):
+    try:
+        a = {}
+        for k, v in input_dict.items():
+            # if the key is of sensitive value
+            if 'password' in k.lower() or \
+                    'token' in k.lower() or \
+                    k.lower().endswith('secret'):
+                a[k] = search_and_hide_keys('****', a)
+
+            # if the key is the SECRETS
+            elif 'SECRETS' == k:
+                a[k] = search_and_hide_keys(
+                        dict(zip(v.keys(), ['***' for x in v.values()])), a)
+            else:
+                a[k] = search_and_hide_keys(v, a)
+        return a
+
+    except:
+        # lowest item in the dict tree
+        return input_dict
+
+
+def print_keyring(keyring_dict):
     '''Print the structure of the Lochness['keyring'] without sensitive info'''
-    keyring_dict = Lochness['keyring']
 
-    new_dict = {}
-    
-    # lochness item under the keyring
-    if 'lochness' in keyring_dict:
-        lochness_dict = keyring_dict['lochness']
-        new_dict['lochness'] = {}
-        for modality, study_dict in lochness_dict.items():
-            new_dict['lochness'][modality] = {}
-            for study_name, key_dict in study_dict.items():
-                new_dict['lochness'][modality][study_name] = {}
-                for redcap_name, project_name in key_dict.items():
-                    new_dict['lochness'][modality]\
-                            [study_name][redcap_name] = project_name
+    keyring_wo_sensitive_info = search_and_hide_keys(keyring_dict)
+    pretty_print_dict(keyring_wo_sensitive_info)
 
-    for modality, modal_dict in keyring_dict.items():
-        if modality != 'lochness':
-            new_dict[modality] = {}
-            for var, keyring in modal_dict.items():
-                if type(keyring) == str:
-                    new_dict[modality][var] = '*'*len(keyring)
-                    # new_dict[modality][var] = keyring
-                else:
-                    new_dict[modality][var] = {}
-                    for var_d, keyring_d in keyring.items():
-                        new_dict[modality][var][var_d] = '*'*len(keyring_d)
 
-    pprint.pprint(new_dict)
+def pretty_print_dict(input_dict: dict):
+    '''Pretty print dictionary'''
+    with tempfile.NamedTemporaryFile(suffix='.json', delete=True) as tmpfile:
+        with open(tmpfile.name, 'w') as f:
+            json.dump(input_dict, f,
+                    sort_keys=False, indent='  ', separators=(',', ': '))
 
+        with open(tmpfile.name, 'r') as f:
+            lines = f.readlines()
+            for i in lines:
+                print(i.strip('\n'))
 
 class KeyringError(Exception):
     pass
