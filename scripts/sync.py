@@ -15,6 +15,7 @@ import lochness.beiwe as Beiwe
 import lochness.redcap as REDCap
 import lochness.dropbox as Dropbox
 import lochness.box as Box
+import lochness.mediaflux as Mediaflux
 import lochness.scheduler as scheduler
 import lochness.icognition as iCognition
 import lochness.onlinescoring as OnlineScoring
@@ -25,6 +26,7 @@ SOURCES = {
     'redcap': REDCap,
     'dropbox': Dropbox,
     'box': Box,
+    'mediaflux': Mediaflux,
     'icognition': iCognition,
     'onlinescoring': OnlineScoring
 }
