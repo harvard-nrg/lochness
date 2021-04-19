@@ -27,17 +27,34 @@ def box_api_token(Lochness, key):
 
 
 def mediaflux_api_token(Lochness, key):
-    '''get mediaflux api token from keyring'''
+    """
+    Get mediaflux login credentials from an encrypted keyring file
+
+    Parameters
+    ----------
+    Lochness : dict
+        It is the configuration obtained from a file provided via scripts/sync.py --config
+
+    key : str
+        It is the subsection within the keyring_file (listed in the above configuration file)
+        where login credentials are written e.g. mediaflux.sydney, mediaflux.melbourne etc.
+
+    Returns
+    -------
+    : tuple
+        Login credentials for the remote host specified in the subsection
+    """
+    
     if key not in Lochness['keyring']:
         raise KeyringError('\'{0}\' not in keyring'.format(key))
 
-    return_list = ['HOST', 'PORT', 'DOMAIN', 'USER', 'PASSWORD']
+    auths = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN', 'DOMAIN', 'USER', 'PASSWORD']
 
-    for return_item in return_list:
-        if return_item not in Lochness['keyring'][key]:
-            raise KeyringError(f'\'{return_item}\' not in {key}')
+    for item in auths:
+        if item not in Lochness['keyring'][key]:
+            raise KeyringError(f'\'{item}\' not in {key}')
 
-    return tuple([Lochness['keyring'][key][x] for x in return_list])
+    return tuple([Lochness['keyring'][key][x] for x in auths])
 
 
 class KeyringError(Exception):
