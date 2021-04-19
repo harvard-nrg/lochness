@@ -298,7 +298,7 @@ def sync_module(Lochness: 'lochness.config',
         print(bx_base)
         # loop through the items defined for the BOX data
         for datatype, products in iter(
-                Lochness['box'][module_basename]['file patterns'].items()):
+                Lochness['box'][module_basename]['file_patterns'].items()):
             print(datatype, products)
             subject_obj = get_box_object_based_on_name(
                     client, bx_sid, bx_base_obj.id)

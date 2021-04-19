@@ -35,7 +35,7 @@ def mock_load(f, archive_base=None):
     # regardless of the selected study in the args
     if 'box' in Lochness:
         for _, study_dict in Lochness['box'].items():
-            for _, modality_values in study_dict['file patterns'].items():
+            for _, modality_values in study_dict['file_patterns'].items():
                 for modality_dict in modality_values:
                     modality_dict['pattern'] = \
                         string.Template(modality_dict['pattern'])

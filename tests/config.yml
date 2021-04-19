@@ -13,7 +13,7 @@ box:
     StudyA: 
         base: codmtg
         delete_on_success: False
-        file patterns:
+        file_patterns:
             actigraphy:
                    - vendor: Philips
                      product: Actiwatch 2
