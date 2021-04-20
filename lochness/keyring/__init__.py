@@ -44,15 +44,26 @@ def mediaflux_api_token(Lochness, key):
     : tuple
         Login credentials for the remote host specified in the subsection
     """
-    
+
+    from os.path import join as pjoin
+
     if key not in Lochness['keyring']:
         raise KeyringError('\'{0}\' not in keyring'.format(key))
 
-    auths = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN', 'DOMAIN', 'USER', 'PASSWORD']
+    # allow having both TOKEN and PASSWORD in keyring, prioritize TOKEN
+    if 'TOKEN' in Lochness['keyring'][key]:
+        auth_keys = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN']
+    else:
+        auth_keys = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN', 'DOMAIN', 'USER', 'PASSWORD']
 
-    for item in auths:
-        if item not in Lochness['keyring'][key]:
-            raise KeyringError(f'\'{item}\' not in {key}')
+    auth_values= Lochness['keyring'][key]
+    with open(pjoin(Lochness['phoenix_root'], 'mflux.cfg'), 'w') as f:
+
+        for item in auth_keys:
+            if item not in :
+                raise KeyringError(f'\'{item}\' not in {key}')
+            f.write(item.lower():)
+
 
     return tuple([Lochness['keyring'][key][x] for x in auths])
 
