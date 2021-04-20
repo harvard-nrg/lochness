@@ -45,27 +45,30 @@ def mediaflux_api_token(Lochness, key):
         Login credentials for the remote host specified in the subsection
     """
 
-    from os.path import join as pjoin
+    import os
 
     if key not in Lochness['keyring']:
         raise KeyringError('\'{0}\' not in keyring'.format(key))
 
     # allow having both TOKEN and PASSWORD in keyring, prioritize TOKEN
     if 'TOKEN' in Lochness['keyring'][key]:
-        auth_keys = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN']
+        credntials = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN']
     else:
-        auth_keys = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN', 'DOMAIN', 'USER', 'PASSWORD']
+        credntials = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN', 'DOMAIN', 'USER', 'PASSWORD']
 
-    auth_values= Lochness['keyring'][key]
-    with open(pjoin(Lochness['phoenix_root'], 'mflux.cfg'), 'w') as f:
+    auths= Lochness['keyring'][key]
+    mflux_cfg= pjoin(Lochness['phoenix_root'], 'mflux.cfg')
+    with open(mflux_cfg, 'w') as f:
 
-        for item in auth_keys:
-            if item not in :
+        for item in credntials:
+            if item not in auths:
                 raise KeyringError(f'\'{item}\' not in {key}')
-            f.write(item.lower():)
+            f.write(f'{item.lower()}={auths[item]}')
 
+    # for security, make the mflux.cfg readable by the owner only
+    os.chmod(mflux_cfg, '0o600')
 
-    return tuple([Lochness['keyring'][key][x] for x in auths])
+    return mflux_cfg
 
 
 class KeyringError(Exception):
