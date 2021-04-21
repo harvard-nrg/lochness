@@ -237,6 +237,8 @@ class BoxHashError(Exception):
         super(BoxHashError, self).__init__(message)
         self.filename = filename
 
+class PatternError(Exception):
+    pass
 
 @net.retry(max_attempts=5)
 def sync_module(Lochness: 'lochness.config',
@@ -263,8 +265,14 @@ def sync_module(Lochness: 'lochness.config',
             print(datatype, products)
 
             for p in products:
+                if '*' not in p['pattern']:
+                    raise PatternError('Mediaflux pattern must include an asterisk e.g. *csv or GENEActiv/*csv')
+                else:
+                    p['pattern']= p['pattern'].replace('*','(.+?)')
+
                 # construct mediaflux remote dir
-                mf_remote_dir = dirname(pjoin(mf_base, p['data_dir'], p['pattern']))
+                mf_remote_pattern= pjoin(mf_base, p['data_dir'], mf_subid, p['pattern'])
+                mf_remote_dir = dirname(mf_remote_pattern)
 
                 # obtain mediaflux remote paths
                 with tempfile.TemporaryDirectory() as tmpdir:
@@ -273,15 +281,17 @@ def sync_module(Lochness: 'lochness.config',
                                       '--mf.config', mflux_cfg,
                                       '--direction down', tmpdir,
                                       mf_remote_dir,
-                                      '-o', ])
+                                      '-o', diff_path])
 
                     p= Popen(cmd, shell=True)
                     p.wait()
 
                     df= pd.read_csv(diff_path)
                     for remote in df['SRC_PATH'].values:
-                        if not remote.endswidth(basename(p['pattern'])):
+                        if not re.search(p['pattern'], remote):
                             continue
+                            # mf_remote_pattern
+                            # remote.strip("\"").split(':')[1]
 
                         # construct local path
                         protect = p.get('protect', False)
@@ -291,6 +301,8 @@ def sync_module(Lochness: 'lochness.config',
 
                         mf_local= pjoin(subj_dir, datatype, dirname(p['pattern']), basename(remote))
 
+                        # ENH retry 5 times
+                        # pass --check-csum so no redownload
                         # subprocess call unimelb-mf-download
                         cmd = (' ').join(['unimelb-mf-download',
                                           '--mf.config', mflux_cfg,
@@ -300,6 +312,7 @@ def sync_module(Lochness: 'lochness.config',
                         p = Popen(cmd, shell=True)
                         p.wait()
 
+                        # ENH after download completes, retry 5 times based on --check-csum
 
 
 def _find_product(s, products, **kwargs):
