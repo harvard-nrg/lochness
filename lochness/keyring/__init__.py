@@ -1,6 +1,23 @@
 from jsonpath_ng import parse
 import tempfile
 import json
+import cryptease as crypt
+import yaml
+import getpass as gp
+
+
+def load_encrypted_keyring(enc_keyring_loc: str) -> dict:
+    with open(enc_keyring_loc, 'rb') as fp:
+        passphrase = gp.getpass('enter passphrase: ')
+        key = crypt.key_from_file(fp, passphrase)
+        content = b''
+        for chunk in crypt.decrypt(fp, key):
+            content += chunk
+
+        keyring_dict = yaml.load(content, Loader=yaml.FullLoader)
+
+    return keyring_dict
+
 
 
 def passphrase(Lochness, study):
@@ -144,6 +161,7 @@ def pretty_print_dict(input_dict: dict):
             lines = f.readlines()
             for i in lines:
                 print(i.strip('\n'))
+
 
 class KeyringError(Exception):
     pass
