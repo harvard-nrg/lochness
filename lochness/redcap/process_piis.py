@@ -34,7 +34,8 @@ def read_pii_mapping_to_dict(pii_table_loc: str) -> pd.DataFrame:
         df = pd.read_csv(pii_table_loc)
 
         # make sure the df is in the correct format
-        if df.columns != ['pii_label_string', 'process']:
+        # if df.columns != ['pii_label_string', 'process']:
+        if not 'pii_label_string' in df.columns or not 'process' in df.columns:
             raise PiiTableError('pii_table is not in the right format')
 
         if len(df) < 1:
