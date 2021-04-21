@@ -300,6 +300,9 @@ def sync_module(Lochness: 'lochness.config',
                             if protect else subject.general_folder
 
                         mf_local= pjoin(subj_dir, datatype, dirname(p['pattern']), basename(remote))
+                        # ENH set different permissions
+                        # GENERAL: 0o755, PROTECTED: 0700
+                        os.makedirs(dirname(mf_local),exist_ok=True)
 
                         # ENH retry 5 times
                         # pass --check-csum so no redownload
@@ -314,13 +317,6 @@ def sync_module(Lochness: 'lochness.config',
 
                         # ENH after download completes, retry 5 times based on --check-csum
 
-
-def _find_product(s, products, **kwargs):
-    for product in products:
-        pattern = product['pattern'].safe_substitute(**kwargs)
-        if re.match(pattern, s):
-            return product
-    return None
 
 
 @net.retry(max_attempts=5)
