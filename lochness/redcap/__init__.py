@@ -13,6 +13,7 @@ import pandas as pd
 import datetime
 from lochness.redcap.process_piis import load_raw_return_proc_json
 from lochness.redcap.process_piis import read_pii_mapping_to_dict
+from typing import List
 
 
 logger = logging.getLogger(__name__)
@@ -285,3 +286,38 @@ def iterate(subject):
     for instance, ids in iter(subject.redcap.items()):
         for id_inst in ids:
             yield instance, id_inst
+
+
+
+def update_study_metadata(subject, content: List[dict]) -> None:
+    '''update metadata csv based on the redcap content: source_id'''
+
+
+    sources = ['XNAT', 'Box', 'Mindlamp', 'Mediaflux']
+
+    orig_metadata_df = pd.read_csv(subject.metadata_csv)
+
+    subject_bool = orig_metadata_df['Subject ID'] == subject.id
+    subject_series = orig_metadata_df[subject_bool]
+    other_metadata_df = orig_metadata_df[~subject_bool]
+
+    updated = False
+    for source in sources:
+        if f"{source}_id" in content[0]:  # exist in the redcap
+            source_id = content[0][f"{source}_id"]
+            if source not in subject_series:
+                subject_series[source] = f'{source.lower()}.{source_id}'
+                updated = True
+
+            # subject already has the information
+            elif subject_series[source][0] != f'{source.lower()}.{source_id}':
+                subject_series[source] = f'{source.lower()}.{source_id}'
+                updated = True
+            else:
+                pass
+
+    if updated:
+        new_metadata_df = pd.concat([other_metadata_df, subject_series])
+
+        # overwrite metadata
+        new_metadata_df.to_csv(subject.metadata_csv, index=False)
