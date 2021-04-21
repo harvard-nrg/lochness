@@ -52,6 +52,7 @@ redcap:
     phoenix_project:
         deidentify: True
     data_entry_trigger_csv: /Users/kc244/lochness/tests/redcap/ha.csv
+    update_metadata: True
 hdd:
     module_name:
         base: /PHOENIX
