@@ -32,7 +32,8 @@ Subject = col.namedtuple('Subject', [
     'box',
     'mediaflux',
     'general_folder',
-    'protected_folder'
+    'protected_folder',
+    'metadata_csv'
 ])
 
 def read_phoenix_metadata(Lochness, studies=None):
