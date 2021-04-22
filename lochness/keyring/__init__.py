@@ -36,8 +36,11 @@ def mediaflux_api_token(Lochness, key):
         It is the configuration obtained from a file provided via scripts/sync.py --config
 
     key : str
-        It is the subsection within the keyring_file (listed in the above configuration file)
-        where login credentials are written e.g. mediaflux.sydney, mediaflux.melbourne etc.
+        It is the subsection within the keyring_file where login credentials are written
+        e.g. mediaflux.sydney. The latter is the remote name of the study under
+        Mediaflux column in study_metadata.csv file. keyring_file is listed
+        in the above configuration file. Thus the same key exists in study_metadata.csv,
+        keyring_file, and in the configuration file.
 
     Returns
     -------
