@@ -322,5 +322,5 @@ def sync_module(Lochness: 'lochness.config',
 @net.retry(max_attempts=5)
 def sync(Lochness, subject, dry):
     '''call sync on the correct sub-module'''
-    for module_name in subject.box:
+    for module_name in subject.mediaflux:
         sync_module(Lochness, subject, module_name, dry)
