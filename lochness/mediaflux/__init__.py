@@ -248,7 +248,7 @@ def sync_module(Lochness: 'lochness.config',
                 dry: bool):
 
 
-    study_basename = study_name.split('.')[1]
+    # study_basename = study_name.split('.')[1]
 
     for mf_subid in subject.mediaflux[study_name]:
         logger.debug(f'exploring {subject.study}/{subject.id}')
@@ -256,13 +256,15 @@ def sync_module(Lochness: 'lochness.config',
         enc_key = enc.kdf(_passphrase)
 
         mflux_cfg= keyring.mediaflux_api_token(Lochness, study_name)
-
-        mf_base = base(Lochness, study_basename)
+        
+        mf_base = base(Lochness, study_name)
+        # mf_base = base(Lochness, study_basename)
 
         print(mf_base)
-        # loop through the items defined for the BOX data
-        for datatype, products in iter(
-                Lochness['mediaflux'][study_basename]['file patterns'].items()):
+        for datatype, products in \
+            iter(Lochness['mediaflux'][study_name]['file_patterns'].items()):
+            # iter(Lochness['mediaflux'][study_basename]['file patterns'].items()):
+
             print(datatype, products)
 
             for p in products:
