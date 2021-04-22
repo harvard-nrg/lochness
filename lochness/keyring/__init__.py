@@ -60,16 +60,16 @@ def mediaflux_api_token(Lochness, key):
         credntials = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN', 'DOMAIN', 'USER', 'PASSWORD']
 
     auths= Lochness['keyring'][key]
-    mflux_cfg= pjoin(Lochness['phoenix_root'], 'mflux.cfg')
+    mflux_cfg= os.path.join(Lochness['phoenix_root'], 'mflux.cfg')
     with open(mflux_cfg, 'w') as f:
 
         for item in credntials:
             if item not in auths:
                 raise KeyringError(f'\'{item}\' not in {key}')
-            f.write(f'{item.lower()}={auths[item]}')
+            f.write(f'{item.lower()}={auths[item]}\n')
 
     # for security, make the mflux.cfg readable by the owner only
-    os.chmod(mflux_cfg, '0o600')
+    os.chmod(mflux_cfg, 0o600)
 
     return mflux_cfg
 
