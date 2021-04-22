@@ -18,7 +18,7 @@ from os.path import join as pjoin, basename, dirname
 import cryptease as enc
 import re
 from subprocess import Popen
-from tempfile import gettempdir
+import tempfile
 import pandas as pd
 
 
@@ -248,7 +248,7 @@ def sync_module(Lochness: 'lochness.config',
                 dry: bool):
 
 
-    # study_basename = study_name.split('.')[1]
+    study_basename = study_name.split('.')[1]
 
     for mf_subid in subject.mediaflux[study_name]:
         logger.debug(f'exploring {subject.study}/{subject.id}')
@@ -257,24 +257,25 @@ def sync_module(Lochness: 'lochness.config',
 
         mflux_cfg= keyring.mediaflux_api_token(Lochness, study_name)
         
-        mf_base = base(Lochness, study_name)
-        # mf_base = base(Lochness, study_basename)
+        # mf_base = base(Lochness, study_name)
+        mf_base = base(Lochness, study_basename)
 
         print(mf_base)
         for datatype, products in \
-            iter(Lochness['mediaflux'][study_name]['file_patterns'].items()):
-            # iter(Lochness['mediaflux'][study_basename]['file patterns'].items()):
+            iter(Lochness['mediaflux'][study_basename]['file_patterns'].items()):
+            # iter(Lochness['mediaflux'][study_name]['file_patterns'].items()):
+
 
             print(datatype, products)
 
-            for p in products:
-                if '*' not in p['pattern']:
+            for prod in products:
+                if '*' not in prod['pattern']:
                     raise PatternError('Mediaflux pattern must include an asterisk e.g. *csv or GENEActiv/*csv')
                 else:
-                    p['pattern']= p['pattern'].replace('*','(.+?)')
+                    prod['pattern']= prod['pattern'].replace('*','(.+?)')
 
                 # construct mediaflux remote dir
-                mf_remote_pattern= pjoin(mf_base, p['data_dir'], mf_subid, p['pattern'])
+                mf_remote_pattern= pjoin(mf_base, prod['data_dir'], mf_subid, prod['pattern'])
                 mf_remote_dir = dirname(mf_remote_pattern)
 
                 # obtain mediaflux remote paths
@@ -291,7 +292,7 @@ def sync_module(Lochness: 'lochness.config',
 
                     df= pd.read_csv(diff_path)
                     for remote in df['SRC_PATH'].values:
-                        if not re.search(p['pattern'], remote):
+                        if not re.search(prod['pattern'], remote):
                             continue
                             # mf_remote_pattern
                             # remote.strip("\"").split(':')[1]
@@ -302,7 +303,7 @@ def sync_module(Lochness: 'lochness.config',
                         subj_dir = subject.protected_folder \
                             if protect else subject.general_folder
 
-                        mf_local= pjoin(subj_dir, datatype, dirname(p['pattern']), basename(remote))
+                        mf_local= pjoin(subj_dir, datatype, dirname(prod['pattern']), basename(remote))
                         # ENH set different permissions
                         # GENERAL: 0o755, PROTECTED: 0700
                         os.makedirs(dirname(mf_local),exist_ok=True)
