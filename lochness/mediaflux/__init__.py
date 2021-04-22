@@ -294,11 +294,11 @@ def sync_module(Lochness: 'lochness.config',
                     for remote in df['SRC_PATH'].values:
                         if not re.search(prod['pattern'], remote):
                             continue
-                            # mf_remote_pattern
-                            # remote.strip("\"").split(':')[1]
+                        else:
+                            remote.split(':')[1]
 
                         # construct local path
-                        protect = p.get('protect', False)
+                        protect = prod.get('protect', False)
                         key = enc_key if protect else None
                         subj_dir = subject.protected_folder \
                             if protect else subject.general_folder
