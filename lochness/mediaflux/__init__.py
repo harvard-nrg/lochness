@@ -2,6 +2,7 @@ import os, sys
 import gzip
 import logging
 import importlib
+import boxsdk
 import lochness
 import tempfile as tf
 import cryptease as crypt
