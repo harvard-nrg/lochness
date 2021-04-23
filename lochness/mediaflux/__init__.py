@@ -21,6 +21,7 @@ from subprocess import Popen
 import tempfile
 import pandas as pd
 from numpy import nan
+from distutils.spawn import find_executable
 
 logger = logging.getLogger(__name__)
 Module = lochness.lchop(__name__, 'lochness.')
@@ -326,8 +327,23 @@ def sync_module(Lochness: 'lochness.config',
 
 
 
-@net.retry(max_attempts=5)
 def sync(Lochness, subject, dry):
     '''call sync on the correct sub-module'''
+    
+    # check availability of unimelb-mf-clients in PATH 
+    for cmd in ['unimelb-mf-download','unimelb-mf-check']:
+        exe= find_executable(cmd)
+        if not exe:
+            raise EnvironmentError(f'''
+
+{cmd} not found in PATH. To resolve this:
+* Download Linux 64bit unimelb-mf-clients client from
+  https://gitlab.unimelb.edu.au/resplat-mediaflux/unimelb-mf-clients/-/tags
+* Unzip it
+* Finally, export the unimelb-mf-clients to your PATH
+  export PATH=`pwd`/unimelb-mf-clients-0.5.8/bin/unix/:$PATH
+
+''')
+
     for module_name in subject.mediaflux:
         sync_module(Lochness, subject, module_name, dry)
