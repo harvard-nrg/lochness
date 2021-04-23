@@ -14,13 +14,13 @@ from io import BytesIO
 import lochness.keyring as keyring
 import lochness.net as net
 import lochness.tree as tree
-from os.path import join as pjoin, basename, dirname
+from os.path import join as pjoin, basename, dirname, isfile
 import cryptease as enc
 import re
 from subprocess import Popen
 import tempfile
 import pandas as pd
-
+from numpy import nan
 
 logger = logging.getLogger(__name__)
 Module = lochness.lchop(__name__, 'lochness.')
@@ -257,13 +257,11 @@ def sync_module(Lochness: 'lochness.config',
 
         mflux_cfg= keyring.mediaflux_api_token(Lochness, study_name)
         
-        # mf_base = base(Lochness, study_name)
         mf_base = base(Lochness, study_basename)
 
         print(mf_base)
         for datatype, products in \
             iter(Lochness['mediaflux'][study_basename]['file_patterns'].items()):
-            # iter(Lochness['mediaflux'][study_name]['file_patterns'].items()):
 
 
             print(datatype, products)
@@ -271,8 +269,6 @@ def sync_module(Lochness: 'lochness.config',
             for prod in products:
                 if '*' not in prod['pattern']:
                     raise PatternError('Mediaflux pattern must include an asterisk e.g. *csv or GENEActiv/*csv')
-                else:
-                    prod['pattern']= prod['pattern'].replace('*','(.+?)')
 
                 # construct mediaflux remote dir
                 mf_remote_pattern= pjoin(mf_base, prod['data_dir'], mf_subid, prod['pattern'])
@@ -289,14 +285,21 @@ def sync_module(Lochness: 'lochness.config',
 
                     p= Popen(cmd, shell=True)
                     p.wait()
+                    
+                    if not isfile(diff_path):
+                        continue
 
                     df= pd.read_csv(diff_path)
                     for remote in df['SRC_PATH'].values:
-                        if not re.search(prod['pattern'], remote):
+                        
+                        if remote is nan:
+                            continue
+                        
+                        if not re.search(prod['pattern'].replace('*','(.+?)'), remote):
                             continue
                         else:
-                            remote.split(':')[1]
-
+                            remote= remote.split(':')[1]
+                        
                         # construct local path
                         protect = prod.get('protect', False)
                         key = enc_key if protect else None
@@ -313,8 +316,8 @@ def sync_module(Lochness: 'lochness.config',
                         # subprocess call unimelb-mf-download
                         cmd = (' ').join(['unimelb-mf-download',
                                           '--mf.config', mflux_cfg,
-                                          '-o', mf_local,
-                                          remote])
+                                          '-o', dirname(mf_local),
+                                          f'\"{remote}\"'])
 
                         p = Popen(cmd, shell=True)
                         p.wait()
