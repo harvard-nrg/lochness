@@ -242,7 +242,7 @@ class BoxHashError(Exception):
 class PatternError(Exception):
     pass
 
-@net.retry(max_attempts=5)
+
 def sync_module(Lochness: 'lochness.config',
                 subject: 'subject.metadata',
                 study_name: 'mediaflux.study_name',
@@ -272,7 +272,7 @@ def sync_module(Lochness: 'lochness.config',
                 - vendor: Activinsights
                       product: GENEActiv
                       data_dir: all_BWH_actigraphy
-                      pattern: 'GENEActiv/*bin','GENEActiv/*csv'
+                      pattern: 'GENEActiv/*bin,GENEActiv/*csv'
                 actigraphy:
                     - vendor: Philips
                       product: Actiwatch 2
@@ -302,6 +302,7 @@ def sync_module(Lochness: 'lochness.config',
                         diff_path= pjoin(tmpdir,'diff.csv')
                         cmd = (' ').join(['unimelb-mf-check',
                                           '--mf.config', mflux_cfg,
+                                          '--nb-retries 5',
                                           '--direction down', tmpdir,
                                           mf_remote_dir,
                                           '-o', diff_path])
@@ -334,19 +335,22 @@ def sync_module(Lochness: 'lochness.config',
                             # GENERAL: 0o755, PROTECTED: 0700
                             os.makedirs(dirname(mf_local),exist_ok=True)
 
-                            # ENH retry 5 times
-                            # pass --check-csum so no redownload
                             # subprocess call unimelb-mf-download
                             cmd = (' ').join(['unimelb-mf-download',
                                               '--mf.config', mflux_cfg,
                                               '-o', dirname(mf_local),
+                                              '--nb-retries 5',
                                               f'\"{remote}\"'])
 
                             p = Popen(cmd, shell=True)
                             p.wait()
 
-                            # ENH after download completes, retry 5 times based on --check-csum
-
+                            # verify checksum after download completes
+                            # if checksum does not match, data will be downloaded again
+                            # ENH should we verify checksum 5 times?
+                            cmd+= ' --csum-check'
+                            p = Popen(cmd, shell=True)
+                            p.wait()
 
 
 def sync(Lochness, subject, dry):
