@@ -261,69 +261,91 @@ def sync_module(Lochness: 'lochness.config',
         mf_base = base(Lochness, study_basename)
 
         print(mf_base)
+
         for datatype, products in \
             iter(Lochness['mediaflux'][study_basename]['file_patterns'].items()):
 
-
             print(datatype, products)
 
+            '''
+            file_patterns:
+                - vendor: Activinsights
+                      product: GENEActiv
+                      data_dir: all_BWH_actigraphy
+                      pattern: 'GENEActiv/*bin','GENEActiv/*csv'
+                actigraphy:
+                    - vendor: Philips
+                      product: Actiwatch 2
+                      data_dir: all_BWH_actigraphy
+                      pattern: 'accel/*csv'
+                      protect: True
+            
+            '''
+
+
             for prod in products:
-                if '*' not in prod['pattern']:
-                    raise PatternError('Mediaflux pattern must include an asterisk e.g. *csv or GENEActiv/*csv')
+                for patt in prod['pattern'].split(','):
 
-                # construct mediaflux remote dir
-                mf_remote_pattern= pjoin(mf_base, prod['data_dir'], mf_subid, prod['pattern'])
-                mf_remote_dir = dirname(mf_remote_pattern)
+                    # consider the case with space
+                    # pattern: 'GENEActiv/*bin', 'GENEActiv/*csv'
+                    patt= patt.strip()
 
-                # obtain mediaflux remote paths
-                with tempfile.TemporaryDirectory() as tmpdir:
-                    diff_path= pjoin(tmpdir,'diff.csv')
-                    cmd = (' ').join(['unimelb-mf-check',
-                                      '--mf.config', mflux_cfg,
-                                      '--direction down', tmpdir,
-                                      mf_remote_dir,
-                                      '-o', diff_path])
+                    if '*' not in patt:
+                        raise PatternError('Mediaflux pattern must include an asterisk e.g. *csv or GENEActiv/*csv')
 
-                    p= Popen(cmd, shell=True)
-                    p.wait()
-                    
-                    if not isfile(diff_path):
-                        continue
+                    # construct mediaflux remote dir
+                    mf_remote_pattern= pjoin(mf_base, prod['data_dir'], mf_subid, patt)
+                    mf_remote_dir = dirname(mf_remote_pattern)
 
-                    df= pd.read_csv(diff_path)
-                    for remote in df['SRC_PATH'].values:
-                        
-                        if remote is nan:
-                            continue
-                        
-                        if not re.search(prod['pattern'].replace('*','(.+?)'), remote):
-                            continue
-                        else:
-                            remote= remote.split(':')[1]
-                        
-                        # construct local path
-                        protect = prod.get('protect', False)
-                        key = enc_key if protect else None
-                        subj_dir = subject.protected_folder \
-                            if protect else subject.general_folder
-
-                        mf_local= pjoin(subj_dir, datatype, dirname(prod['pattern']), basename(remote))
-                        # ENH set different permissions
-                        # GENERAL: 0o755, PROTECTED: 0700
-                        os.makedirs(dirname(mf_local),exist_ok=True)
-
-                        # ENH retry 5 times
-                        # pass --check-csum so no redownload
-                        # subprocess call unimelb-mf-download
-                        cmd = (' ').join(['unimelb-mf-download',
+                    # obtain mediaflux remote paths
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        diff_path= pjoin(tmpdir,'diff.csv')
+                        cmd = (' ').join(['unimelb-mf-check',
                                           '--mf.config', mflux_cfg,
-                                          '-o', dirname(mf_local),
-                                          f'\"{remote}\"'])
+                                          '--direction down', tmpdir,
+                                          mf_remote_dir,
+                                          '-o', diff_path])
 
-                        p = Popen(cmd, shell=True)
+                        p= Popen(cmd, shell=True)
                         p.wait()
 
-                        # ENH after download completes, retry 5 times based on --check-csum
+                        if not isfile(diff_path):
+                            continue
+
+                        df= pd.read_csv(diff_path)
+                        for remote in df['SRC_PATH'].values:
+
+                            if remote is nan:
+                                continue
+
+                            if not re.search(patt.replace('*','(.+?)'), remote):
+                                continue
+                            else:
+                                remote= remote.split(':')[1]
+
+                            # construct local path
+                            protect = prod.get('protect', False)
+                            key = enc_key if protect else None
+                            subj_dir = subject.protected_folder \
+                                if protect else subject.general_folder
+
+                            mf_local= pjoin(subj_dir, datatype, dirname(patt), basename(remote))
+                            # ENH set different permissions
+                            # GENERAL: 0o755, PROTECTED: 0700
+                            os.makedirs(dirname(mf_local),exist_ok=True)
+
+                            # ENH retry 5 times
+                            # pass --check-csum so no redownload
+                            # subprocess call unimelb-mf-download
+                            cmd = (' ').join(['unimelb-mf-download',
+                                              '--mf.config', mflux_cfg,
+                                              '-o', dirname(mf_local),
+                                              f'\"{remote}\"'])
+
+                            p = Popen(cmd, shell=True)
+                            p.wait()
+
+                            # ENH after download completes, retry 5 times based on --check-csum
 
 
 
