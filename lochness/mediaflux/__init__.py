@@ -37,71 +37,6 @@ def base(Lochness, study_name):
                    .get('namespace', '')
 
 
-def get_box_object_based_on_name(client:boxsdk.client,
-                                 box_folder_name: str,
-                                 box_path_id: str = '0') \
-                                         -> boxsdk.object.folder:
-    '''Return Box folder object for the given folder name
-
-    Currently, there is no api function to get box folder objects using
-    path strings in Box.
-        - https://stackoverflow.com/questions/16153409/is-there-any-easy-way-to-get-folderid-based-on-a-given-path
-
-    This function will recursively search for a folder which
-    has the same name as the `bx_head` and return its id.
-
-    Key Arguments:
-        client: Box client object
-        box_folder_name: Name of the folder in interest, str
-        box_path: Known parent id, str of int.
-                  Default=0. This execute search from the root.
-
-    Returns:
-        box_folder_object
-    '''
-    box_folder_name = str(box_folder_name)
-
-    # get list of files and directories under the top directory
-    root_dir = client.folder(folder_id=box_path_id).get()
-
-    # for entry in listing.entries:
-    for file_or_folder in root_dir.get_items():
-        if file_or_folder.type == 'folder' and \
-           file_or_folder.name == box_folder_name:
-            return file_or_folder
-
-
-def walk_from_folder_object(root: str, box_folder_object) -> \
-        Generator[str, list, list]:
-    '''top-down os.path.walk that operates on a Box folder object
-
-    Box does not support getting file or folder IDs with path strings,
-    but only supports recursively searching files and folders under
-    a folder with specific box ID.
-
-    Key Arguments:
-        root: path of the folder, str
-        box_folder_object: folder object, Box Folder
-
-    Yields:
-        (root, box_folder_objects, box_file_object)
-        root: root of the following objects, str
-        box_folder_object: box folder objects, list
-        box_file_object: box file objects, list
-    '''
-    box_folder_objects, box_file_objects = [], []
-    for file_or_folder in box_folder_object.get_items():
-        if file_or_folder.type == 'folder':
-            box_folder_objects.append(file_or_folder)
-        else:
-            box_file_objects.append(file_or_folder)
-
-    yield root, box_folder_objects, box_file_objects
-
-    for box_dir_object in box_folder_objects:
-        new_root = os.path.join(root, box_dir_object.name)
-        for x in walk_from_folder_object(new_root, box_dir_object):
-            yield x
 
 
 def save(box_file_object: boxsdk.object.file,
@@ -138,29 +73,8 @@ def save(box_file_object: boxsdk.object.file,
             raise DownloadError(msg)
 
 
-def hash_retry(n):
-    '''decorator to retry a box download on hash mismatch'''
-    def wrapped(func):
-        def f(*args, **kwargs):
-            attempts = 1
-            while attempts <= n:
-                try:
-                    return func(*args, **kwargs)
-                except BoxHashError as e:
-                    msg = f'attempt {attempts}/{n} failed with error: {e}'
-                    logger.warn(msg)
-                    attempts += 1
-                    os.remove(e.filename)
-            raise HashRetryError()
-        return f
-    return wrapped
 
 
-class HashRetryError(Exception):
-    pass
-
-
-@hash_retry(3)
 def _save(box_file_object, box_fullpath, local_fullfile, key, compress):
     # request the file from box.com
     try:
@@ -190,8 +104,6 @@ def _save(box_file_object, box_fullpath, local_fullfile, key, compress):
     os.rename(tmp_name, local_fullfile)
 
 
-class DownloadError(Exception):
-    pass
 
 
 def _savetemp(content, dirname=None, compress=False):
@@ -233,11 +145,6 @@ def verify(f, content_hash, key=None, compress=False):
         message = f'hash mismatch detected for {f}'
         raise BoxHashError(message, f)
 
-
-class BoxHashError(Exception):
-    def __init__(self, message, filename):
-        super(BoxHashError, self).__init__(message)
-        self.filename = filename
 
 class PatternError(Exception):
     pass
