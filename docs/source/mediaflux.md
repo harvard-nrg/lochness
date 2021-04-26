@@ -54,9 +54,7 @@ namespace/
 │               ├── everything.csv
 │               ├── nothing.txt
 │               └── something.bin
-
 ```
-
 <details><summary>└── SITE_B</summary>
 
 ```
