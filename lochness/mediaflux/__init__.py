@@ -287,7 +287,7 @@ def sync_module(Lochness: 'lochness.config',
                 for patt in prod['pattern'].split(','):
 
                     # consider the case with space
-                    # pattern: 'GENEActiv/*bin', 'GENEActiv/*csv'
+                    # pattern: 'GENEActiv/*bin, GENEActiv/*csv'
                     patt= patt.strip()
 
                     if '*' not in patt:
