@@ -247,6 +247,7 @@ In the following, we show a more specific example with fictitious names. For the
 A couple of notes about the above symbolic and specific examples:
 
 * Here are two equivalences:
+
     1. 
         * `namespace/SITE_A/datatype_1/sub001/*.csv`
         * `/projects/proj-5070_prescient-1128.4.380/BWH/surveys/01236/*.csv`
