@@ -427,11 +427,98 @@ PHOENIX/
 
 How the magic happened is described later ^_^
 
-keyring_file
+Keyring file
 ------------
 
-SITE_metadata.csv
------------------
+Details about the `keyring_file` are explained [here](http://docs.neuroinfo.org/lochness/en/latest/quick_start.html#setup) 
+and [here](http://docs.neuroinfo.org/lochness/en/latest/data_sources.html). In short, define a file like below and encrypt it:
+
+> ~/.lochness.json
+
+    {
+        "lochness": {
+            "SECRETS": {
+                "BWH":""
+            }
+        },
+        "mediaflux.bwh": {
+            "HOST": "mediaflux.researchsoftware.unimelb.edu.au",
+            "PORT": "443",
+            "TRANSPORT": "https",
+            "TOKEN":
+            "DOMAIN": "",
+            "USER": "",
+            "PASSWORD": ""
+        }
+    }
+     
+> crypt.py --encrypt ~/.lochness.json -o ~/.lochness.enc
+
+The output `~/.lochness.enc` has been specified as the `keyring_file` in the aforementioned configuration file. 
+In the above, the site name is `BWH` that we used for `PHOENIX` directory generation. Since there is no value for 
+`lochness.SECRETS.BWH`, downloaded data will not be encrypted. Remote name of the data is `mediaflux.bwh` that appeared 
+as:
+
+    mediaflux:
+        bwh:
+            ... 
+
+in the aforementioned configuration file and must exist in the `BWH_metadata.csv` file.
+
+Metadata file
+-------------
+
+Previously created `BWH_metadata.csv` will contain fictitious values. You must insert a `Mediaflux` column in it with 
+`Subject ID`s you want to download from Mediaflux remote.
+
+    Active,Consent,Subject ID,Mediaflux,XNAT
+    1,2017-02-09,sub01234,mediaflux.bwh:01234,xnat:HCPEP-BWH:01234
+    1,2017-02-09,sub01235,mediaflux.bwh:01235,xnat:HCPEP-BWH:01235
+    1,2017-02-09,sub01236,mediaflux.bwh:01236,xnat:HCPEP-BWH:01236
+
+Rows in the `Mediaflux` column are of pattern `mediaflux.{SITE}:{ID}`. The remote `ID` can be different from that 
+of the local `Subject ID` e.g. `01234` and `sub01234` respectively. You just have to make sure that the remote `ID`s exist 
+in your Mediaflux remote at a certain depth as characterized by `sub001` and `sub002` in the aforementioned [examples](#mediaflux-remote).
+Finally, the `Subject ID`s name the local folders:
+
+    PHOENIX/
+    ├── GENERAL
+    │   └── BWH
+    │       ├── BWH_metadata.csv
+    │       ├── sub01234
+    │       ├── sub01235
+    │       └── sub01236
+    └── PROTECTED
+        └── BWH
+            ├── sub01234
+            ├── sub01235
+            └── sub01236
+
+    
+while the `datatype_1 (actigraphy)` and `datatype_2 (phone)` used in the configuration file name the folders inside each `Subject ID`: 
+folders:
+
+    PHOENIX/
+    ├── GENERAL
+    │   └── BWH
+    │       ├── BWH_metadata.csv
+    │       ├── sub01234
+    │       │   ├── actigraphy
+    │       │   └── phone
+    │       ├── sub01235
+    │       │   ├── actigraphy
+    │       │   └── phone
+    │       └── sub01236
+    │           ├── actigraphy
+    │           └── phone
+    └── PROTECTED
+        └── BWH
+            ├── sub01234
+            │   └── actigraphy
+            ├── sub01235
+            │   └── actigraphy
+            └── sub01236
+                └── actigraphy
 
 
 
