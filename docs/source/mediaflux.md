@@ -15,6 +15,8 @@ keyring, configuration, and metadata
 
 </details>
 
+---
+
 Mediaflux remote
 ----------------
 
@@ -279,6 +281,7 @@ recognize and download them.
 * `datatype_*` folder names are arbitrary e.g. `all_BWH_actigraphy`, `all_phone`, `surveys`. Again, we shall note them 
 in a configuration file accordingly later.
 
+---
 
 Install lochness
 ----------------
@@ -420,7 +423,7 @@ PHOENIX/
 
 ```
 
-<details>
+</details>
 
 How the magic happened is described later ^_^
 
