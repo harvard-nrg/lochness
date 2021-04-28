@@ -11,7 +11,7 @@ keyring, configuration, and metadata
 
 <details><summary>Click on the beginning arrow</summary>
 How's your day going? Thanks anyway!
-<details>
+</details>
 
 Mediaflux remote
 ----------------
