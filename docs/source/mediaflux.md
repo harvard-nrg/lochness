@@ -7,6 +7,11 @@ pull their data from Mediaflux
 * Some Mediaflux login credentials, the predefined structure, and the folder hierarchy are defined via three files--
 keyring, configuration, and metadata
 
+**NOTE** Click on any arrow you find in this document to see their content.
+
+<details><summary>Click on the beginning arrow</summary>
+How's your day going? Thanks anyway!
+<details>
 
 Mediaflux remote
 ----------------
