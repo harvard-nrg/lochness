@@ -15,6 +15,8 @@ keyring, configuration, and metadata
 
 </details>
 
+**NOTE** `STUDY` and `SITE` words are used interchangeably in this document.
+
 ---
 
 Mediaflux remote
