@@ -105,20 +105,141 @@ namespace/
 </details>
 
 
+In the above, names of entities inside `pattern_*/` folder is arbitrary. We shall show how to capture their 
+arbitrariness in a configuration file later so the `lochness` module is able to recognize and download them. 
 
-    /projects/proj-5070_prescient-1128.4.380/
-    ├── BWH
-    │   ├── all_BWH_actigraphy
-    │   ├── all_phone
-    │   └── surveys
-    ├── McLean
-    │   ├── all_actigraphy
-    │   ├── phone
-    │   └── surveys_McLean
-    └── MGH
-        ├── actigraphy
-        ├── phone
-        └── surveys
+In the following, we show a more specific example with fictitious names. For the example, we have chosen 
+*actigraphy*, *phone*, and *survey* data but the organization can be applied to other data types e.g. *mri*, *eeg* etc.
+
+```
+/projects/proj-5070_prescient-1128.4.380/
+├── BWH
+│   ├── all_BWH_actigraphy
+│   │   ├── 01234
+│   │   │   ├── accel
+│   │   │   │   └── BLS-F6VVM-actigraphy_GENEActiv_accel_activityScores_hourly-day1to51.csv
+│   │   │   ├── GENEActiv
+│   │   │   │   ├── F6VVM__052281_2020-02-07\ 09-19-15.bin
+│   │   │   │   └── F6VVM__052281_2020-02-07\ 09-19-15.csv
+│   │   │   └── GENEActivQC
+│   │   │       └── BLS-F6VVM-GENEActivQC-day22to51.csv
+│   │   └── 01235
+│   │       ├── accel
+│   │       │   └── BLS-F6VVM-actigraphy_GENEActiv_accel_activityScores_hourly-day1to51.csv
+│   │       ├── GENEActiv
+│   │       │   ├── F6VVM__052281_2020-02-07\ 09-19-15.bin
+│   │       │   └── F6VVM__052281_2020-02-07\ 09-19-15.csv
+│   │       └── GENEActivQC
+│   │           └── BLS-F6VVM-GENEActivQC-day22to51.csv
+│   ├── all_phone
+│   │   ├── 01235
+│   │   │   ├── processed
+│   │   │   │   ├── accel
+│   │   │   │   ├── audioRecordings
+│   │   │   │   ├── gps
+│   │   │   │   ├── power
+│   │   │   │   ├── surveyAnswers
+│   │   │   │   └── surveyTimings
+│   │   │   └── raw
+│   │   │       └── rsl54vij
+│   │   └── 01236
+│   │       ├── processed
+│   │       │   ├── accel
+│   │       │   ├── audioRecordings
+│   │       │   ├── gps
+│   │       │   ├── power
+│   │       │   ├── surveyAnswers
+│   │       │   └── surveyTimings
+│   │       └── raw
+│   │           └── rsl54vij
+│   └── surveys
+│       ├── 01236
+│       │   ├── BLS-7NE49-redcapclinical-day1to882.csv
+│       │   ├── BLS-7NE49-redcapclinical-day1to946.csv
+│       │   ├── BLS-7NE49-redcapdemographics-day-1443to1378.csv
+│       │   ├── BLS-7NE49-redcapdemographics-day-1443to946.csv
+│       │   ├── BLS-7NE49-redcapwatch_swap-day1to946.csv
+│       │   └── processed
+│       │       ├── F6VVM.12_month_Longitudinal_Imaging_in_SZ_and_BP_Scales.json
+│       │       ├── F6VVM.CORE_SCID.json
+│       │       └── F6VVM.Ongur_Lab_Database.json
+│       └── 01237
+│           ├── BLS-7NE49-redcapclinical-day1to882.csv
+│           ├── BLS-7NE49-redcapclinical-day1to946.csv
+│           ├── BLS-7NE49-redcapdemographics-day-1443to1378.csv
+│           ├── BLS-7NE49-redcapdemographics-day-1443to946.csv
+│           ├── BLS-7NE49-redcapwatch_swap-day1to946.csv
+│           └── processed
+│               ├── F6VVM.12_month_Longitudinal_Imaging_in_SZ_and_BP_Scales.json
+│               ├── F6VVM.CORE_SCID.json
+│               └── F6VVM.Ongur_Lab_Database.json
+```
+<details><summary>└── MGH</summary>
+
+```
+    ├── all_BWH_actigraphy
+    │   ├── 01234
+    │   │   ├── accel
+    │   │   │   └── BLS-F6VVM-actigraphy_GENEActiv_accel_activityScores_hourly-day1to51.csv
+    │   │   ├── GENEActiv
+    │   │   │   ├── F6VVM__052281_2020-02-07\ 09-19-15.bin
+    │   │   │   └── F6VVM__052281_2020-02-07\ 09-19-15.csv
+    │   │   └── GENEActivQC
+    │   │       └── BLS-F6VVM-GENEActivQC-day22to51.csv
+    │   └── 01235
+    │       ├── accel
+    │       │   └── BLS-F6VVM-actigraphy_GENEActiv_accel_activityScores_hourly-day1to51.csv
+    │       ├── GENEActiv
+    │       │   ├── F6VVM__052281_2020-02-07\ 09-19-15.bin
+    │       │   └── F6VVM__052281_2020-02-07\ 09-19-15.csv
+    │       └── GENEActivQC
+    │           └── BLS-F6VVM-GENEActivQC-day22to51.csv
+    ├── all_phone
+    │   ├── 01235
+    │   │   ├── processed
+    │   │   │   ├── accel
+    │   │   │   ├── audioRecordings
+    │   │   │   ├── gps
+    │   │   │   ├── power
+    │   │   │   ├── surveyAnswers
+    │   │   │   └── surveyTimings
+    │   │   └── raw
+    │   │       └── rsl54vij
+    │   └── 01236
+    │       ├── processed
+    │       │   ├── accel
+    │       │   ├── audioRecordings
+    │       │   ├── gps
+    │       │   ├── power
+    │       │   ├── surveyAnswers
+    │       │   └── surveyTimings
+    │       └── raw
+    │           └── rsl54vij
+    └── surveys
+        ├── 01236
+        │   ├── BLS-7NE49-redcapclinical-day1to882.csv
+        │   ├── BLS-7NE49-redcapclinical-day1to946.csv
+        │   ├── BLS-7NE49-redcapdemographics-day-1443to1378.csv
+        │   ├── BLS-7NE49-redcapdemographics-day-1443to946.csv
+        │   ├── BLS-7NE49-redcapwatch_swap-day1to946.csv
+        │   └── processed
+        │       ├── F6VVM.12_month_Longitudinal_Imaging_in_SZ_and_BP_Scales.json
+        │       ├── F6VVM.CORE_SCID.json
+        │       └── F6VVM.Ongur_Lab_Database.json
+        └── 01237
+            ├── BLS-7NE49-redcapclinical-day1to882.csv
+            ├── BLS-7NE49-redcapclinical-day1to946.csv
+            ├── BLS-7NE49-redcapdemographics-day-1443to1378.csv
+            ├── BLS-7NE49-redcapdemographics-day-1443to946.csv
+            ├── BLS-7NE49-redcapwatch_swap-day1to946.csv
+            └── processed
+                ├── F6VVM.12_month_Longitudinal_Imaging_in_SZ_and_BP_Scales.json
+                ├── F6VVM.CORE_SCID.json
+                └── F6VVM.Ongur_Lab_Database.json
+```
+
+</details>
+
 
 As shown above, data folder names at the third level are arbitrary i.e. `all_BWH_actigraphy`, `all_actigraphy`, `actigraphy`. 
 We shall note them in a configuration file accordingly later.
@@ -129,8 +250,7 @@ So the following remotes have
 
 
 
-For the examples, we have chosen *actigraphy* and *survey* data but the organization can 
-be applied to other data types e.g. *phone*, *mri*, *eeg* etc. 
+
 
 
 directories are arbitrary. What this means is that 
