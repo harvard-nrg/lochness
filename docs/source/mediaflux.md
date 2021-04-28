@@ -14,6 +14,7 @@ namespace/
 ├── SITE_A
 │   ├── datatype_1
 │   │   ├── sub001
+│   │   │   ├── hello.csv
 │   │   │   ├── pattern_1
 │   │   │   │   └── anything
 │   │   │   │       ├── everything.csv
@@ -24,6 +25,7 @@ namespace/
 │   │   │       ├── nothing.txt
 │   │   │       └── something.bin
 │   │   └── sub002
+│   │       ├── hello.csv
 │   │       ├── pattern_1
 │   │       │   └── anything
 │   │       │       ├── everything.csv
@@ -35,6 +37,7 @@ namespace/
 │   │           └── something.bin
 │   └── datatype_2
 │       ├── sub001
+│       │   ├── hello.csv
 │       │   ├── pattern_1
 │       │   │   └── anything
 │       │   │       ├── everything.csv
@@ -45,6 +48,7 @@ namespace/
 │       │       ├── nothing.txt
 │       │       └── something.bin
 │       └── sub002
+│           ├── hello.csv
 │           ├── pattern_1
 │           │   └── anything
 │           │       ├── everything.csv
@@ -240,82 +244,25 @@ In the following, we show a more specific example with fictitious names. For the
 
 </details>
 
+A couple of notes about the above symbolic and specific examples:
 
-As shown above, data folder names at the third level are arbitrary i.e. `all_BWH_actigraphy`, `all_actigraphy`, `actigraphy`. 
-We shall note them in a configuration file accordingly later.
+* Here are two equivalences:
+    1. 
+        * `namespace/SITE_A/datatype_1/sub001/*.csv`
+        * `/projects/proj-5070_prescient-1128.4.380/BWH/surveys/01236/*.csv`
+    2. 
+        * `namespace/SITE_A/datatype_1/sub001/pattern_1/*.csv`
+        * `/projects/proj-5070_prescient-1128.4.380/BWH/all_BWH_actigraphy/01236/accel/*.csv`
 
+* There can be any number of directories inside `namespace/SITE_A/datatype_1/sub001/` e.g.
+    * zero: `/projects/proj-5070_prescient-1128.4.380/BWH/surveys/01236/*.csv`
+    * one: `/projects/proj-5070_prescient-1128.4.380/BWH/all_BWH_actigraphy/01236/GENEActiv/*.bin`
+    * three: `/projects/proj-5070_prescient-1128.4.380/BWH/all_phone/01235/raw/rsl54vij/gps/2019-12-19\ 19_00_00.csv.lock`
 
-So the following remotes have 
-`/projects/proj-5070_prescient-1128.4.380/` in their base locations.
+Their patterns just have to be appropriately defined in a configuration file so the `lochness` module is able to 
+recognize and download them.
 
+* `datatype_*` folder names are arbitrary e.g. `all_BWH_actigraphy`, `all_phone`, `surveys`. Again, we shall note them 
+in a configuration file accordingly later.
 
-
-
-
-
-directories are arbitrary. What this means is that 
-we have put *actigraphy* data in `mflux_dummy_data/all_BWH_actigraphy` directory but *survey* data 
-directly under the namespace folder `all_surveys`
-
-<details><summary>/projects/proj-5070_prescient-1128.4.380/mflux_dummy_data/all_BWH_actigraphy</summary>
-
-```
-all_BWH_actigraphy/
-├── 01234
-│   ├── accel
-│   │   └── BLS-F6VVM-actigraphy_GENEActiv_accel_activityScores_hourly-day1to51.csv
-│   ├── GENEActiv
-│   │   ├── F6VVM__052281_2020-02-07\ 09-19-15.bin
-│   │   └── F6VVM__052281_2020-02-07\ 09-19-15.csv
-│   └── GENEActivQC
-│       └── BLS-F6VVM-GENEActivQC-day22to51.csv
-├── 01235
-│   ├── accel
-│   │   └── BLS-F6VVM-actigraphy_GENEActiv_accel_activityScores_hourly-day1to51.csv
-│   ├── GENEActiv
-│   │   ├── F6VVM__052281_2020-02-07\ 09-19-15.bin
-│   │   └── F6VVM__052281_2020-02-07\ 09-19-15.csv
-│   └── GENEActivQC
-│       └── BLS-F6VVM-GENEActivQC-day22to51.csv
-└── 01236
-    ├── accel
-    │   └── BLS-F6VVM-actigraphy_GENEActiv_accel_activityScores_hourly-day1to51.csv
-    ├── GENEActiv
-    │   ├── 2020-02-07\ 09-19-15.bin
-    │   └── F6VVM__052281_2020-02-07\ 09-19-15.csv
-    └── GENEActivQC
-        └── BLS-F6VVM-GENEActivQC-day22to51.csv
-```
-
-</details>
-
-
-
-<details><summary>/projects/proj-5070_prescient-1128.4.380/all_surveys</summary>
-
-```
-all_BWH_surveys/
-├── 01234
-│   ├── BLS-7NE49-redcapclinical-day1to882.csv
-│   ├── BLS-7NE49-redcapclinical-day1to946.csv
-│   ├── BLS-7NE49-redcapdemographics-day-1443to1378.csv
-│   ├── BLS-7NE49-redcapdemographics-day-1443to946.csv
-│   ├── BLS-7NE49-redcapwatch_swap-day1to946.csv
-│   └── processed
-│       ├── F6VVM.12_month_Longitudinal_Imaging_in_SZ_and_BP_Scales.json
-│       ├── F6VVM.CORE_SCID.json
-│       └── F6VVM.Ongur_Lab_Database.json
-└── 01236
-    ├── BLS-7NE49-redcapclinical-day1to882.csv
-    ├── BLS-7NE49-redcapclinical-day1to946.csv
-    ├── BLS-7NE49-redcapdemographics-day-1443to1378.csv
-    ├── BLS-7NE49-redcapdemographics-day-1443to946.csv
-    ├── BLS-7NE49-redcapwatch_swap-day1to946.csv
-    └── processed
-        ├── F6VVM.12_month_Longitudinal_Imaging_in_SZ_and_BP_Scales.json
-        ├── F6VVM.CORE_SCID.json
-        └── F6VVM.Ongur_Lab_Database.json
-```
-
-</details>
 
