@@ -9,8 +9,10 @@ keyring, configuration, and metadata
 
 **NOTE** Click on any arrow you find in this document to see their content.
 
-<details><summary>Click on the beginning arrow</summary>
-How's your day going? Thanks anyway!
+<details><summary></summary>
+
+`How's your day going? Thanks anyway!`
+
 </details>
 
 Mediaflux remote
