@@ -481,6 +481,8 @@ of the local `Subject ID` e.g. `01234` and `sub01234` respectively. You just hav
 in your Mediaflux remote at a certain depth as characterized by `sub001` and `sub002` in the aforementioned [examples](#mediaflux-remote).
 Finally, the `Subject ID`s name the local folders:
 
+<details><summary>Expand</summary>
+
     PHOENIX/
     ├── GENERAL
     │   └── BWH
@@ -494,9 +496,11 @@ Finally, the `Subject ID`s name the local folders:
             ├── sub01235
             └── sub01236
 
+</details>
+
     
-while the `datatype_1 (actigraphy)` and `datatype_2 (phone)` used in the configuration file name the folders inside each `Subject ID`: 
-folders:
+while the `datatype_1 (actigraphy)` and `datatype_2 (phone)` used in the configuration file name the folders inside 
+each `Subject ID` folders:
 
     PHOENIX/
     ├── GENERAL
