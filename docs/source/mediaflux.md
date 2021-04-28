@@ -312,9 +312,9 @@ The above command will generate the following directory structure:
 Now that we have remote data available and local directory set up, we shall define some parameters via three files to 
 download remote data:
 
-    * Configuration
-    * Keyring
-    * Metadata  
+* Configuration
+* Keyring
+* Metadata  
 
 Configuration file
 ------------------
