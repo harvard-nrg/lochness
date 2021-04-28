@@ -460,7 +460,7 @@ as:
 
     mediaflux:
         bwh:
-            ... 
+            ...
 
 in the aforementioned configuration file and must exist in the `BWH_metadata.csv` file.
 
@@ -528,3 +528,46 @@ each `Subject ID` folders:
 </details>
 
 
+Appendix
+--------
+
+* The remote name `mediaflux.bwh` from `BWH_metadata.csv` appears in `~/.lochness.json` and exists as:
+
+
+    mediaflux:
+        bwh:
+            ...
+
+in `config.yml` file.
+
+* Mediaflux remote location of a file is constructed from `config.yml` and `BWH_metadata.csv` as: 
+
+`namespace/SITE/site_dir/ID/pattern`
+(remember that rows under `Mediaflux` column have values like `mediaflux.{SITE}:{ID}`)
+
+* Local destination is constructed as:
+
+`PHOENIX_ROOT/GENERAL/SITE/Subject ID/datatype/pattern`
+
+or
+
+`PHOENIX_ROOT/PROTECTED/SITE/Subject ID/datatype/pattern` when `protect: True`
+(remember that value of `Subject ID` can be different from `ID` in `mediaflux.{SITE}:{ID}` under `Mediaflux` column)
+
+<details><summary>Example remote-local mapping</summary>
+
+* Remote
+
+
+    namespace/SITE/site_dir/ID/pattern
+    /projects/proj-5070_prescient-1128.4.380/BWH/all_BWH_actigraphy/01236/accel/*.csv
+
+* Local
+
+
+    PHOENIX_ROOT/PROTECTED/SITE/Subject ID/datatype/pattern
+    PHOENIX/PROTECTED/BWH/sub01236/actigraphy/accel/BLS-F6VVM-actigraphy_GENEActiv_accel_activityScores_hourly-day1to51.csv
+
+</details>
+
+    
