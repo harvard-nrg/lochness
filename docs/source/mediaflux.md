@@ -363,7 +363,6 @@ will download remote data into the following `PHOENIX` structure:
 <details><summary>PHOENIX/</summary>
 
 ```
-PHOENIX/
 ├── GENERAL
 │   └── BWH
 │       ├── BWH_metadata.csv
@@ -502,6 +501,8 @@ Finally, the `Subject ID`s name the local folders:
 while the `datatype_1 (actigraphy)` and `datatype_2 (phone)` used in the configuration file name the folders inside 
 each `Subject ID` folders:
 
+<details><summary>Expand</summary>
+
     PHOENIX/
     ├── GENERAL
     │   └── BWH
@@ -524,5 +525,6 @@ each `Subject ID` folders:
             └── sub01236
                 └── actigraphy
 
+</details>
 
 
