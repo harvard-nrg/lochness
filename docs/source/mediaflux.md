@@ -1,9 +1,15 @@
 This documentation discusses how to organize data under a Mediaflux namespace and how they can be downloaded
-by `lochness` module.
+by `lochness` module. In a nutshell:
+
+* Individual sites will upload their data to Mediaflux following a predefined structure
+* The central controller of those sites will need to install `lochness` module and generate a folder hierarchy to 
+pull their data from Mediaflux
+* Some Mediaflux login credentials, the predefined structure, and the folder hierarchy are defined via three files--
+keyring, configuration, and metadata
 
 
-Mediaflux Remote Data
----------------------
+Mediaflux remote
+----------------
 
 In the following, we show how data should be organized in Mediaflux remote so `lochness` module recognizes them 
 and can download them. A user can upload data only under a namespace in Mediaflux. The top level directory is the 
@@ -265,5 +271,157 @@ recognize and download them.
 
 * `datatype_*` folder names are arbitrary e.g. `all_BWH_actigraphy`, `all_phone`, `surveys`. Again, we shall note them 
 in a configuration file accordingly later.
+
+
+Install lochness
+----------------
+
+> pip install git+https://https://github.com/PREDICT-DPACC/lochness.git
+
+
+Generate PHOENIX directory
+--------------------------
+
+`lochness` module will download Mediaflux remote data into a directory hierarchy informally known as `PHOENIX`. 
+You can read more about it [here](http://docs.neuroinfo.org/lochness/en/latest/quick_start.html#phoenix). However, the `PHOENIX` directory hierarchy needs to be initialized manually as follows: 
+
+> phoenix-generator.py --study BWH ./PHOENIX
+
+The above command will generate the following directory structure:
+
+    PHOENIX/
+    ├── GENERAL
+    │   └── BWH
+    │       └── BWH_metadata.csv
+    └── PROTECTED
+        └── BWH
+
+
+---
+
+Now that we have remote data available and local directory set up, we shall define some parameters via three files to 
+download remote data:
+
+    * Configuration
+    * Keyring
+    * Metadata  
+
+Configuration file
+------------------
+
+Various parameters of the configuration file are described in detail [here](http://docs.neuroinfo.org/lochness/en/latest/configuration_file.html). 
+For completeness of this documentation, a relevant snippet is provided below: 
+
+> config.yml
+
+    keyring_file: /home/tb571/.lochness.enc
+    phoenix_root: /home/tb571/PHOENIX
+    pid: /home/tb571/lochness.pid
+    stderr: /home/tb571/lochness.stderr
+    stdout: /home/tb571/lochness.stdout
+    poll_interval: 20
+    mediaflux:
+        bwh:
+            namespace: /projects/proj-5070_prescient-1128.4.380/BWH
+            file_patterns:
+            actigraphy:
+                - vendor: Philips
+                  product: Actiwatch 2
+                  data_dir: all_BWH_actigraphy
+                  pattern: 'accel/*csv'
+                  protect: True
+                - vendor: Activinsights
+                  product: GENEActiv
+                  data_dir: all_BWH_actigraphy
+                  pattern: 'GENEActiv/*bin,GENEActiv/*csv'
+                - vendor: Insights
+                  product: GENEActivQC
+                  data_dir: all_BWH_actigraphy
+                  pattern: 'GENEActivQC/*csv'
+            phone:
+                - data_dir: all_phone
+                  pattern: 'processed/accel/*csv'
+    
+    notify:
+        __global__:
+            - tbillah@bwh.harvard.edu
+
+The above snippet contains only `mediaflux` subsection but you may have other subsections e.g. `xnat`, `redcap` etc. 
+Please continue reading below to learn about parameters in the `mediaflux` subsection. However, the above configuration 
+will download remote data into the following `PHOENIX` structure:
+
+<details><summary>PHOENIX/</summary>
+
+```
+PHOENIX/
+├── GENERAL
+│   └── BWH
+│       ├── BWH_metadata.csv
+│       ├── sub01234
+│       │   ├── actigraphy
+│       │   │   ├── GENEActiv
+│       │   │   │   ├── F6VVM__052281_2020-02-07\ 09-19-15.bin
+│       │   │   │   └── F6VVM__052281_2020-02-07\ 09-19-15.csv
+│       │   │   └── GENEActivQC
+│       │   │       └── BLS-F6VVM-GENEActivQC-day22to51.csv
+│       │   └── phone
+│       │       └── processed
+│       │           └── accel
+│       │               ├── BLS-F6VVM-phone_accel_activityScores_hourly-day1to43.csv
+│       │               ├── BLS-F6VVM-phone_accel_activityScores_hourly-day1to51.csv
+│       │               └── BLS-F6VVM-phone_accel_activityScores_hourly-day1to79.csv
+│       ├── sub01235
+│       │   ├── actigraphy
+│       │   │   ├── GENEActiv
+│       │   │   │   ├── F6VVM__052281_2020-02-07\ 09-19-15.bin
+│       │   │   │   └── F6VVM__052281_2020-02-07\ 09-19-15.csv
+│       │   │   └── GENEActivQC
+│       │   │       └── BLS-F6VVM-GENEActivQC-day22to51.csv
+│       │   └── phone
+│       │       └── processed
+│       │           └── accel
+│       │               ├── BLS-F6VVM-phone_accel_activityScores_hourly-day1to43.csv
+│       │               ├── BLS-F6VVM-phone_accel_activityScores_hourly-day1to51.csv
+│       │               └── BLS-F6VVM-phone_accel_activityScores_hourly-day1to79.csv
+│       └── sub01236
+│           ├── actigraphy
+│           │   ├── GENEActiv
+│           │   │   ├── 2020-02-07\ 09-19-15.bin
+│           │   │   └── F6VVM__052281_2020-02-07\ 09-19-15.csv
+│           │   └── GENEActivQC
+│           │       └── BLS-F6VVM-GENEActivQC-day22to51.csv
+│           └── phone
+│               └── processed
+│                   └── accel
+│                       ├── BLS-F6VVM-phone_accel_activityScores_hourly-day1to43.csv
+│                       ├── BLS-F6VVM-phone_accel_activityScores_hourly-day1to51.csv
+│                       └── BLS-F6VVM-phone_accel_activityScores_hourly-day1to79.csv
+└── PROTECTED
+    └── BWH
+        ├── sub01234
+        │   └── actigraphy
+        │       └── accel
+        │           └── BLS-F6VVM-actigraphy_GENEActiv_accel_activityScores_hourly-day1to51.csv
+        ├── sub01235
+        │   └── actigraphy
+        │       └── accel
+        │           └── BLS-F6VVM-actigraphy_GENEActiv_accel_activityScores_hourly-day1to51.csv
+        └── sub01236
+            └── actigraphy
+                └── accel
+                    └── BLS-F6VVM-actigraphy_GENEActiv_accel_activityScores_hourly-day1to51.csv
+
+```
+
+<details>
+
+How the magic happened is described later ^_^
+
+keyring_file
+------------
+
+SITE_metadata.csv
+-----------------
+
 
 
