@@ -351,23 +351,23 @@ For completeness of this documentation, a relevant snippet is provided below:
         bwh:
             namespace: /projects/proj-5070_prescient-1128.4.380/BWH
             file_patterns:
-            actigraphy:
-                - vendor: Philips
-                  product: Actiwatch 2
-                  data_dir: all_BWH_actigraphy
-                  pattern: 'accel/*csv'
-                  protect: True
-                - vendor: Activinsights
-                  product: GENEActiv
-                  data_dir: all_BWH_actigraphy
-                  pattern: 'GENEActiv/*bin,GENEActiv/*csv'
-                - vendor: Insights
-                  product: GENEActivQC
-                  data_dir: all_BWH_actigraphy
-                  pattern: 'GENEActivQC/*csv'
-            phone:
-                - data_dir: all_phone
-                  pattern: 'processed/accel/*csv'
+                actigraphy:
+                    - vendor: Philips
+                      product: Actiwatch 2
+                      data_dir: all_BWH_actigraphy
+                      pattern: 'accel/*csv'
+                      protect: True
+                    - vendor: Activinsights
+                      product: GENEActiv
+                      data_dir: all_BWH_actigraphy
+                      pattern: 'GENEActiv/*bin,GENEActiv/*csv'
+                    - vendor: Insights
+                      product: GENEActivQC
+                      data_dir: all_BWH_actigraphy
+                      pattern: 'GENEActivQC/*csv'
+                phone:
+                    - data_dir: all_phone
+                      pattern: 'processed/accel/*csv'
     
     notify:
         __global__:
@@ -656,26 +656,26 @@ Appendix
             bwh:
                 namespace: /projects/proj-5070_prescient-1128.4.380/BWH
                 file_patterns:
-                actigraphy:
-                    - vendor: Insights
-                      product: GENEActivQC
-                      data_dir: all_BWH_actigraphy
-                      pattern: 'GENEActivQC/*csv'
-                phone:
-                    - data_dir: all_phone
-                      pattern: 'processed/accel/*csv'
+                    actigraphy:
+                        - vendor: Insights
+                          product: GENEActivQC
+                          data_dir: all_BWH_actigraphy
+                          pattern: 'GENEActivQC/*csv'
+                    phone:
+                        - data_dir: all_phone
+                          pattern: 'processed/accel/*csv'
                       
             mgh:
                 namespace: /projects/proj-5070_prescient-1128.4.380/MGH
                 file_patterns:
-                actigraphy:
-                    - vendor: Insights
-                      product: GENEActivQC
-                      data_dir: all_BWH_actigraphy
-                      pattern: 'GENEActivQC/*csv'
-                phone:
-                    - data_dir: all_phone
-                      pattern: 'processed/accel/*csv'
+                    actigraphy:
+                        - vendor: Insights
+                          product: GENEActivQC
+                          data_dir: all_BWH_actigraphy
+                          pattern: 'GENEActivQC/*csv'
+                    phone:
+                        - data_dir: all_phone
+                          pattern: 'processed/accel/*csv'
         
         notify:
             __global__:

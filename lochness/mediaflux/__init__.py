@@ -67,16 +67,16 @@ def sync_module(Lochness: 'lochness.config',
 
             '''
             file_patterns:
-                - vendor: Activinsights
-                      product: GENEActiv
-                      data_dir: all_BWH_actigraphy
-                      pattern: 'GENEActiv/*bin,GENEActiv/*csv'
                 actigraphy:
                     - vendor: Philips
                       product: Actiwatch 2
                       data_dir: all_BWH_actigraphy
                       pattern: 'accel/*csv'
                       protect: True
+                    - vendor: Activinsights
+                      product: GENEActiv
+                      data_dir: all_BWH_actigraphy
+                      pattern: 'GENEActiv/*bin,GENEActiv/*csv'
             
             '''
 
