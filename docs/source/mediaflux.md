@@ -535,129 +535,128 @@ Appendix
 
 * The remote name `mediaflux.bwh` from `BWH_metadata.csv` appears in `~/.lochness.json` and exists as:
 
-```
-mediaflux:
-    bwh:
-        ...
-```
+    ```
+    mediaflux:
+        bwh:
+            ...
+    ```
 
-in `config.yml` file.
+    in `config.yml` file.
 
 * Mediaflux remote location of a file is constructed from `config.yml` and `BWH_metadata.csv` as: 
 
-`namespace/SITE/data_dir/ID/pattern`
-
-(remember that rows under `Mediaflux` column have values like `mediaflux.{SITE}:{ID}`)
+    `namespace/SITE/data_dir/ID/pattern`
+    
+    (remember that rows under `Mediaflux` column have values like `mediaflux.{SITE}:{ID}`)
 
 * Local destination is constructed as:
 
-`PHOENIX_ROOT/GENERAL/SITE/Subject ID/datatype/pattern`
-
-or
-
-`PHOENIX_ROOT/PROTECTED/SITE/Subject ID/datatype/pattern` when `protect: True`
-
-(remember that value of `Subject ID` can be different from `ID` in `mediaflux.{SITE}:{ID}` under `Mediaflux` column)
-
-<details><summary>Example remote-local mapping</summary>
-
-* Remote
-```
-namespace/SITE/data_dir/ID/pattern
-/projects/proj-5070_prescient-1128.4.380/BWH/all_BWH_actigraphy/01236/accel/*.csv
-```
-
-* Local
-```
-PHOENIX_ROOT/PROTECTED/SITE/Subject ID/datatype/pattern
-PHOENIX/PROTECTED/BWH/sub01236/actigraphy/accel/BLS-F6VVM-actigraphy_GENEActiv_accel_activityScores_hourly-day1to51.csv
-```
-
-</details>
+    `PHOENIX_ROOT/GENERAL/SITE/Subject ID/datatype/pattern`
+    
+    or
+    
+    `PHOENIX_ROOT/PROTECTED/SITE/Subject ID/datatype/pattern` when `protect: True`
+    
+    (remember that value of `Subject ID` can be different from `ID` in `mediaflux.{SITE}:{ID}` under `Mediaflux` column)
+    
+    <details><summary>Example remote-local mapping</summary>
+    
+    * Remote
+        ```
+        namespace/SITE/data_dir/ID/pattern
+        /projects/proj-5070_prescient-1128.4.380/BWH/all_BWH_actigraphy/01236/accel/*.csv
+        ```
+    
+    * Local
+        ```
+        PHOENIX_ROOT/PROTECTED/SITE/Subject ID/datatype/pattern
+        PHOENIX/PROTECTED/BWH/sub01236/actigraphy/accel/BLS-F6VVM-actigraphy_GENEActiv_accel_activityScores_hourly-day1to51.csv
+        ```
+    
+    </details>
 
 * A pattern must include an asterisk (`*`).
 
 * If there are data with multiple patterns in one `data_dir`, they can be specified via comma separated strings against 
 `pattern`:
-```
-actigraphy:
-    - vendor: Philips
-      product: Actiwatch 2
-      data_dir: all_BWH_actigraphy
-      pattern: 'GENEActiv/*bin,GENEActiv/*csv'
-```
+    ```
+    actigraphy:
+        - vendor: Philips
+          product: Actiwatch 2
+          data_dir: all_BWH_actigraphy
+          pattern: 'GENEActiv/*bin,GENEActiv/*csv'
+    ```
 
 * Files for pulling data of multiple sites all together
 
-<details><summary>.lochness.json</summary>
-
-    {
-        "lochness": {
-            "SECRETS": {
-                "BWH":"",
-                "MGH":""
+    <details><summary>.lochness.json</summary>
+    
+        {
+            "lochness": {
+                "SECRETS": {
+                    "BWH":"",
+                    "MGH":""
+                }
+            },
+            "mediaflux.bwh": {
+                "HOST": "mediaflux.researchsoftware.unimelb.edu.au",
+                "PORT": "443",
+                "TRANSPORT": "https",
+                "TOKEN":
+                "DOMAIN": "",
+                "USER": "",
+                "PASSWORD": ""
+            },
+            "mediaflux.mgh": {
+                "HOST": "mediaflux.researchsoftware.unimelb.edu.au",
+                "PORT": "443",
+                "TRANSPORT": "https",
+                "TOKEN":
+                "DOMAIN": "",
+                "USER": "",
+                "PASSWORD": ""
             }
-        },
-        "mediaflux.bwh": {
-            "HOST": "mediaflux.researchsoftware.unimelb.edu.au",
-            "PORT": "443",
-            "TRANSPORT": "https",
-            "TOKEN":
-            "DOMAIN": "",
-            "USER": "",
-            "PASSWORD": ""
-        },
-        "mediaflux.mgh": {
-            "HOST": "mediaflux.researchsoftware.unimelb.edu.au",
-            "PORT": "443",
-            "TRANSPORT": "https",
-            "TOKEN":
-            "DOMAIN": "",
-            "USER": "",
-            "PASSWORD": ""
         }
-    }
-
-</details>
-
     
-<details><summary>config.yml</summary>
-
-    keyring_file: /home/tb571/.lochness.enc
-    phoenix_root: /home/tb571/PHOENIX
-    pid: /home/tb571/lochness.pid
-    stderr: /home/tb571/lochness.stderr
-    stdout: /home/tb571/lochness.stdout
-    poll_interval: 20
-    mediaflux:
-        bwh:
-            namespace: /projects/proj-5070_prescient-1128.4.380/BWH
-            file_patterns:
-            actigraphy:
-                - vendor: Insights
-                  product: GENEActivQC
-                  data_dir: all_BWH_actigraphy
-                  pattern: 'GENEActivQC/*csv'
-            phone:
-                - data_dir: all_phone
-                  pattern: 'processed/accel/*csv'
-                  
-        mgh:
-            namespace: /projects/proj-5070_prescient-1128.4.380/MGH
-            file_patterns:
-            actigraphy:
-                - vendor: Insights
-                  product: GENEActivQC
-                  data_dir: all_BWH_actigraphy
-                  pattern: 'GENEActivQC/*csv'
-            phone:
-                - data_dir: all_phone
-                  pattern: 'processed/accel/*csv'
+    </details>    
+        
+    <details><summary>config.yml</summary>
     
-    notify:
-        __global__:
-            - tbillah@bwh.harvard.edu
-
-</details>
-
-`BWH_metadata.csv` and `MGH_metadata.csv` must be in place as described [here](#metadata-file).
+        keyring_file: /home/tb571/.lochness.enc
+        phoenix_root: /home/tb571/PHOENIX
+        pid: /home/tb571/lochness.pid
+        stderr: /home/tb571/lochness.stderr
+        stdout: /home/tb571/lochness.stdout
+        poll_interval: 20
+        mediaflux:
+            bwh:
+                namespace: /projects/proj-5070_prescient-1128.4.380/BWH
+                file_patterns:
+                actigraphy:
+                    - vendor: Insights
+                      product: GENEActivQC
+                      data_dir: all_BWH_actigraphy
+                      pattern: 'GENEActivQC/*csv'
+                phone:
+                    - data_dir: all_phone
+                      pattern: 'processed/accel/*csv'
+                      
+            mgh:
+                namespace: /projects/proj-5070_prescient-1128.4.380/MGH
+                file_patterns:
+                actigraphy:
+                    - vendor: Insights
+                      product: GENEActivQC
+                      data_dir: all_BWH_actigraphy
+                      pattern: 'GENEActivQC/*csv'
+                phone:
+                    - data_dir: all_phone
+                      pattern: 'processed/accel/*csv'
+        
+        notify:
+            __global__:
+                - tbillah@bwh.harvard.edu
+    
+    </details>
+    
+    `BWH_metadata.csv` and `MGH_metadata.csv` must be in place as described [here](#metadata-file).
