@@ -2,7 +2,6 @@ import os, sys
 import gzip
 import logging
 import importlib
-import boxsdk
 import lochness
 import tempfile as tf
 import cryptease as crypt
@@ -35,115 +34,6 @@ def base(Lochness, study_name):
     return Lochness.get('mediaflux', {}) \
                    .get(study_name, {}) \
                    .get('namespace', '')
-
-
-
-
-def save(box_file_object: boxsdk.object.file,
-         box_path_tuple: Tuple[str, str],
-         out_base: str,
-         key=None,
-         compress=False, delete=False, dry=False):
-    '''save a box file to an output directory'''
-    # file path
-    box_path_root, box_path_name = box_path_tuple
-    box_fullpath = os.path.join(box_path_root, box_path_name)
-
-    # extension
-    ext = '.lock' if key else ''
-    ext = ext + '.gz' if compress else ext
-
-    # local path
-    local_fullfile = os.path.join(out_base, box_path_name + ext)
-
-    if os.path.exists(local_fullfile):
-        return
-    local_dirname = os.path.dirname(local_fullfile)
-    if not os.path.exists(local_dirname):
-        os.makedirs(local_dirname)
-
-    if not dry:
-        try:
-            _save(box_file_object, box_fullpath, local_fullfile, key, compress)
-            if delete:
-                logger.debug(f'deleting file on box {box_fullpath}')
-                _delete(box_file_object, box_fullpath)
-        except HashRetryError:
-            msg = f'too many failed attempts downloading {box_fullpath}'
-            raise DownloadError(msg)
-
-
-
-
-def _save(box_file_object, box_fullpath, local_fullfile, key, compress):
-    # request the file from box.com
-    try:
-        content = BytesIO(box_file_object.content())
-    except boxsdk.BoxAPIException as e:
-        if e.error.is_path() and e.error.get_path().is_not_found():
-            msg = f'error downloading file {box_fullpath}'
-            raise DownloadError(msg)
-        else:
-            raise e
-    local_dirname = os.path.dirname(local_fullfile)
-    logger.info(f'saving {box_fullpath} to {local_fullfile} ')
-
-    # write the file content to a temporary location
-    if key:
-        _stream = crypt.encrypt(content, key, chunk_size=CHUNK_SIZE)
-        tmp_name = _savetemp(crypt.buffer(_stream),
-                             local_dirname,
-                             compress=compress)
-    else:
-        tmp_name = _savetemp(content, local_dirname, compress=compress)
-
-    # verify the file and rename to final local destination
-    logger.debug(f'verifying temporary file {tmp_name}')
-    verify(tmp_name, box_file_object.sha1, key=key, compress=compress)
-    os.chmod(tmp_name, 0o0644)
-    os.rename(tmp_name, local_fullfile)
-
-
-
-
-def _savetemp(content, dirname=None, compress=False):
-    '''save content to a temporary file with optional compression'''
-    if not dirname:
-        dirname = tf.gettempdir()
-    fo = tf.NamedTemporaryFile(dir=dirname, prefix='.', delete=False)
-    if compress:
-        fo = gzip.GzipFile(fileobj=fo, mode='wb')
-
-    while 1:
-        buf = content.read(CHUNK_SIZE)
-        if not buf:
-            break
-        fo.write(buf)
-
-    fo.flush()
-    os.fsync(fo.fileno())
-    fo.close()
-    return fo.name
-
-
-def verify(f, content_hash, key=None, compress=False):
-    '''compute box hash of a local file and compare to content_hash'''
-    hasher = hashlib.sha1()
-    CHUNK_SIZE = 65536
-    fo = open(f, 'rb')
-    if compress:
-        fo = gzip.GzipFile(fileobj=fo, mode='rb')
-    if key:
-        fo = crypt.buffer(crypt.decrypt(fo, key, chunk_size=CHUNK_SIZE))
-    while 1:
-        buf = fo.read(CHUNK_SIZE)
-        if not buf:
-            break
-        hasher.update(buf)
-    fo.close()
-    if hasher.hexdigest() != content_hash:
-        message = f'hash mismatch detected for {f}'
-        raise BoxHashError(message, f)
 
 
 class PatternError(Exception):
