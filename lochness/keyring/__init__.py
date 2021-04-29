@@ -80,15 +80,15 @@ def mediaflux_api_token(Lochness, key):
 
     # allow having both TOKEN and PASSWORD in keyring, prioritize TOKEN
     if 'TOKEN' in Lochness['keyring'][key]:
-        credntials = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN']
+        credentials = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN']
     else:
-        credntials = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN', 'DOMAIN', 'USER', 'PASSWORD']
+        credentials = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN', 'DOMAIN', 'USER', 'PASSWORD']
 
     auths= Lochness['keyring'][key]
     mflux_cfg= os.path.join(Lochness['phoenix_root'], 'mflux.cfg')
     with open(mflux_cfg, 'w') as f:
 
-        for item in credntials:
+        for item in credentials:
             if item not in auths:
                 raise KeyringError(f'\'{item}\' not in {key}')
             f.write(f'{item.lower()}={auths[item]}\n')
