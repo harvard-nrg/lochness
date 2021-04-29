@@ -18,6 +18,7 @@ They are described in the following sections:
   * [Configuration file](#configuration-file)
   * [Keyring file](#keyring-file)
   * [Metadata file](#metadata-file)
+  * [Download data](#download-data)
   * [Appendix](#appendix)
 
 **NOTE** Click on any arrow you find in this document to see their content.
@@ -543,6 +544,15 @@ each `Subject ID` folders:
 
 </details>
 
+
+Download data
+-------------
+
+Now that you have done everything, pull the data:
+
+> sync.py --config /path/to/config.yml --source mediaflux --continuous
+
+Additionally, `sync.py --help` can be useful.
 
 Appendix
 --------
