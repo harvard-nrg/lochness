@@ -1,3 +1,6 @@
+Mediaflux and lochness
+----------------------
+
 This documentation discusses how to organize data under a Mediaflux namespace and how they can be downloaded
 by `lochness` module. In a nutshell:
 
