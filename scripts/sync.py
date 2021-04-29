@@ -72,7 +72,10 @@ def main():
 
     # replace args.source with corresponding lochness modules
     if args.source:
+        args.input_sources = args.source
         args.source = [SOURCES[x] for x in args.source]
+    else:
+        args.input_sources = []
 
     # load the lochness configuration file and keyring
     Lochness = config.load(args.config, args.archive_base)
@@ -100,9 +103,22 @@ def main():
 def do(args):
     # reload config every time
     Lochness = config.load(args.config, args.archive_base)
+
+    # run redcap pull first to update metadata.csv
     for subject in lochness.read_phoenix_metadata(Lochness, args.studies):
         if not subject.active and args.skip_inactive:
-            logger.info('skipping inactive subject={0}, study={1}'.format(subject.id, subject.study))
+            logger.info(f'skipping inactive subject={subject.id}, '
+                        f'study={subject.study}')
+            continue
+        else:
+            if 'redcap' in args.input_sources:
+                lochness.attempt(REDCap.sync, Lochness, subject, dry=args.dry)
+
+
+    for subject in lochness.read_phoenix_metadata(Lochness, args.studies):
+        if not subject.active and args.skip_inactive:
+            logger.info(f'skipping inactive subject={subject.id}, '
+                        f'study={subject.study}')
             continue
         if args.hdd:
             for Module in args.hdd:

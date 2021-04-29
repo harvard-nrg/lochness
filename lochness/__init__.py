@@ -15,6 +15,7 @@ import tempfile as tf
 import traceback as tb
 import collections as col
 import lochness.ssh as ssh
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -57,72 +58,81 @@ def read_phoenix_metadata(Lochness, studies=None):
         logger.debug('reading metadata file {0}'.format(f))
         try:
             # iterate over rows in metadata file
-            for subject in _subjects(Lochness, study_name, general_folder, 
+            for subject in _subjects(Lochness, study_name, general_folder,
                                      protected_folder, f):
                 yield subject
         except StudyMetadataError as e:
             logger.error(e)
-            lochness.email.metadata_error(Lochness, e.message)
+            # lochness.email.metadata_error(Lochness, e.message)
             continue
 
 def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
     meta_basename = os.path.basename(metadata_file)
-    # read the study metadata file (local or remote)
-    with lochness.openfile(Lochness, metadata_file, 'r') as fo:
-        reader = csv.reader(fo)
-        headers = next(reader)
-        for values in reader:
-            # quick sanity check of the current row
-            if not values:
-                continue
-            if len(values) != len(headers):
-                raise StudyMetadataError('bad row in metadata file for {0}'.format(meta_basename))
-            # these columns are required
-            row = dict(zip(headers, values))
-            active = int(row['Active'].strip())
-            consent = row['Consent'].strip()
-            phoenix_id = row['Subject ID'].strip()
-            # these columns are optional
-            phoenix_study = row.get('Study', study).strip()
-            saliva = dict()
-            if 'Saliva' in row:
-                saliva = _parse_saliva(row['Saliva'], phoenix_id)
-            beiwe = dict()
-            if 'Beiwe' in row:
-                beiwe = _parse_beiwe(row['Beiwe'], phoenix_id)
-            redcap = dict()
-            if 'REDCap' in row:
-                redcap = _parse_redcap(row['REDCap'], phoenix_id)
-            xnat = dict()
-            if 'XNAT' in row:
-                xnat = _parse_xnat(row['XNAT'], phoenix_id)
-            icognition = dict()
-            if 'iCognition' in row:
-                icognition = _parse_icognition(row['iCognition'], phoenix_id)
-            onlinescoring = dict()
-            if 'OnlineScoring' in row:
-                onlinescoring = _parse_onlinescoring(row['OnlineScoring'], phoenix_id)
-            dropbox = dict()
-            if 'Dropbox' in row:
-                dropbox = _parse_dropbox(row['Dropbox'], phoenix_id)
-            box = dict()
-            if 'Box' in row:
-                box = _parse_box(row['Box'], phoenix_id)
-            mediaflux = dict()
-            if 'Mediaflux' in row:
-                mediaflux = _parse_mediaflux(row['Mediaflux'], phoenix_id)
 
-            # sanity check on very critical bits of information
-            if not phoenix_id or not phoenix_study:
-                raise StudyMetadataError('bad row in metadata file {0}'.format(meta_basename))
-            general = os.path.join(general_folder, phoenix_study, phoenix_id)
-            protected = os.path.join(protected_folder, phoenix_study, phoenix_id)
-            subject = Subject(active, phoenix_study, phoenix_id, consent, beiwe,
-                              icognition, saliva, xnat, redcap, dropbox,
-                              box, mediaflux,
-                              general, protected)
-            logger.debug('subject metadata blob:\n{0}'.format(json.dumps(subject._asdict(), indent=2)))
-            yield subject
+    # read the study metadata fiile (local or remote)
+    metadata_df = pd.read_csv(metadata_file)
+    metadata_df = metadata_df.astype(str)
+    headers = metadata_df.columns
+
+    for index, row in metadata_df.iterrows():
+        values = row.tolist()
+
+        # quick sanity check of the current row
+        if not values:
+            continue
+
+        # these columns are required
+        if len(values) != len(headers):
+            raise StudyMetadataError(
+                    f'bad row in metadata file for {meta_basename}')
+
+        # these columns are required
+        row = dict(zip(headers, values))
+        active = int(row['Active'].strip())
+        consent = row['Consent'].strip()
+        phoenix_id = row['Subject ID'].strip()
+
+        # these columns are optional
+        phoenix_study = row.get('Study', study).strip()
+        saliva = dict()
+        if 'Saliva' in row:
+            saliva = _parse_saliva(row['Saliva'], phoenix_id)
+        beiwe = dict()
+        if 'Beiwe' in row:
+            beiwe = _parse_beiwe(row['Beiwe'], phoenix_id)
+        redcap = dict()
+        if 'REDCap' in row:
+            redcap = _parse_redcap(row['REDCap'], phoenix_id)
+        xnat = dict()
+        if 'XNAT' in row:
+            xnat = _parse_xnat(row['XNAT'], phoenix_id)
+        icognition = dict()
+        if 'iCognition' in row:
+            icognition = _parse_icognition(row['iCognition'], phoenix_id)
+        onlinescoring = dict()
+        if 'OnlineScoring' in row:
+            onlinescoring = _parse_onlinescoring(row['OnlineScoring'], phoenix_id)
+        dropbox = dict()
+        if 'Dropbox' in row:
+            dropbox = _parse_dropbox(row['Dropbox'], phoenix_id)
+        box = dict()
+        if 'Box' in row:
+            box = _parse_box(row['Box'], phoenix_id)
+        mediaflux = dict()
+        if 'Mediaflux' in row:
+            mediaflux = _parse_mediaflux(row['Mediaflux'], phoenix_id)
+
+        # sanity check on very critical bits of information
+        if not phoenix_id or not phoenix_study:
+            raise StudyMetadataError('bad row in metadata file {0}'.format(meta_basename))
+        general = os.path.join(general_folder, phoenix_study, phoenix_id)
+        protected = os.path.join(protected_folder, phoenix_study, phoenix_id)
+        subject = Subject(active, phoenix_study, phoenix_id, consent, beiwe,
+                          icognition, saliva, xnat, redcap, dropbox,
+                          box, mediaflux,
+                          general, protected)
+        logger.debug('subject metadata blob:\n{0}'.format(json.dumps(subject._asdict(), indent=2)))
+        yield subject
 
 def _parse_saliva(value, default_id=None):
     '''helper function to parse a saliva value'''

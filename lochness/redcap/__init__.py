@@ -66,7 +66,7 @@ def process_and_copy_json(Lochness, subject, dst,
     pii_table_loc = get_PII_table_loc(Lochness, subject.study)
 
     # don't run this if the pii_table in the config.yml is missing
-    if pii_table_loc != '':
+    if pii_table_loc != False and pii_table_loc != '':
         # process PII here
         pii_str_proc_dict = read_pii_mapping_to_dict(pii_table_loc)
         processed_content = load_raw_return_proc_json(
@@ -163,6 +163,7 @@ def sync(Lochness, subject, dry=False):
                     process_and_copy_json(Lochness, subject, dst,
                                           redcap_subject,
                                           _redcap_project)
+                    update_study_metadata(subject, json.loads(content))
                     
                 else:
                     # responses are not stored atomically in redcap
@@ -178,6 +179,7 @@ def sync(Lochness, subject, dry=False):
                         process_and_copy_json(Lochness, subject, dst,
                                               redcap_subject,
                                               _redcap_project)
+                        update_study_metadata(subject, json.loads(content))
 
 
 class REDCapError(Exception):
@@ -304,15 +306,16 @@ def update_study_metadata(subject, content: List[dict]) -> None:
 
     updated = False
     for source in sources:
-        if f"{source}_id" in content[0]:  # exist in the redcap
-            source_id = content[0][f"{source}_id"]
+        if f"{source.lower()}_id" in content[0]:  # exist in the redcap
+            source_id = content[0][f"{source.lower()}_id"]
             if source not in subject_series:
                 subject_series[source] = f'{source.lower()}.{source_id}'
                 updated = True
 
             # subject already has the information
             elif subject_series[source][0] != f'{source.lower()}.{source_id}':
-                subject_series[source] = f'{source.lower()}.{source_id}'
+                subject_series[source] = \
+                        f'{source.lower()}.{source_id}'
                 updated = True
             else:
                 pass
