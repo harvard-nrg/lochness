@@ -20,9 +20,6 @@ keyring, configuration, and metadata
 
 **NOTE** `STUDY` and `SITE` words are used interchangeably in this document.
 
-Table of Contents
-=================
-
   * [Mediaflux and lochness](#mediaflux-and-lochness)
   * [Mediaflux remote](#mediaflux-remote)
   * [Install lochness](#install-lochness)
@@ -31,7 +28,6 @@ Table of Contents
   * [Keyring file](#keyring-file)
   * [Metadata file](#metadata-file)
   * [Appendix](#appendix)
-
 
 ---
 
