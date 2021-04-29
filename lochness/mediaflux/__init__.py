@@ -11,8 +11,6 @@ from pathlib import Path
 import hashlib
 from io import BytesIO
 import lochness.keyring as keyring
-import lochness.net as net
-import lochness.tree as tree
 from os.path import join as pjoin, basename, dirname, isfile
 import cryptease as enc
 import re
@@ -30,7 +28,7 @@ CHUNK_SIZE = 65536
 
 
 def base(Lochness, study_name):
-    ''' get module-specific base box diretory '''
+    '''get study-specific namespace directory'''
     return Lochness.get('mediaflux', {}) \
                    .get(study_name, {}) \
                    .get('namespace', '')
@@ -44,7 +42,10 @@ def sync_module(Lochness: 'lochness.config',
                 subject: 'subject.metadata',
                 study_name: 'mediaflux.study_name',
                 dry: bool):
+    '''sync mediaflux data for the subject'''
 
+    if dry:
+        raise NotImplemented
 
     study_basename = study_name.split('.')[1]
 
@@ -106,6 +107,9 @@ def sync_module(Lochness: 'lochness.config',
 
                         p= Popen(cmd, shell=True)
                         p.wait()
+
+                        # ENH
+                        # if dry: exit()
 
                         if not isfile(diff_path):
                             continue

@@ -38,7 +38,7 @@ def delete_on_success(Lochness, module_name):
 
 
 def base(Lochness, module_name):
-    ''' get module-specific base box diretory '''
+    ''' get module-specific base box directory '''
     return Lochness.get('box', {}) \
                    .get(module_name, {}) \
                    .get('base', '')
