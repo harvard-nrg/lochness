@@ -1,6 +1,3 @@
-Mediaflux and lochness
-----------------------
-
 This documentation discusses how to organize data under a Mediaflux namespace and how they can be downloaded
 by `lochness` module. In a nutshell:
 
@@ -9,6 +6,16 @@ by `lochness` module. In a nutshell:
 pull their data from Mediaflux
 * Some Mediaflux login credentials, the predefined structure, and the folder hierarchy are defined via three files--
 keyring, configuration, and metadata
+
+They are described in the following sections:
+
+  * [Mediaflux remote](#mediaflux-remote)
+  * [Install lochness](#install-lochness)
+  * [Generate PHOENIX directory](#generate-phoenix-directory)
+  * [Configuration file](#configuration-file)
+  * [Keyring file](#keyring-file)
+  * [Metadata file](#metadata-file)
+  * [Appendix](#appendix)
 
 **NOTE** Click on any arrow you find in this document to see their content.
 
@@ -20,14 +27,6 @@ keyring, configuration, and metadata
 
 **NOTE** `STUDY` and `SITE` words are used interchangeably in this document.
 
-  * [Mediaflux and lochness](#mediaflux-and-lochness)
-  * [Mediaflux remote](#mediaflux-remote)
-  * [Install lochness](#install-lochness)
-  * [Generate PHOENIX directory](#generate-phoenix-directory)
-  * [Configuration file](#configuration-file)
-  * [Keyring file](#keyring-file)
-  * [Metadata file](#metadata-file)
-  * [Appendix](#appendix)
 
 ---
 
