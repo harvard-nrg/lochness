@@ -45,7 +45,7 @@ def sync_module(Lochness: 'lochness.config',
     '''sync mediaflux data for the subject'''
 
     if dry:
-        raise NotImplemented
+        raise NotImplementedError('--dry option is not implemented')
 
     study_basename = study_name.split('.')[1]
 
