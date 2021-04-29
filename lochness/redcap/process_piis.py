@@ -111,6 +111,7 @@ def process_pii_string(pii_string: str, process: str, subject_id: str) -> str:
             - 'change_date': change to days from certain time point.
             - 'random_number': replaced to random numbers in the same length.
             - 'random_string': replaced to random strings in the same length.
+            - 'replace_with_subject_id': replaced with subject_id
 
     Examples:
         process_pii_string('address': 'remove')
@@ -153,7 +154,6 @@ def process_pii_string(pii_string: str, process: str, subject_id: str) -> str:
         return new_string
 
     elif process == 'replace_with_subject_id':
-        print(subject_id)
         return subject_id
 
     else:
