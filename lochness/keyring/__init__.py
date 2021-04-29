@@ -44,9 +44,9 @@ def mediaflux_api_token(Lochness, key):
         Content of STUDY_metadata.csv:
 
         Active,Consent,Subject ID,Mediaflux,XNAT
-        1,2017-02-09,01234,mediaflux.bwh:01234,xnat:HCPEP-BWH:01234
-        1,2017-02-09,01235,mediaflux.bwh:01235,xnat:HCPEP-BWH:01235
-        1,2017-02-09,01236,mediaflux.bwh:01236,xnat:HCPEP-BWH:01236
+        1,2017-02-09,sub01234,mediaflux.bwh:01234,xnat:HCPEP-BWH:01234
+        1,2017-02-09,sub01235,mediaflux.bwh:01235,xnat:HCPEP-BWH:01235
+        1,2017-02-09,sub01236,mediaflux.bwh:01236,xnat:HCPEP-BWH:01236
 
         Content of keyring_file:
 
