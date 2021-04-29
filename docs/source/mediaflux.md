@@ -20,6 +20,19 @@ keyring, configuration, and metadata
 
 **NOTE** `STUDY` and `SITE` words are used interchangeably in this document.
 
+Table of Contents
+=================
+
+  * [Mediaflux and lochness](#mediaflux-and-lochness)
+  * [Mediaflux remote](#mediaflux-remote)
+  * [Install lochness](#install-lochness)
+  * [Generate PHOENIX directory](#generate-phoenix-directory)
+  * [Configuration file](#configuration-file)
+  * [Keyring file](#keyring-file)
+  * [Metadata file](#metadata-file)
+  * [Appendix](#appendix)
+
+
 ---
 
 Mediaflux remote
