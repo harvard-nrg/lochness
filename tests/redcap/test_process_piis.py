@@ -80,15 +80,18 @@ def test_load_raw_return_proc_json():
 
     pii_str_proc_dict = read_pii_mapping_to_dict(pii_table_loc)
     processed_content = load_raw_return_proc_json(json_loc,
-                                                  pii_str_proc_dict)
+                                                  pii_str_proc_dict,
+                                                  'subject01')
 
     assert type(processed_content) == bytes
 
 
 def test_process_pii_string():
-    print(process_pii_string('my name is kevin', 'random_string'))
-    print(process_pii_string('1923956', 'random_number'))
-    print(process_pii_string('816-198-963', 'random_number'))
+    print(process_pii_string('my name is kevin', 'random_string', 'subject01'))
+    print(process_pii_string('1923956', 'random_number', 'subject01'))
+    print(process_pii_string('816-198-963', 'random_number', 'subject01'))
+    print(process_pii_string('Kevin Cho', 'replace_with_subject_id',
+                             'kevin2subject01'))
 
 
 def test_get_shuffle_dict_for_type():

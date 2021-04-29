@@ -28,6 +28,7 @@ def read_pii_mapping_to_dict(pii_table_loc: str) -> pd.DataFrame:
         date             | change_date
         phone_number     | random_number
         patient_name     | random_string
+        subject_name     | replace_with_subject_id
     '''
 
     if Path(pii_table_loc).is_file():
@@ -50,7 +51,8 @@ def read_pii_mapping_to_dict(pii_table_loc: str) -> pd.DataFrame:
 
 
 def load_raw_return_proc_json(json_loc: str,
-                              pii_str_proc_dict: dict) -> List[dict]:
+                              pii_str_proc_dict: dict,
+                              subject_id: str) -> List[dict]:
     # load json in PROTECTED/survey/raw
     with open(json_loc, 'r') as f:
         raw_json = json.load(f)  # list of dicts
@@ -61,7 +63,9 @@ def load_raw_return_proc_json(json_loc: str,
         for field_name, field_value in instrument.items():
             for pii_label_string, process in pii_str_proc_dict.items():
                 if re.search(pii_label_string, field_name):
-                    new_value = process_pii_string(field_value, process)
+                    new_value = process_pii_string(field_value,
+                                                   process,
+                                                   subject_id)
                     processed_instrument[field_name] = new_value
                     break
                 else:
@@ -97,7 +101,7 @@ def get_shuffle_dict_for_type(string_type: string, input_str: str) -> dict:
     return input_str
 
 
-def process_pii_string(pii_string: str, process: str) -> str:
+def process_pii_string(pii_string: str, process: str, subject_id: str) -> str:
     '''Process PII string
 
     Key Arguments:
@@ -147,6 +151,10 @@ def process_pii_string(pii_string: str, process: str) -> str:
         new_string = ''.join(
             random.choice(letters) for i in range(len(pii_string)))
         return new_string
+
+    elif process == 'replace_with_subject_id':
+        print(subject_id)
+        return subject_id
 
     else:
         return pii_string

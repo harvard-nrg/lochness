@@ -69,7 +69,8 @@ def process_and_copy_json(Lochness, subject, dst,
     if pii_table_loc != '':
         # process PII here
         pii_str_proc_dict = read_pii_mapping_to_dict(pii_table_loc)
-        processed_content = load_raw_return_proc_json(dst, pii_str_proc_dict)
+        processed_content = load_raw_return_proc_json(
+                dst, pii_str_proc_dict, subject.id)
 
         # save processed content to general processed
         proc_folder = tree.get('surveys',
