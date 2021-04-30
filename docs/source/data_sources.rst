@@ -277,4 +277,4 @@ A standalone documentation for the interaction between Mediaflux and lochness is
 Specifically, you can take a look at `mediaflux#keyring-file <./mediaflux.md#keyring-file>`_ and
 `mediaflux#metadata-file <./mediaflux.md#metadata-file>`_. Learn about login credentials necessary for the keyring file
 from `https://wiki-rcs.unimelb.edu.au/display/RCS/Configuration+File <https://wiki-rcs.unimelb.edu.au/display/RCS/Configuration+File>`_.
-You may authenticate with Mediaflux by either user credentials or a security identity token as mentioned in the above Wiki.
+You may authenticate with Mediaflux using your credentials or a security token as mentioned in the above Wiki.
