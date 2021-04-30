@@ -277,12 +277,7 @@ def deidentify_flag(Lochness, study):
 def get_PII_table_loc(Lochness, study):
     ''' get study specific deidentify flag with a safe default '''
     value = Lochness.get('redcap', dict()) \
-                    .get(study, dict()) \
                     .get('pii_table', False)
-
-    # if this is anything but a boolean, just return False
-    if not isinstance(value, bool):
-        return ''
     return value
 
 
@@ -303,7 +298,8 @@ def update_study_metadata(subject, content: List[dict]) -> None:
     orig_metadata_df = pd.read_csv(subject.metadata_csv)
 
     subject_bool = orig_metadata_df['Subject ID'] == subject.id
-    subject_series = orig_metadata_df[subject_bool]
+    subject_index = orig_metadata_df[subject_bool].index
+    subject_series = orig_metadata_df.loc[subject_index]
     other_metadata_df = orig_metadata_df[~subject_bool]
 
     updated = False
@@ -315,8 +311,8 @@ def update_study_metadata(subject, content: List[dict]) -> None:
                 updated = True
 
             # subject already has the information
-            elif subject_series[source][0] != f'{source.lower()}.{source_id}':
-                subject_series[source] = \
+            elif subject_series.iloc[0][source] != f'{source.lower()}.{source_id}':
+                subject_series.iloc[0][source] = \
                         f'{source.lower()}.{source_id}'
                 updated = True
             else:
