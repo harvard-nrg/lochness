@@ -94,7 +94,7 @@ The resulting section should look as follows ::
         base: /PHOENIX
 
 box
--------
+---
 The ``box`` section is used to configure how Lochness will behave when 
 downloading data from `Box <https://box.com>`_.
 
@@ -112,7 +112,7 @@ The resulting section should look as follows ::
         delete_on_success: True
 
 box base
-~~~~~~~~~~~~
+~~~~~~~~
 For each Box account, you may add a ``base`` field to the configuration file to 
 indicate that Lochness should begin searching Box starting at that location. 
 ``file patterns`` field will have the name of directory under the `base`
@@ -145,6 +145,11 @@ The resulting section should look as follows ::
                          product: EyeLink 1000
                          pattern: '.*\.mov'
 
+
+mediaflux
+---------
+A standalone documentation for the interaction between Mediaflux and lochness is available `here ./mediaflux.md`_.
+Specifically, you can take a look at `mediaflux#configuration-file ./mediaflux.md#configuration-file`_.
 
 redcap
 ------
