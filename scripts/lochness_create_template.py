@@ -47,6 +47,24 @@ def create_lochness_template(args):
         # create example metadata
         create_example_meta_file_advanced(metadata, study, args.sources)
 
+    # create det_csv
+    if not Path(args.det_csv).is_file():
+        args.det_csv = args.outdir / 'data_entry_trigger_database.csv'
+
+
+    # create pii table
+    if not Path(args.pii_csv).is_file():
+        args.pii_csv = args.outdir / 'pii_convert.csv'
+        df = pd.DataFrame({
+            'pii_label_string': [
+                'address', 'phone_number', 'date',
+                'patient_name', 'subject_name'],
+            'process': [
+                'remove', 'random_number', 'change_date',
+                'random_string', 'replace_with_subject_id']
+            })
+        df.to_csv(args.pii_csv)
+
     # create config
     config_loc = args.outdir / 'config.yml'
     create_config_template(config_loc, args)
@@ -55,6 +73,7 @@ def create_lochness_template(args):
     keyring_loc = args.outdir / 'lochness.json'
     encrypt_keyring_loc = args.outdir / '.lochness.enc'
     create_keyring_template(keyring_loc, args)
+
 
     # write commands for the user to run after editing config and keyring
     write_commands_needed(args.outdir, config_loc,
@@ -140,6 +159,7 @@ def create_keyring_template(keyring_loc: Path, args: object) -> None:
 
 def create_config_template(config_loc: Path, args: object) -> None:
     '''Create config file template'''
+
     config_example = f'''keyring_file: {args.outdir}/.lochness.enc
 phoenix_root: {args.outdir}/PHOENIX
 pid: {args.outdir}/lochness.pid
@@ -148,12 +168,17 @@ stdout: {args.outdir}/lochness.stdout
 poll_interval: {args.poll_interval}
 ssh_user: {args.ssh_user}
 ssh_host: {args.ssh_host}
-sender: {args.email}
+sender: {args.email}'''
+
+    redcap_lines = f'''
 redcap:
     phoenix_project:
         deidentify: True
+    pii_table: {args.pii_csv}
     data_entry_trigger_csv: {args.det_csv}
     update_metadata: True'''
+
+    config_example += redcap_lines
 
     if 'mediaflux' in args.sources:
         config_example += '\nmediaflux:'
@@ -278,8 +303,12 @@ def get_arguments():
                         required=True,
                         help='ssh id')
     parser.add_argument('-det', '--det_csv',
-                        required=True,
+                        default='data_entry_trigger.csv',
                         help='Redcap data entry trigger database csv path')
+    parser.add_argument('-pc', '--pii_csv',
+                        default='pii_convert.csv',
+                        help='Location of table to be used in deidentifying '
+                             'redcap fields')
 
     args = parser.parse_args()
 
