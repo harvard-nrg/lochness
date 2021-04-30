@@ -148,8 +148,8 @@ The resulting section should look as follows ::
 
 mediaflux
 ---------
-A standalone documentation for the interaction between Mediaflux and lochness is available `here ./mediaflux.md`_.
-Specifically, you can take a look at `mediaflux#configuration-file ./mediaflux.md#configuration-file`_.
+A standalone documentation for the interaction between Mediaflux and lochness is available `here <./mediaflux.md>`_.
+Specifically, you can take a look at `mediaflux#configuration-file <./mediaflux.md#configuration-file>`_.
 
 redcap
 ------
