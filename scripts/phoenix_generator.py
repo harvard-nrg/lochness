@@ -9,9 +9,7 @@ import argparse as ap
 
 logger = logging.getLogger(__name__)
 
-def main():
-    # arguments and logging
-    args = parse_args()
+def main(args):
     configure_logging(args.verbose)
 
     # secure the resulting directory structure
@@ -36,7 +34,10 @@ def main():
     os.makedirs(general)
     print('\tcreate: {0}'.format(protected))
     os.makedirs(protected)
+    create_example_meta_file(metadata)
 
+
+def create_example_meta_file(metadata: str) -> None:
     # example metadata file row
     example = [
         ['Active', 'Consent', 'Subject ID', 'Beiwe'],
@@ -66,4 +67,6 @@ def configure_logging(verbose):
     logging.basicConfig(level=level)
  
 if __name__ == '__main__':
-    main()
+    # arguments and logging
+    args = parse_args()
+    main(args)
