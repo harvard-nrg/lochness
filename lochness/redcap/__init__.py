@@ -103,7 +103,9 @@ def sync(Lochness, subject, dry=False):
             _redcap_project = re.sub(r'[\W]+', '_', redcap_project.strip())
 
             # default location to protected folder
-            dst_folder = tree.get('surveys', subject.protected_folder)
+            dst_folder = tree.get('surveys',
+                                  subject.protected_folder,
+                                  processed=False)
             fname = f'{redcap_subject}.{_redcap_project}.json'
             dst = Path(dst_folder) / fname
 
