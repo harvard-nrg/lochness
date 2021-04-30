@@ -276,4 +276,4 @@ Mediaflux
 A standalone documentation for the interaction between Mediaflux and lochness is available `here <./mediaflux.md>`_.
 Specifically, you can take a look at `mediaflux#keyring-file <./mediaflux.md#keyring-file>`_ and
 `mediaflux#metadata-file <./mediaflux.md#metadata-file>`_. To authenticate with Mediaflux remote, follow the
-instruction available at `https://wiki-rcs.unimelb.edu.au/display/RCS/Configuration+File <https://wiki-rcs.unimelb.edu.au/display/RCS/Configuration+File>`_
+instruction available at `https://wiki-rcs.unimelb.edu.au/display/RCS/Configuration+File <https://wiki-rcs.unimelb.edu.au/display/RCS/Configuration+File>`_.
