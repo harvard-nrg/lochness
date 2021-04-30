@@ -105,7 +105,7 @@ def create_keyring_template(keyring_loc: Path, args: object) -> None:
             # lower part of the keyring
             template_dict[f'redcap.{study}'] = {
                     'URL': f'**https://redcap.address.org/redcap/{study}**',
-                    'API_TOEN': {study: f'**API_TOEN_FOR_{study}**'}}
+                    'API_TOKEN': {study: f'**API_TOEN_FOR_{study}**'}}
 
     if 'xnat' in args.sources:
         for study in args.studies:
@@ -156,9 +156,10 @@ redcap:
     update_metadata: True'''
 
     if 'mediaflux' in args.sources:
+        config_example += '\nmediaflux:'
+
         for study in args.studies:
             line_to_add = f'''
-mediaflux:
     {study}:
         namespace: /DATA/ROOT/UNDER/BOX
         delete_on_success: False
@@ -185,9 +186,9 @@ mediaflux:
 
 
     if 'box' in args.sources:
+        config_example += '\nbox:'
         for study in args.studies:
             line_to_add = f'''
-box:
     {study}:
         base: /DATA/ROOT/UNDER/BOX
         delete_on_success: False
