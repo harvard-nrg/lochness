@@ -63,9 +63,12 @@ def load_raw_return_proc_json(json_loc: str,
         for field_name, field_value in instrument.items():
             for pii_label_string, process in pii_str_proc_dict.items():
                 if re.search(pii_label_string, field_name):
-                    new_value = process_pii_string(field_value,
-                                                   process,
-                                                   subject_id)
+                    try:
+                        new_value = process_pii_string(field_value,
+                                                       process,
+                                                       subject_id)
+                    except:
+                        new_value = 'check_process_pii_string'
                     processed_instrument[field_name] = new_value
                     break
                 else:
@@ -126,12 +129,13 @@ def process_pii_string(pii_string: str, process: str, subject_id: str) -> str:
         base_date = date(1900, 1, 1)
 
         # eg) 2016-10-03
+        pii_string = pii_string.split(' ')[0]
         y = int(pii_string.split('-')[0])
         m = int(pii_string.split('-')[1])
         d = int(pii_string.split('-')[2])
 
-        date = date(y, m, d)
-        delta = date - base_date
+        new_date = date(y, m, d)
+        delta = new_date - base_date
 
         return str(delta.days)
 
