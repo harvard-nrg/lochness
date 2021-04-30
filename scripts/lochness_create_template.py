@@ -155,6 +155,35 @@ redcap:
     data_entry_trigger_csv: {args.det_csv}
     update_metadata: True'''
 
+    if 'mediaflux' in args.sources:
+        for study in args.studies:
+            line_to_add = f'''
+mediaflux:
+    {study}:
+        namespace: /DATA/ROOT/UNDER/BOX
+        delete_on_success: False
+        file_patterns:
+            actigraphy:
+                - vendor: Philips
+                  product: Actiwatch 2
+                  data_dir: all_BWH_actigraphy
+                  pattern: 'accel/*csv'
+                  protect: True
+                - vendor: Activinsights
+                  product: GENEActiv
+                  data_dir: all_BWH_actigraphy
+                  pattern: 'GENEActiv/*bin,GENEActiv/*csv'
+                - vendor: Insights
+                  product: GENEActivQC
+                  data_dir: all_BWH_actigraphy
+                  pattern: 'GENEActivQC/*csv'
+            phone:
+                - data_dir: all_phone
+                  pattern: 'processed/accel/*csv'''
+
+            config_example += line_to_add
+
+
     if 'box' in args.sources:
         for study in args.studies:
             line_to_add = f'''
@@ -233,18 +262,23 @@ def get_arguments():
     parser.add_argument('-ss', '--sources',
                         required=True,
                         nargs='+',
-                        help='List of sources, eg) xnat, redcap, box etc.')
+                        help='List of sources, eg) xnat, redcap, box, '
+                             'mindlamp, mediaflux, etc.')
     parser.add_argument('-e', '--email',
+                        required=True,
                         help='Email address')
     parser.add_argument('-p', '--poll_interval',
                         default=86400,
                         help='Poll interval in seconds')
     parser.add_argument('-sh', '--ssh_host',
+                        required=True,
                         help='ssh id')
     parser.add_argument('-su', '--ssh_user',
+                        required=True,
                         help='ssh id')
     parser.add_argument('-det', '--det_csv',
-                        help='data entry trigger csv path')
+                        required=True,
+                        help='Redcap data entry trigger database csv path')
 
     args = parser.parse_args()
 
