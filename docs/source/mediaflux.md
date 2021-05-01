@@ -461,7 +461,7 @@ and [here](http://docs.neuroinfo.org/lochness/en/latest/data_sources.html). In s
             "HOST": "mediaflux.researchsoftware.unimelb.edu.au",
             "PORT": "443",
             "TRANSPORT": "https",
-            "TOKEN":
+            "TOKEN": "",
             "DOMAIN": "",
             "USER": "",
             "PASSWORD": ""
@@ -626,7 +626,7 @@ Appendix
                 "HOST": "mediaflux.researchsoftware.unimelb.edu.au",
                 "PORT": "443",
                 "TRANSPORT": "https",
-                "TOKEN":
+                "TOKEN": "",
                 "DOMAIN": "",
                 "USER": "",
                 "PASSWORD": ""
@@ -635,7 +635,7 @@ Appendix
                 "HOST": "mediaflux.researchsoftware.unimelb.edu.au",
                 "PORT": "443",
                 "TRANSPORT": "https",
-                "TOKEN":
+                "TOKEN": "",
                 "DOMAIN": "",
                 "USER": "",
                 "PASSWORD": ""

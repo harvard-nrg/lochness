@@ -60,7 +60,7 @@ def mediaflux_api_token(Lochness, key):
                 "HOST": "mediaflux.researchsoftware.unimelb.edu.au",
                 "PORT": "443",
                 "TRANSPORT": "https",
-                "TOKEN":
+                "TOKEN": "",
                 "DOMAIN": "",
                 "USER": "",
                 "PASSWORD": ""
