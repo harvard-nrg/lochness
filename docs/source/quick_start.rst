@@ -31,7 +31,7 @@ the *keyring*. Here's an example of a decrypted keyring file ::
         "URL": "https://beiwe.example.org",
         "ACCESS_KEY": "...",
         "SECRET_KEY": "..."
-      }
+      },
 
       "xnat.example": {
         "URL": "https://chpe-xnat.example.harvard.edu",
@@ -39,11 +39,21 @@ the *keyring*. Here's an example of a decrypted keyring file ::
         "PASSWORD": "..."
       },
 
-      "box.xxxxx": {
+      "box.example": {
         "CLIENT_ID": "...",
         "CLIENT_SECRET": "...",
         "API_TOKEN": "..."
-        }
+      },
+
+      "mediaflux.example": {
+        "HOST": "mediaflux.researchsoftware.unimelb.edu.au",
+        "PORT": "443",
+        "TRANSPORT": "https",
+        "TOKEN": "...",
+        "DOMAIN": "...",
+        "USER": "...",
+        "PASSWORD": "..."
+      }
     }
 
 This file must be encrypted using a passphrase. At the moment, Lochness only
