@@ -38,7 +38,7 @@ def delete_on_success(Lochness, module_name):
 
 
 def base(Lochness, module_name):
-    ''' get module-specific base box diretory '''
+    ''' get module-specific base box directory '''
     return Lochness.get('box', {}) \
                    .get(module_name, {}) \
                    .get('base', '')
@@ -299,8 +299,6 @@ def sync_module(Lochness: 'lochness.config',
         # loop through the items defined for the BOX data
         for datatype, products in iter(
                 Lochness['box'][module_basename]['file patterns'].items()):
-            print(datatype, products)
-            print(datatype, products)
             print(datatype, products)
             subject_obj = get_box_object_based_on_name(
                     client, bx_sid, bx_base_obj.id)
