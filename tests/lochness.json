@@ -4,6 +4,11 @@
             "StudyA": {
                 "redcap.hcpep": ["hcpep"]
             }
+        },
+        "mindlamp": {
+            "StudyA": {
+                "mindlamp.StudyA": ["StudyA"]
+            }
         }
     },
 
@@ -19,6 +24,12 @@
         "API_TOKEN": {
             "hcpep": "377F16*****"
         }
+    },
+
+    "mindlamp.StudyA": {
+        "URL": "api.lamp.digital",
+        "ACCESS_KEY": "kevincho@bwh.harvard.edu",
+        "SECRET_KEY": "AMP**"
     },
 
     "box.StudyA": {

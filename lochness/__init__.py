@@ -32,6 +32,7 @@ Subject = col.namedtuple('Subject', [
     'dropbox',
     'box',
     'mediaflux',
+    'mindlamp',
     'general_folder',
     'protected_folder',
     'metadata_csv'
@@ -103,6 +104,9 @@ def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
         redcap = dict()
         if 'REDCap' in row:
             redcap = _parse_redcap(row['REDCap'], phoenix_id)
+        mindlamp = dict()
+        if 'Mindlamp' in row:
+            mindlamp = _parse_mindlamp(row['Mindlamp'], phoenix_id)
         xnat = dict()
         if 'XNAT' in row:
             xnat = _parse_xnat(row['XNAT'], phoenix_id)
@@ -129,10 +133,11 @@ def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
         protected = os.path.join(protected_folder, phoenix_study, phoenix_id)
         subject = Subject(active, phoenix_study, phoenix_id, consent, beiwe,
                           icognition, saliva, xnat, redcap, dropbox,
-                          box, mediaflux,
+                          box, mediaflux, mindlamp,
                           general, protected)
         logger.debug('subject metadata blob:\n{0}'.format(json.dumps(subject._asdict(), indent=2)))
         yield subject
+
 
 def _parse_saliva(value, default_id=None):
     '''helper function to parse a saliva value'''
@@ -194,7 +199,12 @@ def _parse_beiwe(value, default_id=None):
     
 def _parse_redcap(value, default_id=None):
     '''helper function to parse a redcap metadata value'''
-    default = 'redcap.rc:{ID}'.format(ID=default_id)
+    default = 'redcap.*:{ID}'.format(ID=default_id)
+    return _simple_parser(value, default=default)
+
+def _parse_mindlamp(value, default_id=None):
+    '''helper function to parse a mindlamp metadata value'''
+    default = 'mindlamp.*:{ID}'.format(ID=default_id)
     return _simple_parser(value, default=default)
 
 def _parse_icognition(value, default_id=None):

@@ -6,6 +6,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 requires = [
     'dropbox',
     'boxsdk',
+    'LAMP-core',
     'paramiko',
     'pyyaml',
     'mano',

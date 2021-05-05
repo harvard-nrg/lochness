@@ -13,6 +13,7 @@ import lochness.hdd as HDD
 import lochness.xnat as XNAT
 import lochness.beiwe as Beiwe
 import lochness.redcap as REDCap
+import lochness.mindlamp as Mindlamp
 import lochness.dropbox as Dropbox
 import lochness.box as Box
 import lochness.mediaflux as Mediaflux
@@ -24,6 +25,7 @@ SOURCES = {
     'xnat': XNAT,
     'beiwe': Beiwe,
     'redcap': REDCap,
+    'mindlamp': Mindlamp,
     'dropbox': Dropbox,
     'box': Box,
     'mediaflux': Mediaflux,
