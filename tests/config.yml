@@ -1,4 +1,4 @@
-keyring_file: lochness.json
+keyring_file: /Users/kc244/lochness/tests/lochness.json
 phoenix_root: ./PHOENIX
 pid: lochness.pid
 stderr: lochness.stderr
@@ -13,7 +13,7 @@ box:
     StudyA: 
         base: codmtg
         delete_on_success: False
-        file patterns:
+        file_patterns:
             actigraphy:
                    - vendor: Philips
                      product: Actiwatch 2
@@ -51,6 +51,8 @@ box:
 redcap:
     phoenix_project:
         deidentify: True
+    data_entry_trigger_csv: /Users/kc244/lochness/tests/redcap/ha.csv
+    update_metadata: True
 hdd:
     module_name:
         base: /PHOENIX

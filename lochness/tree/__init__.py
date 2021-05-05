@@ -6,7 +6,7 @@ Templates = {
     'actigraphy': {
         'raw': Template('${base}/actigraphy/raw'),
         'processed': Template('${base}/actigraphy/processed')
-    }, 
+    },
     'mri': {
         'raw': Template('${base}/mri/raw'),
         'processed': Template('${base}/mri/processed')
@@ -85,7 +85,7 @@ def get(data_type, base, **kwargs):
             os.makedirs(processed_folder)
             os.chmod(processed_folder, 0o01777)
 
-    if kwargs.get('processed', False):
+    if kwargs.get('processed', True):
         return processed_folder
     else:
         return raw_folder

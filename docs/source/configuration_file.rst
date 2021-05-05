@@ -115,7 +115,7 @@ box base
 ~~~~~~~~
 For each Box account, you may add a ``base`` field to the configuration file to 
 indicate that Lochness should begin searching Box starting at that location. 
-``file patterns`` field will have the name of directory under the `base`
+``file_patterns`` field will have the name of directory under the `base`
 directory, with subfields. 
 
 The subfields are 
@@ -131,7 +131,7 @@ The resulting section should look as follows ::
         xxxxx: 
             base: xxxxx_dir
             delete_on_success: False
-            file patterns:                 
+            file_patterns:                 
                 actigraphy:
                        - vendor: Philips
                          product: Actiwatch 2

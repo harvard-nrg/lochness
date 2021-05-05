@@ -1,3 +1,25 @@
+from jsonpath_ng import parse
+import tempfile
+import json
+import cryptease as crypt
+import yaml
+import getpass as gp
+
+
+def load_encrypted_keyring(enc_keyring_loc: str) -> dict:
+    with open(enc_keyring_loc, 'rb') as fp:
+        passphrase = gp.getpass('enter passphrase: ')
+        key = crypt.key_from_file(fp, passphrase)
+        content = b''
+        for chunk in crypt.decrypt(fp, key):
+            content += chunk
+
+        keyring_dict = yaml.load(content, Loader=yaml.FullLoader)
+
+    return keyring_dict
+
+
+
 def passphrase(Lochness, study):
     '''get passphrase for study from keyring'''
 
@@ -24,7 +46,6 @@ def box_api_token(Lochness, key):
     return (Lochness['keyring'][key]['CLIENT_ID'],
             Lochness['keyring'][key]['CLIENT_SECRET'],
             Lochness['keyring'][key]['API_TOKEN'])
-
 
 def mediaflux_api_token(Lochness, key):
     """
@@ -97,6 +118,49 @@ def mediaflux_api_token(Lochness, key):
     os.chmod(mflux_cfg, 0o600)
 
     return mflux_cfg
+
+
+def search_and_hide_keys(input_dict, a={}):
+    try:
+        a = {}
+        for k, v in input_dict.items():
+            # if the key is of sensitive value
+            if 'password' in k.lower() or \
+                    'token' in k.lower() or \
+                    k.lower().endswith('secret'):
+                a[k] = search_and_hide_keys('****', a)
+
+            # if the key is the SECRETS
+            elif 'SECRETS' == k:
+                a[k] = search_and_hide_keys(
+                        dict(zip(v.keys(), ['***' for x in v.values()])), a)
+            else:
+                a[k] = search_and_hide_keys(v, a)
+        return a
+
+    except:
+        # lowest item in the dict tree
+        return input_dict
+
+
+def print_keyring(keyring_dict):
+    '''Print the structure of the Lochness['keyring'] without sensitive info'''
+
+    keyring_wo_sensitive_info = search_and_hide_keys(keyring_dict)
+    pretty_print_dict(keyring_wo_sensitive_info)
+
+
+def pretty_print_dict(input_dict: dict):
+    '''Pretty print dictionary'''
+    with tempfile.NamedTemporaryFile(suffix='.json', delete=True) as tmpfile:
+        with open(tmpfile.name, 'w') as f:
+            json.dump(input_dict, f,
+                    sort_keys=False, indent='  ', separators=(',', ': '))
+
+        with open(tmpfile.name, 'r') as f:
+            lines = f.readlines()
+            for i in lines:
+                print(i.strip('\n'))
 
 
 class KeyringError(Exception):
