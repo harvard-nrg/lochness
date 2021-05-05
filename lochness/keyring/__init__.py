@@ -1,3 +1,6 @@
+import pprint
+
+
 def passphrase(Lochness, study):
     '''get passphrase for study from keyring'''
 
@@ -97,6 +100,39 @@ def mediaflux_api_token(Lochness, key):
     os.chmod(mflux_cfg, 0o600)
 
     return mflux_cfg
+
+
+def print_key_ring(Lochness):
+    '''Print the structure of the Lochness['keyring'] without sensitive info'''
+    keyring_dict = Lochness['keyring']
+
+    new_dict = {}
+    
+    # lochness item under the keyring
+    if 'lochness' in keyring_dict:
+        lochness_dict = keyring_dict['lochness']
+        new_dict['lochness'] = {}
+        for modality, study_dict in lochness_dict.items():
+            new_dict['lochness'][modality] = {}
+            for study_name, key_dict in study_dict.items():
+                new_dict['lochness'][modality][study_name] = {}
+                for redcap_name, project_name in key_dict.items():
+                    new_dict['lochness'][modality]\
+                            [study_name][redcap_name]  = project_name
+
+    for modality, modal_dict in keyring_dict.items():
+        if modality != 'lochness':
+            new_dict[modality] = {}
+            for var, keyring in modal_dict.items():
+                if type(keyring) == str:
+                    new_dict[modality][var] = '*'*len(keyring)
+                    # new_dict[modality][var] = keyring
+                else:
+                    new_dict[modality][var] = {}
+                    for var_d, keyring_d in keyring.items():
+                        new_dict[modality][var][var_d] = '*'*len(keyring_d)
+
+    pprint.pprint(new_dict)
 
 
 class KeyringError(Exception):
