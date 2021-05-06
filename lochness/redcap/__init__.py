@@ -14,9 +14,94 @@ import datetime
 from lochness.redcap.process_piis import load_raw_return_proc_json
 from lochness.redcap.process_piis import read_pii_mapping_to_dict
 from typing import List
+import tempfile as tf
 
 
 logger = logging.getLogger(__name__)
+
+
+def initialize_metadata(Lochness: 'Lochness object',
+                        study_name: str,
+                        redcap_id_colname: str,
+                        redcap_consent_colname: str) -> None:
+    '''Initialize metadata.csv by pulling data from REDCap
+
+    Key arguments:
+        Lochness: Lochness object
+        study_name: Name of the study, str.
+        redcap_id_colname: Name of the ID field name in REDCap, str.
+        redcap_consent_colname: Name of the consent date field name in REDCap,
+                                str.
+
+    '''
+    study_redcap = Lochness['keyring'][f'redcap.{study_name}']
+    api_url = study_redcap['URL'] + '/api/'
+    api_key = study_redcap['API_TOKEN'][study_name]
+
+    record_query = {
+        'token': api_key,
+        'content': 'record',
+        'format': 'json',
+    }
+
+    # pull all records from REDCap for the study
+    content = post_to_redcap(api_url,
+                             record_query,
+                             f'initializing data {study_name}')
+
+    # load pulled information as list of dictionary : data
+    with tf.NamedTemporaryFile(suffix='tmp.json') as tmpfilename:
+        lochness.atomic_write(tmpfilename.name, content)
+        with open(tmpfilename.name, 'r') as f:
+            data = json.load(f)
+
+    df = pd.DataFrame()
+    # for each record in pulled information, extract subject ID and source IDs
+    for item in data:
+        subject_dict = {'Subject ID': item[redcap_id_colname]}
+
+        # Consent date
+        try:
+            subject_dict['Consent'] = item[redcap_consent_colname]
+        except:
+            subject_dict['Consent'] = '1988-09-16'
+
+        source_source_name_dict = {
+                'beiwe': 'Beiwe', 'xnat': 'XNAT', 'dropbox': 'Drpbox',
+                'box': 'Box', 'mediaflux': 'Mediaflux',
+                'mindlamp': 'Mindlamp', 'daris': 'Daris', 'rpms': 'RPMS'}
+
+        for source, source_name in source_source_name_dict.items():
+            try:
+                subject_dict[source_name] = item[f'{source}_id']
+            except:
+                pass
+
+        df_tmp = pd.DataFrame.from_dict(subject_dict, orient='index')
+        df = pd.concat([df, df_tmp.T])
+
+    # Each subject may have more than one arms, which will result in more than
+    # single item for the subject in the redcap pulled `content`
+    # remove empty lables
+    df_final = pd.DataFrame()
+    for _, table in df.groupby(['Subject ID']):
+        pad_filled = table.fillna(
+                method='ffill').fillna(method='bfill').iloc[0]
+        df_final = pd.concat([df_final, pad_filled], axis=1)
+    df_final = df_final.T
+
+    # register all of the lables as active
+    df_final['Active'] = 1
+
+    # reorder columns
+    main_cols = ['Active', 'Consent', 'Subject ID']
+    df_final = df_final[main_cols + \
+            [x for x in df_final.columns if x not in main_cols]]
+
+    general_path = Path(Lochness['phoenix_root']) / 'GENERAL'
+    metadata_study = general_path / study_name / f"{study_name}_metadata.csv"
+    df_final.to_csv(metadata_study, index=False)
+
 
 
 def check_if_modified(subject_id: str,
@@ -293,7 +378,7 @@ def update_study_metadata(subject, content: List[dict]) -> None:
     '''update metadata csv based on the redcap content: source_id'''
 
 
-    sources = ['XNAT', 'Box', 'Mindlamp', 'Mediaflux']
+    sources = ['XNAT', 'Box', 'Mindlamp', 'Mediaflux', 'Daris', 'RPMS']
 
     orig_metadata_df = pd.read_csv(subject.metadata_csv)
 
