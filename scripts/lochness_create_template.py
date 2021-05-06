@@ -150,6 +150,15 @@ def create_keyring_template(keyring_loc: Path, args: object) -> None:
                 "ACCESS_KEY": args.email,
                 "SECRET_KEY": "**PASSWORD**"}
 
+    if 'daris' in args.sources:
+        for study in args.studies:
+            # lower part of the keyring
+            template_dict[f'daris.{study}'] = {
+                "URL": "https://daris.researchsoftware.unimelb.edu.au",
+                "TOKEN": "******",
+                "PROJECT_CID": "******",
+                }
+
     with open(keyring_loc, 'w') as f:
         json.dump(template_dict, f,
                   sort_keys=False,
@@ -205,7 +214,8 @@ redcap:
                   pattern: 'GENEActivQC/*csv'
             phone:
                 - data_dir: all_phone
-                  pattern: 'processed/accel/*csv'''
+                  pattern: 'processed/accel/*csv'
+              '''
 
             config_example += line_to_add
 
@@ -229,7 +239,8 @@ redcap:
             mri_eye:
                    - vendor: SR Research
                      product: EyeLink 1000
-                     pattern: '*.mov'''
+                     pattern: '*.mov'
+             '''
 
             config_example += line_to_add
 
@@ -257,7 +268,8 @@ def create_example_meta_file_advanced(metadata: str,
                              'redcap': 'REDCap',
                              'box': 'Box',
                              'mindlamp': 'Mindlamp',
-                             'mediaflux': 'Mediaflux'}
+                             'mediaflux': 'Mediaflux',
+                             'daris': 'Daris'}
 
     df = pd.DataFrame({
         'Active': [1],

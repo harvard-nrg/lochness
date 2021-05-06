@@ -19,7 +19,6 @@ def load_encrypted_keyring(enc_keyring_loc: str) -> dict:
     return keyring_dict
 
 
-
 def passphrase(Lochness, study):
     '''get passphrase for study from keyring'''
 
@@ -46,6 +45,7 @@ def box_api_token(Lochness, key):
     return (Lochness['keyring'][key]['CLIENT_ID'],
             Lochness['keyring'][key]['CLIENT_SECRET'],
             Lochness['keyring'][key]['API_TOKEN'])
+
 
 def mediaflux_api_token(Lochness, key):
     """

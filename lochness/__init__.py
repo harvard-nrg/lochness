@@ -148,8 +148,8 @@ def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
         protected = os.path.join(protected_folder, phoenix_study, phoenix_id)
         subject = Subject(active, phoenix_study, phoenix_id, consent, beiwe,
                           icognition, saliva, xnat, redcap, dropbox,
-                          box, mediaflux, mindlamp, daris
-                          general, protected)
+                          box, mediaflux, mindlamp, daris,
+                          general, protected, metadata_file)
         logger.debug('subject metadata blob:\n{0}'.format(json.dumps(subject._asdict(), indent=2)))
         yield subject
 
