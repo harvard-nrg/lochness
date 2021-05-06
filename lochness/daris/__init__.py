@@ -55,7 +55,7 @@ def sync(Lochness, subject, dry=False):
                                subject.protected_folder,
                                processed=False)
             dst_zipfile = os.path.join(dirname, 'tmp.zip')
-            timestamp_loc = os.path.join(dirname, '.latest_pull.txt')
+            timestamp_loc = os.path.join(dirname, '.latest_pull_timestamp')
 
             # load the time of the lastest data pull from daris
             # estimated from the mtime of the zip file downloaded
