@@ -21,8 +21,8 @@ def daris_download(daris_uid: str, latest_pull_mtime: float,
     '''Download data from DaRIS using curl'''
 
     # filters for curl
-    # f"xpath(mf-dicom-patient/id)='{daris_uid}'",
     curl_filters = [
+        f"xpath(mf-dicom-patient/id)='{daris_uid}'",
         "xpath(mf-dicom-series/modality)='MR'",
         f"mtime>='{latest_pull_mtime}'"
         ]
