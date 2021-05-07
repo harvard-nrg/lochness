@@ -20,6 +20,35 @@ import tempfile as tf
 logger = logging.getLogger(__name__)
 
 
+def get_field_names_from_redcap(api_url: str,
+                                api_key: str,
+                                study_name: str) -> list:
+    '''Return all field names from redcap database'''
+
+    record_query = {
+        'token': api_key,
+        'content': 'exportFieldNames',
+        'format': 'json',
+    }
+
+    # pull field names from REDCap for the study
+    content = post_to_redcap(api_url,
+                             record_query,
+                             f'initializing data {study_name}')
+
+    # load pulled information as list of dictionary : data
+    with tf.NamedTemporaryFile(suffix='tmp.json') as tmpfilename:
+        lochness.atomic_write(tmpfilename.name, content)
+        with open(tmpfilename.name, 'r') as f:
+            data = json.load(f)
+
+    field_names = []
+    for item in data:
+        field_names.append(item['original_field_name'])
+
+    return field_names
+
+
 def initialize_metadata(Lochness: 'Lochness object',
                         study_name: str,
                         redcap_id_colname: str,
@@ -38,16 +67,37 @@ def initialize_metadata(Lochness: 'Lochness object',
     api_url = study_redcap['URL'] + '/api/'
     api_key = study_redcap['API_TOKEN'][study_name]
 
+    source_source_name_dict = {
+        'beiwe': 'Beiwe', 'xnat': 'XNAT', 'dropbox': 'Drpbox',
+        'box': 'Box', 'mediaflux': 'Mediaflux',
+        'mindlamp': 'Mindlamp', 'daris': 'Daris', 'rpms': 'RPMS'}
+
     record_query = {
         'token': api_key,
         'content': 'record',
         'format': 'json',
+        'fields[0]': redcap_id_colname,
     }
 
+    # # only pull source_names
+    field_num = 2
+    for source, source_name in source_source_name_dict.items():
+        record_query[f"fields[{field_num}]"] = f"source_id"
+
     # pull all records from REDCap for the study
-    content = post_to_redcap(api_url,
-                             record_query,
-                             f'initializing data {study_name}')
+    try:
+        content = post_to_redcap(api_url,
+                                 record_query,
+                                 f'initializing data {study_name}')
+    except:  # field names are not set yet
+        record_query = {
+            'token': api_key,
+            'content': 'record',
+            'format': 'json',
+        }
+        content = post_to_redcap(api_url,
+                                 record_query,
+                                 f'initializing data {study_name}')
 
     # load pulled information as list of dictionary : data
     with tf.NamedTemporaryFile(suffix='tmp.json') as tmpfilename:
@@ -65,11 +115,6 @@ def initialize_metadata(Lochness: 'Lochness object',
             subject_dict['Consent'] = item[redcap_consent_colname]
         except:
             subject_dict['Consent'] = '1988-09-16'
-
-        source_source_name_dict = {
-                'beiwe': 'Beiwe', 'xnat': 'XNAT', 'dropbox': 'Drpbox',
-                'box': 'Box', 'mediaflux': 'Mediaflux',
-                'mindlamp': 'Mindlamp', 'daris': 'Daris', 'rpms': 'RPMS'}
 
         for source, source_name in source_source_name_dict.items():
             try:
@@ -127,7 +172,6 @@ def check_if_modified(subject_id: str,
         return True
     else:
         return False
-
 
 
 def get_data_entry_trigger_df(Lochness: 'Lochness') -> pd.DataFrame:
@@ -194,7 +238,6 @@ def sync(Lochness, subject, dry=False):
             fname = f'{redcap_subject}.{_redcap_project}.json'
             dst = Path(dst_folder) / fname
 
-
             # check if the data has been updated by checking the redcap data
             # entry trigger db
             if dst.is_file():
@@ -250,7 +293,7 @@ def sync(Lochness, subject, dry=False):
                     process_and_copy_json(Lochness, subject, dst,
                                           redcap_subject,
                                           _redcap_project)
-                    update_study_metadata(subject, json.loads(content))
+                    # update_study_metadata(subject, json.loads(content))
                     
                 else:
                     # responses are not stored atomically in redcap
@@ -266,7 +309,7 @@ def sync(Lochness, subject, dry=False):
                         process_and_copy_json(Lochness, subject, dst,
                                               redcap_subject,
                                               _redcap_project)
-                        update_study_metadata(subject, json.loads(content))
+                        # update_study_metadata(subject, json.loads(content))
 
 
 class REDCapError(Exception):
@@ -378,7 +421,7 @@ def update_study_metadata(subject, content: List[dict]) -> None:
     '''update metadata csv based on the redcap content: source_id'''
 
 
-    sources = ['XNAT', 'Box', 'Mindlamp', 'Mediaflux', 'Daris', 'RPMS']
+    sources = ['XNAT', 'Box', 'Mindlamp', 'Mediaflux', 'Daris']
 
     orig_metadata_df = pd.read_csv(subject.metadata_csv)
 
@@ -396,7 +439,8 @@ def update_study_metadata(subject, content: List[dict]) -> None:
                 updated = True
 
             # subject already has the information
-            elif subject_series.iloc[0][source] != f'{source.lower()}.{source_id}':
+            elif subject_series.iloc[0][source] != \
+                    f'{source.lower()}.{source_id}':
                 subject_series.iloc[0][source] = \
                         f'{source.lower()}.{source_id}'
                 updated = True
