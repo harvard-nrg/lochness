@@ -1,3 +1,4 @@
+import lochness
 import pandas as pd
 from pathlib import Path
 import json
@@ -162,3 +163,72 @@ def process_pii_string(pii_string: str, process: str, subject_id: str) -> str:
 
     else:
         return pii_string
+
+
+def load_raw_return_proc_csv(csv_loc: str,
+                             pii_str_proc_dict: dict,
+                             subject_id: str) -> List[dict]:
+    '''CSV version of the load raw CSV and save processed CSV'''
+    # load csv in PROTECTED/survey/raw
+    raw_df_subject = pd.read_csv(csv_loc)
+    with open(csv_loc, 'r') as f:
+        raw_json = json.load(f)  # list of dicts
+
+    processed_json = []
+    for instrument in raw_json:
+        processed_instrument = {}
+        for field_name, field_value in instrument.items():
+            for pii_label_string, process in pii_str_proc_dict.items():
+                if re.search(pii_label_string, field_name):
+                    try:
+                        new_value = process_pii_string(field_value,
+                                                       process,
+                                                       subject_id)
+                    except:
+                        new_value = 'check_process_pii_string'
+                    processed_instrument[field_name] = new_value
+                    break
+                else:
+                    processed_instrument[field_name] = field_value
+        processed_json.append(processed_instrument)
+
+    processed_content = json.dumps(processed_json).encode()
+
+    return processed_content
+
+
+def process_and_copy_db(Lochness, subject, raw_input, proc_dst):
+    '''Process PII and copy the json to GENERAL/survey/processed'''
+    pii_table_loc = get_PII_table_loc(Lochness, subject.study)
+
+    # don't run this if the pii_table in the config.yml is missing
+    if pii_table_loc != False and pii_table_loc != '':
+        # process PII here
+        pii_str_proc_dict = read_pii_mapping_to_dict(pii_table_loc)
+
+        if raw_input.endswith('json'):
+            processed_content = load_raw_return_proc_json(
+                    raw_input, pii_str_proc_dict, subject.id)
+
+            # double check the pii string processing dict once more
+            # if it's empty, don't copy it over to general
+            if pii_str_proc_dict != {}:
+                lochness.atomic_write(proc_dst, processed_content)
+
+        elif raw_input.endswith('csv'):
+            processed_df = load_raw_return_proc_csv(
+                    raw_input, pii_str_proc_dict, subject.id)
+
+            # double check the pii string processing dict once more
+            # if it's empty, don't copy it over to general
+            if pii_str_proc_dict != {}:
+                processed_df.to_csv(proc_dst, index=False)
+
+
+
+def get_PII_table_loc(Lochness, study):
+    ''' get study specific deidentify flag with a safe default '''
+    value = Lochness.get('pii_table', False)
+    return value
+
+
