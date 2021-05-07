@@ -185,13 +185,13 @@ stdout: {args.outdir}/lochness.stdout
 poll_interval: {args.poll_interval}
 ssh_user: {args.ssh_user}
 ssh_host: {args.ssh_host}
-sender: {args.email}'''
+sender: {args.email}
+pii_table: {args.pii_csv}'''
 
     redcap_lines = f'''
 redcap:
     phoenix_project:
         deidentify: True
-    pii_table: {args.pii_csv}
     data_entry_trigger_csv: {args.det_csv}
     update_metadata: True'''
 
