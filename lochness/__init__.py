@@ -10,6 +10,8 @@ import logging
 import lochness
 import itertools
 import lochness.email
+import lochness.redcap as REDCap
+import lochness.rpms as RPMS
 import datetime as dt
 import tempfile as tf
 import traceback as tb
@@ -34,10 +36,33 @@ Subject = col.namedtuple('Subject', [
     'mediaflux',
     'mindlamp',
     'daris',
+    'rpms',
     'general_folder',
     'protected_folder',
     'metadata_csv'
 ])
+
+
+def initialize_metadata(Lochness, args) -> None:
+    '''Create (overwrite) metadata.csv using either REDCap or RPMS database'''
+    for study_name in args.studies:
+        # if 'redcap' or 'rpms' is in the sources, create (overwrite)
+        if 'redcap' in args.sources:
+            id_fieldname = 'record_id1'
+            consent_fieldname = 'Consent'
+            REDCap.initialize_metadata(
+                    Lochness, study_name, id_fieldname, consent_fieldname)
+
+        elif 'rpms' in args.sources:
+            # metadata.csv
+            id_fieldname = 'record_id1'
+            consent_fieldname = 'Consent'
+            RPMS.initialize_metadata(
+                    Lochness, study_name, id_fieldname, consent_fieldname)
+
+        else:
+            pass
+
 
 def read_phoenix_metadata(Lochness, studies=None):
     '''
@@ -52,7 +77,9 @@ def read_phoenix_metadata(Lochness, studies=None):
         studies = lochness.listdir(Lochness, general_folder)
     # iterate over studies
     for study_name in studies:
-        f = os.path.join(general_folder, study_name, '{0}_metadata.csv'.format(study_name))
+        f = os.path.join(general_folder,
+                         study_name,
+                         f'{study_name}_metadata.csv')
         if not os.path.exists(f):
             logger.error('metadata file does not exist {0}'.format(f))
             print('no meta')
@@ -67,6 +94,7 @@ def read_phoenix_metadata(Lochness, studies=None):
             logger.error(e)
             # lochness.email.metadata_error(Lochness, e.message)
             continue
+
 
 def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
     meta_basename = os.path.basename(metadata_file)
@@ -141,6 +169,10 @@ def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
         if 'Daris' in row:
             daris = _parse_daris(row['Daris'], phoenix_id)
 
+        rpms = dict()
+        if 'RPMS' in row:
+            rpms = _parse_rpms(row['RPMS'], phoenix_id)
+
         # sanity check on very critical bits of information
         if not phoenix_id or not phoenix_study:
             raise StudyMetadataError('bad row in metadata file {0}'.format(meta_basename))
@@ -148,7 +180,7 @@ def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
         protected = os.path.join(protected_folder, phoenix_study, phoenix_id)
         subject = Subject(active, phoenix_study, phoenix_id, consent, beiwe,
                           icognition, saliva, xnat, redcap, dropbox,
-                          box, mediaflux, mindlamp, daris,
+                          box, mediaflux, mindlamp, daris, rpms,
                           general, protected, metadata_file)
         logger.debug('subject metadata blob:\n{0}'.format(json.dumps(subject._asdict(), indent=2)))
         yield subject
@@ -233,6 +265,12 @@ def _parse_mindlamp(value, default_id=None):
 def _parse_daris(value, default_id=None):
     '''helper function to parse a daris metadata value'''
     default = 'daris.*:{ID}'.format(ID=default_id)
+    return _simple_parser(value, default=default)
+
+
+def _parse_rpms(value, default_id=None):
+    '''helper function to parse a rpms metadata value'''
+    default = 'rpms.*:{ID}'.format(ID=default_id)
     return _simple_parser(value, default=default)
 
 
