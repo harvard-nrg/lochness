@@ -11,10 +11,9 @@ import lochness.tree as tree
 from pathlib import Path
 import pandas as pd
 import datetime
-from lochness.redcap.process_piis import load_raw_return_proc_json
-from lochness.redcap.process_piis import read_pii_mapping_to_dict
 from typing import List
 import tempfile as tf
+from lochness.redcap.process_piis import process_and_copy_db
 
 
 logger = logging.getLogger(__name__)
@@ -189,31 +188,6 @@ def get_data_entry_trigger_df(Lochness: 'Lochness') -> pd.DataFrame:
     return db_df
 
 
-def process_and_copy_json(Lochness, subject, dst,
-                          redcap_subject, _redcap_project):
-    '''Process PII and copy the json to GENERAL/survey/processed'''
-    pii_table_loc = get_PII_table_loc(Lochness, subject.study)
-
-    # don't run this if the pii_table in the config.yml is missing
-    if pii_table_loc != False and pii_table_loc != '':
-        # process PII here
-        pii_str_proc_dict = read_pii_mapping_to_dict(pii_table_loc)
-        processed_content = load_raw_return_proc_json(
-                dst, pii_str_proc_dict, subject.id)
-
-        # save processed content to general processed
-        proc_folder = tree.get('surveys',
-                               subject.general_folder,
-                               processed=True)
-        fname = f'{redcap_subject}.{_redcap_project}.json'
-        proc_dst = Path(proc_folder) / fname
-
-        # double check the pii string processing dict once more
-        # if it's empty, don't copy it over to general
-        if pii_str_proc_dict != {}:
-            lochness.atomic_write(proc_dst, processed_content)
-
-
 @net.retry(max_attempts=5)
 def sync(Lochness, subject, dry=False):
 
@@ -237,6 +211,12 @@ def sync(Lochness, subject, dry=False):
                                   processed=False)
             fname = f'{redcap_subject}.{_redcap_project}.json'
             dst = Path(dst_folder) / fname
+
+            # PII processed content to general processed
+            proc_folder = tree.get('surveys',
+                                   subject.general_folder,
+                                   processed=True)
+            proc_dst = Path(proc_folder) / fname
 
             # check if the data has been updated by checking the redcap data
             # entry trigger db
@@ -290,9 +270,7 @@ def sync(Lochness, subject, dry=False):
                 if not os.path.exists(dst):
                     logger.debug(f'saving {dst}')
                     lochness.atomic_write(dst, content)
-                    process_and_copy_json(Lochness, subject, dst,
-                                          redcap_subject,
-                                          _redcap_project)
+                    process_and_copy_db(Lochness, subject, dst, proc_dst)
                     # update_study_metadata(subject, json.loads(content))
                     
                 else:
@@ -306,9 +284,7 @@ def sync(Lochness, subject, dry=False):
                         lochness.backup(dst)
                         logger.debug(f'saving {dst}')
                         lochness.atomic_write(dst, content)
-                        process_and_copy_json(Lochness, subject, dst,
-                                              redcap_subject,
-                                              _redcap_project)
+                        process_and_copy_db(Lochness, subject, dst, proc_dst)
                         # update_study_metadata(subject, json.loads(content))
 
 
@@ -399,13 +375,6 @@ def deidentify_flag(Lochness, study):
     # if this is anything but a boolean, just return False
     if not isinstance(value, bool):
         return False
-    return value
-
-
-def get_PII_table_loc(Lochness, study):
-    ''' get study specific deidentify flag with a safe default '''
-    value = Lochness.get('redcap', dict()) \
-                    .get('pii_table', False)
     return value
 
 
