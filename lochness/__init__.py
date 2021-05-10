@@ -33,6 +33,7 @@ Subject = col.namedtuple('Subject', [
     'box',
     'mediaflux',
     'mindlamp',
+    'daris',
     'general_folder',
     'protected_folder',
     'metadata_csv'
@@ -95,36 +96,50 @@ def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
 
         # these columns are optional
         phoenix_study = row.get('Study', study).strip()
+
         saliva = dict()
         if 'Saliva' in row:
             saliva = _parse_saliva(row['Saliva'], phoenix_id)
+
         beiwe = dict()
         if 'Beiwe' in row:
             beiwe = _parse_beiwe(row['Beiwe'], phoenix_id)
+
         redcap = dict()
         if 'REDCap' in row:
             redcap = _parse_redcap(row['REDCap'], phoenix_id)
+
         mindlamp = dict()
         if 'Mindlamp' in row:
             mindlamp = _parse_mindlamp(row['Mindlamp'], phoenix_id)
+
         xnat = dict()
         if 'XNAT' in row:
             xnat = _parse_xnat(row['XNAT'], phoenix_id)
+
         icognition = dict()
         if 'iCognition' in row:
             icognition = _parse_icognition(row['iCognition'], phoenix_id)
+
         onlinescoring = dict()
         if 'OnlineScoring' in row:
             onlinescoring = _parse_onlinescoring(row['OnlineScoring'], phoenix_id)
+
         dropbox = dict()
         if 'Dropbox' in row:
             dropbox = _parse_dropbox(row['Dropbox'], phoenix_id)
+
         box = dict()
         if 'Box' in row:
             box = _parse_box(row['Box'], phoenix_id)
+
         mediaflux = dict()
         if 'Mediaflux' in row:
             mediaflux = _parse_mediaflux(row['Mediaflux'], phoenix_id)
+
+        daris = dict()
+        if 'Daris' in row:
+            daris = _parse_daris(row['Daris'], phoenix_id)
 
         # sanity check on very critical bits of information
         if not phoenix_id or not phoenix_study:
@@ -133,8 +148,8 @@ def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
         protected = os.path.join(protected_folder, phoenix_study, phoenix_id)
         subject = Subject(active, phoenix_study, phoenix_id, consent, beiwe,
                           icognition, saliva, xnat, redcap, dropbox,
-                          box, mediaflux, mindlamp,
-                          general, protected)
+                          box, mediaflux, mindlamp, daris,
+                          general, protected, metadata_file)
         logger.debug('subject metadata blob:\n{0}'.format(json.dumps(subject._asdict(), indent=2)))
         yield subject
 
@@ -143,21 +158,25 @@ def _parse_saliva(value, default_id=None):
     '''helper function to parse a saliva value'''
     return [x.strip() for x in value.split(';') if x]
 
+
 def _parse_dropbox(value, default_id=None):
     '''helper function to parse a dropbox value'''
     default = 'dropbox.cbsn:{ID}'.format(ID=default_id)
     return _simple_parser(value, default=default)
+
 
 def _parse_box(value, default_id=None):
     '''helper function to parse a box value'''
     default = 'box.*:{ID}'.format(ID=default_id)
     return _simple_parser(value, default=default)
 
+
 def _parse_mediaflux(value, default_id=None):
     '''helper function to parse a mediaflux value'''
     default = 'mediaflux.*:{ID}'.format(ID=default_id)
     return _simple_parser(value, default=default)
  
+
 def _parse_xnat(value, default_id=None):
     '''helper function to parse an xnat value'''
     default = 'cbscentral:Buckner_P:{ID}'.format(ID=default_id)
@@ -180,6 +199,7 @@ def _parse_xnat(value, default_id=None):
         result[deployment].append((project, subject))
     return result
 
+
 def _parse_beiwe(value, default_id=None):
     '''helper function to parse a beiwe value'''
     result = col.defaultdict(list)
@@ -197,25 +217,36 @@ def _parse_beiwe(value, default_id=None):
         result[deployment].append((study, user))
     return result
     
+
 def _parse_redcap(value, default_id=None):
     '''helper function to parse a redcap metadata value'''
     default = 'redcap.*:{ID}'.format(ID=default_id)
     return _simple_parser(value, default=default)
+
 
 def _parse_mindlamp(value, default_id=None):
     '''helper function to parse a mindlamp metadata value'''
     default = 'mindlamp.*:{ID}'.format(ID=default_id)
     return _simple_parser(value, default=default)
 
+
+def _parse_daris(value, default_id=None):
+    '''helper function to parse a daris metadata value'''
+    default = 'daris.*:{ID}'.format(ID=default_id)
+    return _simple_parser(value, default=default)
+
+
 def _parse_icognition(value, default_id=None):
     '''helper function to parse an icognition metadata value'''
     default = 'mytimedtest:{ID}'.format(ID=default_id)
     return _simple_parser(value, default)
 
+
 def _parse_onlinescoring(value, default_id=None):
     '''helper function to parse an onlinescoring metadata value'''
     default = 'onlinescoring:{ID}'.format(ID=default_id)
     return _simple_parser(value, default)
+
 
 def _simple_parser(value, default=None):
     '''simple metadata value parser'''
@@ -238,11 +269,14 @@ def _simple_parser(value, default=None):
         result[deployment].append(id)
     return result
 
+
 class StudyMetadataNotFoundError(Exception):
     pass
 
+
 class StudyMetadataError(Exception):
     pass
+
 
 def openfile(Lochness, f, mode):
     '''open a file locally or fallback to sftp'''
@@ -250,11 +284,13 @@ def openfile(Lochness, f, mode):
         return open(f, mode)
     return ssh.open(Lochness, f, mode)
 
+
 def listdir(Lochness, d):
     '''list a directory locally or fallback to sftp'''
     if os.path.exists(d):
         return os.listdir(d)
     return ssh.listdir(Lochness, d)
+
 
 def attempt(f, Lochness, *args, **kwargs):
     '''attempt a function call'''
@@ -268,10 +304,13 @@ def attempt(f, Lochness, *args, **kwargs):
         logger.warn(e)
         logger.debug(tb.format_exc().strip())
         attempt.warnings.append(str(e))
+
+
 attempt.warnings = []
 
 class AttemptsError(Exception):
     pass
+
 
 def configure_logging(logger, args):
     '''configure all the loggers for all things'''
@@ -293,20 +332,25 @@ def configure_logging(logger, args):
         logargs['filename'] = os.path.expanduser(args.log_file)
     logging.basicConfig(**logargs)
 
+
 class KeyringError(Exception):
     pass
 
+
 class SoftError(Exception):
     pass
+
 
 def crc32(content, encoding='utf-8'):
     if isinstance(content, six.string_types):
         content = content.encode(encoding)
     return _crc32bin(io.BytesIO(content))
 
+
 def crc32file(f):
     with open(f, 'rb') as fo:
         return _crc32bin(fo)
+
 
 def _crc32bin(content, buffersize=4096):
     buffr = content.read(buffersize)
@@ -315,6 +359,7 @@ def _crc32bin(content, buffersize=4096):
         crc = zlib.crc32(buffr, crc)
         buffr = content.read(buffersize)
     return format(crc & 0xFFFFFFFF, '08x')
+
 
 def backup(f):
     '''
@@ -333,6 +378,7 @@ def backup(f):
     conflict_dst = os.path.join(conflict_dirname, conflict_basename)
     logger.debug('renaming {0} to {1}'.format(f, conflict_dst))
     os.rename(f, conflict_dst)
+
 
 def notify(Lochness, s, study=None):
     '''
@@ -361,8 +407,10 @@ def notify(Lochness, s, study=None):
             recipients.add(address)
     lochness.email.send(recipients, Lochness['sender'], 'lochness notification', s)
 
+
 class NotificationError(Exception):
     pass
+
 
 def makedirs(path, umask):
     '''
@@ -376,6 +424,7 @@ def makedirs(path, umask):
     umask = os.umask(umask)
     os.makedirs(path)
     os.umask(umask)
+
 
 def lchop(s, beginning):
     '''
@@ -392,6 +441,7 @@ def lchop(s, beginning):
         return s[len(beginning):]
     return s
 
+
 def iso8601(tz="UTC"):
     '''
     Get ISO 8601 timestamp as a string.
@@ -402,6 +452,7 @@ def iso8601(tz="UTC"):
     :rtype: str
     '''
     return dt.datetime.now(pytz.timezone(tz)).isoformat()
+
 
 def atomic_write(filename, content, overwrite=True, permissions=0o0644, encoding='utf-8'):
     '''
@@ -436,6 +487,7 @@ def atomic_write(filename, content, overwrite=True, permissions=0o0644, encoding
         os.fsync(tmp.fileno())
     os.chmod(tmp.name, permissions)
     os.rename(tmp.name, filename)
+
 
 def WriteError(Exception):
     pass
