@@ -9,6 +9,9 @@ import tempfile as tf
 import collections as col
 import lochness.net as net
 import lochness.tree as tree
+from datetime import datetime
+import json
+from typing import List
 
 yaml.SafeDumper.add_representer(
     col.OrderedDict, yaml.representer.SafeRepresenter.represent_dict)
@@ -20,11 +23,14 @@ def daris_download(daris_uid: str, latest_pull_mtime: float,
                    url: str, dst_zipfile: str) -> None:
     '''Download data from DaRIS using curl'''
 
+    latest_pull_mtime_str = datetime.fromtimestamp(
+            latest_pull_mtime).strftime('%d-%B-%Y %H:%M:%S')
     # filters for curl
     # f"xpath(mf-dicom-patient/id)='{daris_uid}'",
     curl_filters = [
+        f"cid contained by (xpath(mf-dicom-patient/id)='{daris_uid}')",
         "xpath(mf-dicom-series/modality)='MR'",
-        f"mtime>='{latest_pull_mtime}'"
+        f"mtime>='{latest_pull_mtime_str}'"
         ]
 
     curl_filter = ' and '.join(curl_filters)
@@ -38,6 +44,29 @@ def daris_download(daris_uid: str, latest_pull_mtime: float,
                    f'"{url}/daris/dicom.mfjp"'
 
     os.popen(curl_command).read()
+
+
+def collect_all_daris_metadata(daris_pull_dir: Path,
+                               metadata_dst: Path) -> None:
+    '''Collect all daris metadata for the subject and saves as a json file
+
+    Key arguments:
+        daris_pull_dir: root of unzipped files
+        metadata_dst: where to save the metadata
+
+    '''
+    json_paths = Path(daris_pull_dir).glob('*/*json')
+
+    metadata = {}
+    for json_path in json_paths:
+        json_root_name = json_path.parent.name
+        with open(json_path, 'r') as json_f:
+            data = json.load(json_f)
+        metadata[json_root_name] = data
+
+    with open(metadata_dst, 'w') as metadata_f:
+        json.dump(metadata, metadata_f)
+
 
 
 @net.retry(max_attempts=5)
@@ -54,6 +83,11 @@ def sync(Lochness, subject, dry=False):
             dirname = tree.get('mri',
                                subject.protected_folder,
                                processed=False)
+            metadata_dst_dir = tree.get('mri',
+                                        subject.protected_folder,
+                                        processed=True)
+            metadata_dst = Path(metadata_dst_dir) / f'{daris_uid}_metadata.csv'
+
             dst_zipfile = os.path.join(dirname, 'tmp.zip')
             timestamp_loc = os.path.join(dirname, '.latest_pull_timestamp')
 
@@ -89,6 +123,9 @@ def sync(Lochness, subject, dry=False):
                 if any([x > 1 for x in nfiles_in_dirs]):
                     logger.info(f'New MRI file downloaded for {daris_uid}')
                     save_latest_pull_timestamp(dst_zipfile, timestamp_loc)
+
+                    # write metadata in the processed folder
+                    collect_all_daris_metadata(tmpdir, metadata_dst)
 
                 shutil.copytree(tmpdir, dirname, dirs_exist_ok=True)
                 os.remove(dst_zipfile)
