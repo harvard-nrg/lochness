@@ -33,9 +33,19 @@ def test_create_lochness_template(args):
 
 
 
-
 def test_create_lochness_template_multiple_study(args):
     args.studies = ['StudyA', 'StudyB']
     create_lochness_template(args)
     pass
     # create_lochness_template(args)
+
+
+def test_create_lochness_template_for_documentation(args):
+    args.outdir = 'lochness_root'
+    args.studies = ['BWH', 'McLean']
+    args.sources = ['redcap', 'xnat', 'box', 'mindlamp']
+    args.poll_interval = 43200
+    args.det_csv = '/data/data_entry_trigger_db.csv'
+    args.pii_csv = '/data/personally_identifiable_process_mappings.csv'
+
+    create_lochness_template(args)

@@ -94,7 +94,7 @@ Running one of the commands above will create the structure below ::
    automatically update the metadata files.
 
    Currently, lochness initializes the metadata using the following field names 
-   in REDCap and RPMS. ::
+   in REDCap and RPMS.
 
 - `record_id1`: the record ID field name
 - `Consent`: the field name of the consent date
@@ -128,14 +128,14 @@ You can still extract keyring structure without sensitive information by running
 
 
 5. Edit Personally identifiable information mapping table. Please seee below
-   "Personally identifiable information removal from REDCap and RPMS data"::
+   "Personally identifiable information removal from REDCap and RPMS data" ::
 
     `/data/lochness_root/pii_convert.csv`
 
 
-5. Run the `sync.py` or use the example command in `2_synch_command.sh`::
+5. Run the `sync.py` or use the example command in `2_synch_command.sh` ::
 
-   bash 2_sync_command.sh
+   `bash 2_sync_command.sh`
 
 
 REDCap Data Entry Trigger capture
