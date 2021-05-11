@@ -113,14 +113,14 @@ Running one of the commands above will create the structure below ::
    bash 1_encrypt_command.sh
 
 
-This encryption step creates a copy of encrypted keyrings to
-`/data/lochness_root/.lochness.enc`. To protect the sensitive keyring
-information in json, remove the `lochness.json` after running the encryption.
+   This encryption step creates a copy of encrypted keyrings to
+   `/data/lochness_root/.lochness.enc`. To protect the sensitive keyring
+   information in json, remove the `lochness.json` after running the encryption.
 
 
-You can still extract keyring structure without sensitive information by running ::
+   You can still extract keyring structure without sensitive information by running ::
 
-   lochness_check_config.py -ke /data/lochness_root/.lochness.enc
+      lochness_check_config.py -ke /data/lochness_root/.lochness.enc
    
 
 4. Set up REDCap Data Entry Trigger if using REDCap. Please see below 
