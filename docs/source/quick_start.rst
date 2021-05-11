@@ -96,16 +96,16 @@ Running one of the commands above will create the structure below ::
    Currently, lochness initializes the metadata using the following field names 
    in REDCap and RPMS. ::
 
-   - `record_id1`: the record ID field name
-   - `Consent`: the field name of the consent date
-   - `beiwe_id`: the field name of the BEIWE ID.
-   - `xnat_id`: the field name of the XNAT ID.
-   - `dropbox_id`: the field name of the Dropbox ID.
-   - `box_id`: the field name of the Box ID.
-   - `mediaflux_id`: the field name of the Mediaflux ID.
-   - `mindlamp_id`: the field name of the Mindlamp ID.
-   - `daris_id`: the field name of the DaRIS ID.
-   - `rpms_id`: the field name of the RPMS ID.
+- `record_id1`: the record ID field name
+- `Consent`: the field name of the consent date
+- `beiwe_id`: the field name of the BEIWE ID.
+- `xnat_id`: the field name of the XNAT ID.
+- `dropbox_id`: the field name of the Dropbox ID.
+- `box_id`: the field name of the Box ID.
+- `mediaflux_id`: the field name of the Mediaflux ID.
+- `mindlamp_id`: the field name of the Mindlamp ID.
+- `daris_id`: the field name of the DaRIS ID.
+- `rpms_id`: the field name of the RPMS ID.
 
 
 3. Encrypt the `lochness.json` by running ::
