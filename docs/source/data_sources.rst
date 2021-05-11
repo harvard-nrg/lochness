@@ -36,6 +36,7 @@ should be the first few characters from the 24-character Study ID, and
    characters of the Study ID either. You only need enough characters 
    (e.g., the first 5 or so) to make it uniquely identifiable.
 
+
 backfilling
 ~~~~~~~~~~~
 There is always the chance that you're deploying Lochness well after you've 
@@ -138,6 +139,46 @@ file indicating that data from REDCap should be *de-identified* before being
 saved to the filesystem. Please refer to the 
 `redcap configuration file documentation <configuration_file.html#redcap>`_  
 for more details.
+
+
+
+RPMS
+--------
+To have Lochness download data automatically from RPMS, you need a few
+things.
+
+Get RPMS_PATH
+~~~~~~~~~~~~~
+Since RPMS exports data into a directory daily, you will need to provide this
+RPMS data export path.
+
+
+Create keyring section
+~~~~~~~~~~~~~~~~~~~~~~
+Next, you need to create a new ``keyring`` section for your RPMS instance. 
+This section must be named ``rpms.xxxxx`` where ``xxxxx`` can be any 
+string that is both valid JSON *and* match `rpms` column values in the
+metadata.csv. 
+Within your new section, you must add your RPMS RPMS_PATH ::
+
+    {
+      "rpms.xxxxx": {
+        "RPMS_PATH": "..."
+        }
+    }
+
+metadata file entry
+~~~~~~~~~~~~~~~~~~~
+A valid metadata file entry should look as follows ::
+
+    Active,...,RPMS,...
+    1,...,rpms.xxxxx:SUBJECT,...
+
+Where ``rpms.xxxxx`` would be a valid ``keyring`` section and ``SUBJECT`` 
+would be a valid Subject raw in RPMS measures. This folder name does not 
+necessarily have to match the PHOENIX subject.
+
+
 
 XNAT
 ----
@@ -278,3 +319,85 @@ Specifically, you can take a look at `mediaflux#keyring-file <./mediaflux.md#key
 `mediaflux#metadata-file <./mediaflux.md#metadata-file>`_. Learn about login credentials necessary for the keyring file
 from `https://wiki-rcs.unimelb.edu.au/display/RCS/Configuration+File <https://wiki-rcs.unimelb.edu.au/display/RCS/Configuration+File>`_.
 You may authenticate with Mediaflux using your credentials or a secure token as mentioned in the above Wiki.
+
+
+Mindlamp
+--------
+To have Lochness download data automatically from Mindlamp, you need a few
+things.
+
+Get URL, access key and secret key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+First, you need to get URL, ACCESS_KEY and SECRET_KEY from the mindlamp.
+
+
+Create keyring section
+~~~~~~~~~~~~~~~~~~~~~~
+Next, you need to create a new ``keyring`` section for your Mindlamp instance. 
+This section must be named ``mindlamp.xxxxx`` where ``xxxxx`` can be any 
+string that is both valid JSON *and* match `mindlamp` column values in the
+metadata.csv. 
+Within your new section, you must add your Mindlamp URL, ACCESS_KEY and
+SECRET_KEY  ::
+
+    {
+      "mindlamp.xxxxx": {
+        "URL": "...",
+        "ACCESS_KEY": "...",
+        "SECRET_KEY": "..."
+        }
+    }
+
+metadata file entry
+~~~~~~~~~~~~~~~~~~~
+A valid metadata file entry should look as follows ::
+
+    Active,...,Mindlamp,...
+    1,...,mindlamp.xxxxx:SUBJECT,...
+
+Where ``mindlamp.xxxxx`` would be a valid ``keyring`` section and ``SUBJECT`` 
+would be a valid Subject folder name in Mindlamp. This folder name does not 
+necessarily have to match the PHOENIX subject.
+
+
+
+DaRIS
+--------
+To have Lochness download data automatically from Daris, you need a few
+things.
+
+Get URL, TOKEN and PROJECT_CID
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+First, you need to get URL, TOKEN and PROJECT_CID from the DaRIS.
+
+
+Create keyring section
+~~~~~~~~~~~~~~~~~~~~~~
+Next, you need to create a new ``keyring`` section for your DaRIS instance. 
+This section must be named ``daris.xxxxx`` where ``xxxxx`` can be any 
+string that is both valid JSON *and* match `daris` column values in the
+metadata.csv. 
+Within your new section, you must add your DaRIS URL, TOKEN and
+PROJECT_CID  ::
+
+    {
+      "daris.xxxxx": {
+        "URL": "...",
+        "TOKEN": "...",
+        "PROJECT_CID": "..."
+        }
+    }
+
+metadata file entry
+~~~~~~~~~~~~~~~~~~~
+A valid metadata file entry should look as follows ::
+
+    Active,...,Daris,...
+    1,...,daris.xxxxx:SUBJECT,...
+
+Where ``daris.xxxxx`` would be a valid ``keyring`` section and ``SUBJECT`` 
+would be a valid Subject folder name in Daris. This folder name does not 
+necessarily have to match the PHOENIX subject.
+
+
+
