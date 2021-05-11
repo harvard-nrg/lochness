@@ -11,12 +11,141 @@ import lochness.tree as tree
 from pathlib import Path
 import pandas as pd
 import datetime
-from lochness.redcap.process_piis import load_raw_return_proc_json
-from lochness.redcap.process_piis import read_pii_mapping_to_dict
 from typing import List
+import tempfile as tf
+from lochness.redcap.process_piis import process_and_copy_db
 
 
 logger = logging.getLogger(__name__)
+
+
+def get_field_names_from_redcap(api_url: str,
+                                api_key: str,
+                                study_name: str) -> list:
+    '''Return all field names from redcap database'''
+
+    record_query = {
+        'token': api_key,
+        'content': 'exportFieldNames',
+        'format': 'json',
+    }
+
+    # pull field names from REDCap for the study
+    content = post_to_redcap(api_url,
+                             record_query,
+                             f'initializing data {study_name}')
+
+    # load pulled information as list of dictionary : data
+    with tf.NamedTemporaryFile(suffix='tmp.json') as tmpfilename:
+        lochness.atomic_write(tmpfilename.name, content)
+        with open(tmpfilename.name, 'r') as f:
+            data = json.load(f)
+
+    field_names = []
+    for item in data:
+        field_names.append(item['original_field_name'])
+
+    return field_names
+
+
+def initialize_metadata(Lochness: 'Lochness object',
+                        study_name: str,
+                        redcap_id_colname: str,
+                        redcap_consent_colname: str) -> None:
+    '''Initialize metadata.csv by pulling data from REDCap
+
+    Key arguments:
+        Lochness: Lochness object
+        study_name: Name of the study, str.
+        redcap_id_colname: Name of the ID field name in REDCap, str.
+        redcap_consent_colname: Name of the consent date field name in REDCap,
+                                str.
+
+    '''
+    study_redcap = Lochness['keyring'][f'redcap.{study_name}']
+    api_url = study_redcap['URL'] + '/api/'
+    api_key = study_redcap['API_TOKEN'][study_name]
+
+    source_source_name_dict = {
+        'beiwe': 'Beiwe', 'xnat': 'XNAT', 'dropbox': 'Drpbox',
+        'box': 'Box', 'mediaflux': 'Mediaflux',
+        'mindlamp': 'Mindlamp', 'daris': 'Daris', 'rpms': 'RPMS'}
+
+    record_query = {
+        'token': api_key,
+        'content': 'record',
+        'format': 'json',
+        'fields[0]': redcap_id_colname,
+    }
+
+    # # only pull source_names
+    field_num = 2
+    for source, source_name in source_source_name_dict.items():
+        record_query[f"fields[{field_num}]"] = f"source_id"
+
+    # pull all records from REDCap for the study
+    try:
+        content = post_to_redcap(api_url,
+                                 record_query,
+                                 f'initializing data {study_name}')
+    except:  # field names are not set yet
+        record_query = {
+            'token': api_key,
+            'content': 'record',
+            'format': 'json',
+        }
+        content = post_to_redcap(api_url,
+                                 record_query,
+                                 f'initializing data {study_name}')
+
+    # load pulled information as list of dictionary : data
+    with tf.NamedTemporaryFile(suffix='tmp.json') as tmpfilename:
+        lochness.atomic_write(tmpfilename.name, content)
+        with open(tmpfilename.name, 'r') as f:
+            data = json.load(f)
+
+    df = pd.DataFrame()
+    # for each record in pulled information, extract subject ID and source IDs
+    for item in data:
+        subject_dict = {'Subject ID': item[redcap_id_colname]}
+
+        # Consent date
+        try:
+            subject_dict['Consent'] = item[redcap_consent_colname]
+        except:
+            subject_dict['Consent'] = '1988-09-16'
+
+        for source, source_name in source_source_name_dict.items():
+            try:
+                subject_dict[source_name] = item[f'{source}_id']
+            except:
+                pass
+
+        df_tmp = pd.DataFrame.from_dict(subject_dict, orient='index')
+        df = pd.concat([df, df_tmp.T])
+
+    # Each subject may have more than one arms, which will result in more than
+    # single item for the subject in the redcap pulled `content`
+    # remove empty lables
+    df_final = pd.DataFrame()
+    for _, table in df.groupby(['Subject ID']):
+        pad_filled = table.fillna(
+                method='ffill').fillna(method='bfill').iloc[0]
+        df_final = pd.concat([df_final, pad_filled], axis=1)
+    df_final = df_final.T
+
+    # register all of the lables as active
+    df_final['Active'] = 1
+
+    # reorder columns
+    main_cols = ['Active', 'Consent', 'Subject ID']
+    df_final = df_final[main_cols + \
+            [x for x in df_final.columns if x not in main_cols]]
+
+    general_path = Path(Lochness['phoenix_root']) / 'GENERAL'
+    metadata_study = general_path / study_name / f"{study_name}_metadata.csv"
+    df_final.to_csv(metadata_study, index=False)
+
 
 
 def check_if_modified(subject_id: str,
@@ -44,7 +173,6 @@ def check_if_modified(subject_id: str,
         return False
 
 
-
 def get_data_entry_trigger_df(Lochness: 'Lochness') -> pd.DataFrame:
     '''Read Data Entry Trigger database as dataframe'''
     if 'redcap' in Lochness:
@@ -58,31 +186,6 @@ def get_data_entry_trigger_df(Lochness: 'Lochness') -> pd.DataFrame:
     db_df = pd.DataFrame({'record':[]})
     # db_df = pd.DataFrame()
     return db_df
-
-
-def process_and_copy_json(Lochness, subject, dst,
-                          redcap_subject, _redcap_project):
-    '''Process PII and copy the json to GENERAL/survey/processed'''
-    pii_table_loc = get_PII_table_loc(Lochness, subject.study)
-
-    # don't run this if the pii_table in the config.yml is missing
-    if pii_table_loc != False and pii_table_loc != '':
-        # process PII here
-        pii_str_proc_dict = read_pii_mapping_to_dict(pii_table_loc)
-        processed_content = load_raw_return_proc_json(
-                dst, pii_str_proc_dict, subject.id)
-
-        # save processed content to general processed
-        proc_folder = tree.get('surveys',
-                               subject.general_folder,
-                               processed=True)
-        fname = f'{redcap_subject}.{_redcap_project}.json'
-        proc_dst = Path(proc_folder) / fname
-
-        # double check the pii string processing dict once more
-        # if it's empty, don't copy it over to general
-        if pii_str_proc_dict != {}:
-            lochness.atomic_write(proc_dst, processed_content)
 
 
 @net.retry(max_attempts=5)
@@ -109,6 +212,11 @@ def sync(Lochness, subject, dry=False):
             fname = f'{redcap_subject}.{_redcap_project}.json'
             dst = Path(dst_folder) / fname
 
+            # PII processed content to general processed
+            proc_folder = tree.get('surveys',
+                                   subject.general_folder,
+                                   processed=True)
+            proc_dst = Path(proc_folder) / fname
 
             # check if the data has been updated by checking the redcap data
             # entry trigger db
@@ -162,10 +270,8 @@ def sync(Lochness, subject, dry=False):
                 if not os.path.exists(dst):
                     logger.debug(f'saving {dst}')
                     lochness.atomic_write(dst, content)
-                    process_and_copy_json(Lochness, subject, dst,
-                                          redcap_subject,
-                                          _redcap_project)
-                    update_study_metadata(subject, json.loads(content))
+                    process_and_copy_db(Lochness, subject, dst, proc_dst)
+                    # update_study_metadata(subject, json.loads(content))
                     
                 else:
                     # responses are not stored atomically in redcap
@@ -178,10 +284,8 @@ def sync(Lochness, subject, dry=False):
                         lochness.backup(dst)
                         logger.debug(f'saving {dst}')
                         lochness.atomic_write(dst, content)
-                        process_and_copy_json(Lochness, subject, dst,
-                                              redcap_subject,
-                                              _redcap_project)
-                        update_study_metadata(subject, json.loads(content))
+                        process_and_copy_db(Lochness, subject, dst, proc_dst)
+                        # update_study_metadata(subject, json.loads(content))
 
 
 class REDCapError(Exception):
@@ -274,13 +378,6 @@ def deidentify_flag(Lochness, study):
     return value
 
 
-def get_PII_table_loc(Lochness, study):
-    ''' get study specific deidentify flag with a safe default '''
-    value = Lochness.get('redcap', dict()) \
-                    .get('pii_table', False)
-    return value
-
-
 def iterate(subject):
     '''generator for redcap instance and subject'''
     for instance, ids in iter(subject.redcap.items()):
@@ -293,7 +390,7 @@ def update_study_metadata(subject, content: List[dict]) -> None:
     '''update metadata csv based on the redcap content: source_id'''
 
 
-    sources = ['XNAT', 'Box', 'Mindlamp', 'Mediaflux']
+    sources = ['XNAT', 'Box', 'Mindlamp', 'Mediaflux', 'Daris']
 
     orig_metadata_df = pd.read_csv(subject.metadata_csv)
 
@@ -311,7 +408,8 @@ def update_study_metadata(subject, content: List[dict]) -> None:
                 updated = True
 
             # subject already has the information
-            elif subject_series.iloc[0][source] != f'{source.lower()}.{source_id}':
+            elif subject_series.iloc[0][source] != \
+                    f'{source.lower()}.{source_id}':
                 subject_series.iloc[0][source] = \
                         f'{source.lower()}.{source_id}'
                 updated = True

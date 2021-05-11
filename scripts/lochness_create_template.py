@@ -159,6 +159,14 @@ def create_keyring_template(keyring_loc: Path, args: object) -> None:
                 "PROJECT_CID": "******",
                 }
 
+    if 'rpms' in args.sources:
+        for study in args.studies:
+            # lower part of the keyring
+            template_dict[f'rpms.{study}'] = {
+                "RPMS_PATH": "/RPMS/DAILY/EXPORT/PATH",
+                "TOKEN": "******",
+                }
+
     with open(keyring_loc, 'w') as f:
         json.dump(template_dict, f,
                   sort_keys=False,
@@ -177,13 +185,13 @@ stdout: {args.outdir}/lochness.stdout
 poll_interval: {args.poll_interval}
 ssh_user: {args.ssh_user}
 ssh_host: {args.ssh_host}
-sender: {args.email}'''
+sender: {args.email}
+pii_table: {args.pii_csv}'''
 
     redcap_lines = f'''
 redcap:
     phoenix_project:
         deidentify: True
-    pii_table: {args.pii_csv}
     data_entry_trigger_csv: {args.det_csv}
     update_metadata: True'''
 
@@ -269,7 +277,8 @@ def create_example_meta_file_advanced(metadata: str,
                              'box': 'Box',
                              'mindlamp': 'Mindlamp',
                              'mediaflux': 'Mediaflux',
-                             'daris': 'Daris'}
+                             'daris': 'Daris',
+                             'rpms': 'RPMS'}
 
     df = pd.DataFrame({
         'Active': [1],

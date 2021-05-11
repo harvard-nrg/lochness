@@ -26,7 +26,6 @@ def daris_download(daris_uid: str, latest_pull_mtime: float,
     latest_pull_mtime_str = datetime.fromtimestamp(
             latest_pull_mtime).strftime('%d-%B-%Y %H:%M:%S')
     # filters for curl
-    # f"xpath(mf-dicom-patient/id)='{daris_uid}'",
     curl_filters = [
         f"cid contained by (xpath(mf-dicom-patient/id)='{daris_uid}')",
         "xpath(mf-dicom-series/modality)='MR'",

@@ -18,6 +18,7 @@ import lochness.dropbox as Dropbox
 import lochness.box as Box
 import lochness.mediaflux as Mediaflux
 import lochness.daris as Daris
+import lochness.rpms as RPMS
 import lochness.scheduler as scheduler
 import lochness.icognition as iCognition
 import lochness.onlinescoring as OnlineScoring
@@ -31,6 +32,7 @@ SOURCES = {
     'box': Box,
     'mediaflux': Mediaflux,
     'daris': Daris,
+    'rpms': RPMS,
     'icognition': iCognition,
     'onlinescoring': OnlineScoring
 }
@@ -104,20 +106,13 @@ def main():
     else:
         do(args)
 
+
 def do(args):
     # reload config every time
     Lochness = config.load(args.config, args.archive_base)
 
-    # run redcap pull first to update metadata.csv
-    for subject in lochness.read_phoenix_metadata(Lochness, args.studies):
-        if not subject.active and args.skip_inactive:
-            logger.info(f'skipping inactive subject={subject.id}, '
-                        f'study={subject.study}')
-            continue
-        else:
-            if 'redcap' in args.input_sources:
-                lochness.attempt(REDCap.sync, Lochness, subject, dry=args.dry)
-
+    # initialize (overwrite) metadata.csv using either REDCap or RPMS database
+    lochness.initialize_metadata(Lochness, args)
 
     for subject in lochness.read_phoenix_metadata(Lochness, args.studies):
         if not subject.active and args.skip_inactive:
@@ -130,6 +125,7 @@ def do(args):
         else:
             for Module in args.source:
                 lochness.attempt(Module.sync, Lochness, subject, dry=args.dry)
+
 
 if __name__ == '__main__':
     main()
