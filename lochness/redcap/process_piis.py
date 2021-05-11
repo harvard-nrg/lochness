@@ -7,6 +7,7 @@ import string
 from datetime import date
 from typing import List
 import re
+import sys
 
 
 class PiiTableError(Exception):
@@ -171,30 +172,23 @@ def load_raw_return_proc_csv(csv_loc: str,
     '''CSV version of the load raw CSV and save processed CSV'''
     # load csv in PROTECTED/survey/raw
     raw_df_subject = pd.read_csv(csv_loc)
-    with open(csv_loc, 'r') as f:
-        raw_json = json.load(f)  # list of dicts
 
-    processed_json = []
-    for instrument in raw_json:
-        processed_instrument = {}
-        for field_name, field_value in instrument.items():
-            for pii_label_string, process in pii_str_proc_dict.items():
-                if re.search(pii_label_string, field_name):
-                    try:
-                        new_value = process_pii_string(field_value,
-                                                       process,
-                                                       subject_id)
-                    except:
-                        new_value = 'check_process_pii_string'
-                    processed_instrument[field_name] = new_value
-                    break
-                else:
-                    processed_instrument[field_name] = field_value
-        processed_json.append(processed_instrument)
+    for field_name in raw_df_subject.columns:
+        field_value = raw_df_subject.loc[0][field_name]
+        for pii_label_string, process in pii_str_proc_dict.items():
+            if re.search(pii_label_string, field_name):
+                try:
+                    new_value = process_pii_string(field_value,
+                                                   process,
+                                                   subject_id)
+                except:
+                    new_value = 'check_process_pii_string'
+                raw_df_subject.loc[0, field_name] = new_value
+                break
+            else:
+                raw_df_subject.loc[0, field_name] = field_value
 
-    processed_content = json.dumps(processed_json).encode()
-
-    return processed_content
+    return raw_df_subject
 
 
 def process_and_copy_db(Lochness, subject, raw_input, proc_dst):
@@ -206,7 +200,7 @@ def process_and_copy_db(Lochness, subject, raw_input, proc_dst):
         # process PII here
         pii_str_proc_dict = read_pii_mapping_to_dict(pii_table_loc)
 
-        if raw_input.endswith('json'):
+        if str(raw_input).endswith('json'):
             processed_content = load_raw_return_proc_json(
                     raw_input, pii_str_proc_dict, subject.id)
 
@@ -215,7 +209,7 @@ def process_and_copy_db(Lochness, subject, raw_input, proc_dst):
             if pii_str_proc_dict != {}:
                 lochness.atomic_write(proc_dst, processed_content)
 
-        elif raw_input.endswith('csv'):
+        elif str(raw_input).endswith('csv'):
             processed_df = load_raw_return_proc_csv(
                     raw_input, pii_str_proc_dict, subject.id)
 
