@@ -20,13 +20,8 @@ scripts_dir = Path(lochness.__path__[0]).parent / 'tests'
 sys.path.append(str(scripts_dir))
 from mock_args import mock_load
 
-<<<<<<< HEAD
 from lochness.rpms import initialize_metadata, sync, get_rpms_database
 from typing import List, Dict
-=======
-from lochness.rpms import initialize_metadata, sync
-
->>>>>>> 4f0ecce591a2b7c2b89df798522df5baea7d4013
 
 
 class Args:
@@ -46,22 +41,13 @@ class Args:
 def args():
     return Args('test_lochness')
 
-<<<<<<< HEAD
 
 def create_fake_rpms_repo():
     '''Create fake RPMS repo per variable'''
-=======
-@pytest.fixture
-def args_whole_process():
-    return Args('tmp_lochness')
-
-def create_fake_rpms_repo():
->>>>>>> 4f0ecce591a2b7c2b89df798522df5baea7d4013
     # make REPO directory
     root = Path('RPMS_repo')
     root.mkdir(exist_ok=True)
 
-<<<<<<< HEAD
     number_of_measures = 10
     number_of_subjects = 5
     for measure_num in range(0, number_of_measures):
@@ -88,25 +74,6 @@ def create_fake_rpms_repo():
             df = pd.concat([df, df_tmp])
 
         df.to_csv(measure_file, index=False)
-=======
-    number_of_subjects = 5
-    for subject_num in range(0, number_of_subjects):
-        # create a data
-        subject_dir = root / f'subject_{subject_num}'
-        subject_dir.mkdir(exist_ok=True)
-
-        df = pd.DataFrame({
-            'record_id1': [f'subject_{subject_num}'],
-            'Consent': '1988-09-16',
-            'var1': f'var1_subject_{subject_num}',
-            'var2': f'var2_subject_{subject_num}',
-            'var3': f'var3_subject_{subject_num}',
-            'xnat_id': f'StudyA:bwh:var3_subject_{subject_num}',
-            'box_id': f'box.StudyA:var3_subject_{subject_num}',
-            'last_modified': time.time()})
-
-        df.to_csv(subject_dir / f'subject_{subject_num}.csv', index=False)
->>>>>>> 4f0ecce591a2b7c2b89df798522df5baea7d4013
 
 
 def test_updating_metadata_based_on_th_rpms(args):
@@ -143,10 +110,7 @@ def test_create_lochness_template(args):
 
     for subject in lochness.read_phoenix_metadata(Lochness,
                                                   studies=['StudyA']):
-<<<<<<< HEAD
-=======
         print(subject)
->>>>>>> 4f0ecce591a2b7c2b89df798522df5baea7d4013
         for module in subject.rpms:
             print(module)
             break
@@ -166,22 +130,12 @@ def test_sync(args):
 
 def update_keyring_and_encrypt(tmp_lochness_dir: str):
     keyring_loc = Path(tmp_lochness_dir) / 'lochness.json'
-<<<<<<< HEAD
-=======
-    print(keyring_loc)
->>>>>>> 4f0ecce591a2b7c2b89df798522df5baea7d4013
     with open(keyring_loc, 'r') as f:
         keyring = json.load(f)
 
     keyring['rpms.StudyA']['RPMS_PATH'] = str(
             Path(tmp_lochness_dir).absolute().parent / 'RPMS_repo')
 
-<<<<<<< HEAD
-=======
-
-    print(keyring)
-
->>>>>>> 4f0ecce591a2b7c2b89df798522df5baea7d4013
     with open(keyring_loc, 'w') as f:
         json.dump(keyring, f)
     
@@ -197,10 +151,7 @@ def test_sync_from_empty(args):
     create_lochness_template(args)
     update_keyring_and_encrypt(args.outdir)
     create_fake_rpms_repo()
-<<<<<<< HEAD
 
-=======
->>>>>>> 4f0ecce591a2b7c2b89df798522df5baea7d4013
     dry=False
     study_name = 'StudyA'
     Lochness = config.load(f'{args.outdir}/config.yml', '')
@@ -209,12 +160,11 @@ def test_sync_from_empty(args):
     for subject in lochness.read_phoenix_metadata(Lochness,
                                                   studies=['StudyA']):
         sync(Lochness, subject, dry)
-<<<<<<< HEAD
 
     # print the structure
     print(os.popen('tree').read())
 
-    shutil.rmtree(args.outdir)
+    # shutil.rmtree(args.outdir)
 
 
 # rpms_root_path: str
@@ -228,8 +178,3 @@ def test_get_rpms_database():
     assert type(list(all_df_dict.values())[0]) == pd.core.frame.DataFrame
     print(list(all_df_dict.values())[0])
     # print(all_df_dict))
-=======
-    shutil.rmtree(args.outdir)
-
-
->>>>>>> 4f0ecce591a2b7c2b89df798522df5baea7d4013
