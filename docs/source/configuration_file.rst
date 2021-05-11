@@ -37,6 +37,14 @@ sources for incoming data (in seconds)
 
     poll_interval: 43200
 
+pii_table
+-------------
+This field determines the location of the csv file that has the mappings for
+each personally identifiable information (PII) to how to process them. It is
+used to process the PII field values in both REDCap and RPMS sources.
+
+    poll_interval: ~/pii_convert_table.csv
+
 beiwe
 -----
 The ``beiwe`` section is used to configure how Lochness will behave while downloading
@@ -156,11 +164,18 @@ redcap
 For each PHOENIX study, you may add an entry to the ``redcap`` section indicating 
 that data should be de-identified before being downloaded and saved to PHOENIX.
 
+``data_entry_trigger_csv`` determines the location of the database created
+by the `listen_to_recap.py` by storying the **Data Entry Trigger** post signals
+from REDCap.
+
 Assuming your PHOENIX study is named ``StudyA`` this field would look like so ::
 
     redcap:
+      data_entry_trigger_csv: ~/data_entry_trigger_database.csv
       StudyA:
         deidentify: True
+
+
 
 admins
 ------
