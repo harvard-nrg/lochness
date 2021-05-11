@@ -6,6 +6,8 @@ the box there is support for pulling data from a multitude of
 `data sources <data_sources.html>`_ including Beiwe, XNAT, REDCap, 
 Dropbox, Box, Mediaflux, Daris, RPMS, external hard drives, and more.
 
+
+
 Installation
 ------------
 Just use ``pip`` ::
@@ -18,9 +20,25 @@ or for most recent DPACC-lochness ::
     pip install git+https://github.com/PREDICT-DPACC/lochness
 
 
+for debugging ::
+
+    cd ~
+    git clone https://github.com/PREDICT-DPACC/lochness
+    export PATH=${PATH}:~/lochness/scripts  # add to ~/.bashrc
+    export PYTHONPATH=${PYTHONPATH}:~/lochness  # add to ~/.bashrc
+
+
+
+
 Setup from a template
 ---------------------
-Create an example template to work from::
+
+Creating the template
+~~~~~~~~~~~~~~~~~~~~~
+Setting up lochness from scratch could be slightly confusing in the beginning.
+Try using the `lochness_create_template.py` to create a starting point.
+
+Create an example template to easily structure the lochness system ::
 
     # PREDICT
     lochness_create_template.py \
@@ -45,7 +63,10 @@ Create an example template to work from::
     # For more options: lochness_create_template.py -h
 
 
-Running one of the commands above will create the structure below::
+Making edits to the template
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Running one of the commands above will create the structure below ::
 
     /data/lochness_root/
     ├── 1_encrypt_command.sh
@@ -64,6 +85,7 @@ Running one of the commands above will create the structure below::
     └── pii_convert.csv
 
 
+
 1. Change information in `config.yml` and `lochness.json` as needed.
 
 
@@ -71,30 +93,32 @@ Running one of the commands above will create the structure below::
    amend the field names in REDCap / RPMS sources correctly for lochness to
    automatically update the metadata files.
 
-   Currently, lochness initializes the metadata using following field names 
-   in REDCap and RPMS.::
+   Currently, lochness initializes the metadata using the following field names 
+   in REDCap and RPMS. ::
 
-   record_id1: the record ID field name
-   Consent: the field name of the consent date
-   beiwe_id: the field name of the BEIWE ID.
-   xnat_id: the field name of the XNAT ID.
-   dropbox_id: the field name of the Dropbox ID.
-   box_id: the field name of the Box ID.
-   mediaflux_id: the field name of the Mediaflux ID.
-   mindlamp_id: the field name of the Mindlamp ID.
-   daris_id: the field name of the DaRIS ID.
-   rpms_id: the field name of the RPMS ID.
+   - `record_id1`: the record ID field name
+   - `Consent`: the field name of the consent date
+   - `beiwe_id`: the field name of the BEIWE ID.
+   - `xnat_id`: the field name of the XNAT ID.
+   - `dropbox_id`: the field name of the Dropbox ID.
+   - `box_id`: the field name of the Box ID.
+   - `mediaflux_id`: the field name of the Mediaflux ID.
+   - `mindlamp_id`: the field name of the Mindlamp ID.
+   - `daris_id`: the field name of the DaRIS ID.
+   - `rpms_id`: the field name of the RPMS ID.
 
 
-3. Encrypt the `lochness.json` by running::
+3. Encrypt the `lochness.json` by running ::
 
    bash 1_encrypt_command.sh
+
 
 This encryption step creates a copy of encrypted keyrings to
 `/data/lochness_root/.lochness.enc`. To protect the sensitive keyring
 information in json, remove the `lochness.json` after running the encryption.
 
-You can still extract keyring structure without sensitive information by running::
+
+You can still extract keyring structure without sensitive information by running ::
 
    lochness_check_config.py -ke /data/lochness_root/.lochness.enc
    
@@ -121,10 +145,9 @@ only pull new REDCap data, "Data Entry Trigger" needs to be set up in REDCap.
 
 In REDCap,
 - "Project Setup"
-  - "Enable optional modules and customizations"
-    - "Additional customizations"
-      - check "Data Entry Trigger" and give address of the server including
-        the port number. eg) http://pnl-t55-7.partners.org:9999
+- "Enable optional modules and customizations"
+- "Additional customizations"
+- check "Data Entry Trigger" and give address of the server including the port number. eg) http://pnl-t55-7.partners.org:9999
 
 
 In order to use this functionality, the server where lochness is installed
@@ -142,6 +165,7 @@ the `/data/data_entry_trigger_db.csv` real-time::
     # please specify the same port defined in the REDCap settings
     listen_to_redcap.py --database_csv /data/data_entry_trigger_db.csv \
                         --port 9999
+
 
 It would be useful to run `listen_to_redcap.py` in background, maybe inside a
 `gnu screen` so it runs continuously without interference.
@@ -246,6 +270,7 @@ install it separately on another machine as well. Here is how you would use
    file. I will only recommend discarding the decrypted version as soon as 
    possible.
 
+
 PHOENIX
 ~~~~~~~
 Lochness will download your data into a directory structure informally known as
@@ -266,6 +291,7 @@ The above command will generate the following directory tree ::
     └── PROTECTED
         └── StudyA
 
+
 Basic usage
 -----------
 The primary command line utility for Lochness is ``sync.py``. When you invoke this 
@@ -273,11 +299,13 @@ tool, you will be prompted for the passphrase that you used to encrypt your
 `keyring <#setup>`_. To sidestep the password prompt, you can use an environment 
 variable ``NRG_KEYRING_PASS``.
 
+
 metadata files
 ~~~~~~~~~~~~~~
 The ``sync.py`` tool is driven largely off the PHOENIX metadata files. For an 
 in-depth look at these metadata files, please read the 
 `metadata files section <phoenix.html#metadata-files>`_ from the PHOENIX documentation.
+
 
 configuration file
 ~~~~~~~~~~~~~~~~~~
@@ -290,6 +318,7 @@ There is an example configuration file within the Lochness repository under
 ``etc/config.yaml``. To learn more about what each configuration option 
 means, please read the `configuration file documentation <configuration_file.html>`_.
 
+
 data sources
 ~~~~~~~~~~~~
 By default, Lochness will download data from *all* supported data sources. If 
@@ -298,6 +327,7 @@ provide the ``--source`` argument ::
 
     sync.py -c config.yml --source beiwe
     sync.py -c config.yml --source xnat box
+
 
 additional help
 ~~~~~~~~~~~~~~~
