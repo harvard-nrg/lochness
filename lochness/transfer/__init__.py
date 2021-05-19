@@ -6,13 +6,15 @@ import pandas as pd
 import subprocess
 from time import time
 import tempfile as tf
+import sys
 
 from typing import List
 
 
 def get_updated_files(phoenix_root: str,
                       timestamp_start: int,
-                      timestamp_end: int) -> List[Path]:
+                      timestamp_end: int,
+                      general_only: bool = True) -> List[Path]:
     '''Return list of file paths updated betwee time window using GNU find
 
     In order to compress the new files with the original structure from the
@@ -23,6 +25,7 @@ def get_updated_files(phoenix_root: str,
         phoenix_root: PHOENIX root, str.
         timestamp_start: start of the GNU find search window in timestamp, int.
         timestamp_end: end of the GNU find search window in timestamp, int.
+        general_only: only searches new files under GENERAL directory, bool.
 
     Returns:
         file_paths_relative: relative paths of new files, list of Path objects.
@@ -33,10 +36,18 @@ def get_updated_files(phoenix_root: str,
     date_time_end = datetime.fromtimestamp(timestamp_end).replace(
             microsecond=0)
 
-    find_command = f'find {phoenix_root} ' \
-                   f'-type f ' \
-                   f'-newermt "{date_time_start}" ' \
-                   f'! -newermt "{date_time_end}"'
+    if general_only:
+        find_command = f'find {phoenix_root} ' \
+                       f'-path {phoenix_root}/PROTECTED -prune -o ' \
+                       f'\( -type f ' \
+                       f'-newermt "{date_time_start}" ' \
+                       f'! -newermt "{date_time_end}" \)'
+    else:
+        find_command = f'find {phoenix_root} ' \
+                       f'-type f ' \
+                       f'-newermt "{date_time_start}" ' \
+                       f'! -newermt "{date_time_end}"'
+
     proc = subprocess.Popen(find_command, shell=True, stdout=subprocess.PIPE)
     proc.wait()
 
@@ -45,6 +56,11 @@ def get_updated_files(phoenix_root: str,
     file_paths_absolute = outs.decode().strip().split('\n')
     file_paths_relative = [Path(x).relative_to(Path(phoenix_root).parent) for x
                            in file_paths_absolute]
+
+    if general_only:
+        # remove the PROTECTED DIR
+        file_paths_relative = [x for x in file_paths_relative
+                               if x.name != 'PROTECTED']
 
     return file_paths_relative
 
@@ -98,7 +114,8 @@ def compress_list_of_files(phoenix_root: str,
     os.chdir(pwd)
 
 
-def compress_new_files(compress_db: str, phoenix_root: str, out_tar_ball: str):
+def compress_new_files(compress_db: str, phoenix_root: str,
+                       out_tar_ball: str, general_only: bool = True) -> None:
     '''Compress from to end'''
     tmp_timestamp = 590403600
 
@@ -120,14 +137,16 @@ def compress_new_files(compress_db: str, phoenix_root: str, out_tar_ball: str):
     # find new files and zip them
     new_file_lists = get_updated_files(phoenix_root,
                                        last_compress_timestamp,
-                                       now)
+                                       now,
+                                       general_only)
+
     compress_list_of_files(phoenix_root, new_file_lists, out_tar_ball)
 
     # save database when the process completes
     compress_df.to_csv(compress_db)
 
 
-def lochness_to_lochness_transfer(Lochness):
+def lochness_to_lochness_transfer(Lochness, general_only: bool = True):
     '''Lochness to Lochness transfer
 
     TODO: update dir to tmp dir
@@ -138,6 +157,7 @@ def lochness_to_lochness_transfer(Lochness):
         # compress
         compress_new_files(Lochness['lochness_sync_history_csv'],
                            Lochness['phoenix_root'],
-                           tmpfilename.name)
+                           tmpfilename.name,
+                           general_only)
 
         # send to remote server

@@ -68,6 +68,11 @@ def create_lochness_template(args):
             })
         df.to_csv(args.pii_csv)
 
+    # create pii table
+    if not Path(args.lochness_sync_history_csv).is_file():
+        args.lochness_sync_history_csv = args.outdir / \
+                'lochness_sync_history.csv'
+
     # create config
     config_loc = args.outdir / 'config.yml'
     create_config_template(config_loc, args)

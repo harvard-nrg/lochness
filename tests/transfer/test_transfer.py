@@ -16,6 +16,7 @@ from datetime import timedelta
 from datetime import datetime
 import json
 import cryptease as crypt
+import tempfile as tf
 
 class Args:
     def __init__(self, root_dir):
@@ -140,12 +141,56 @@ def test_lochness_to_lochness_transfer(args):
 
     Lochness = config.load('tmp_lochness/config.yml', '')
 
+    protected_dir = Path(Lochness['phoenix_root']) / 'PROTECTED'
+
+    for i in range(10):
+        with tf.NamedTemporaryFile(suffix='tmp.text',
+                                   delete=False,
+                                   dir=protected_dir) as tmpfilename:
+
+            with open(tmpfilename.name, 'w') as f:
+                f.write('ha')
+
+
     lochness_to_lochness_transfer(Lochness)
     print(os.popen('tree').read())
     shutil.rmtree('tmp_lochness')
-    os.remove('lochness_sync_history.csv')
+
     compressed_file = list(Path('.').glob('tmp*tar'))[0]
     os.popen(f'tar -xf {compressed_file}').read()
     os.remove(str(compressed_file))
     print(os.popen('tree').read())
     shutil.rmtree('PHOENIX')
+
+
+def test_lochness_to_lochness_transfer_all(args):
+    print()
+    outdir = 'tmp_lochness'
+    args.outdir = outdir
+    create_lochness_template(args)
+    update_keyring_and_encrypt(args.outdir)
+
+    Lochness = config.load('tmp_lochness/config.yml', '')
+
+    protected_dir = Path(Lochness['phoenix_root']) / 'PROTECTED'
+
+    for i in range(10):
+        with tf.NamedTemporaryFile(suffix='tmp.text',
+                                   delete=False,
+                                   dir=protected_dir) as tmpfilename:
+
+            with open(tmpfilename.name, 'w') as f:
+                f.write('ha')
+
+
+    #pull all
+    lochness_to_lochness_transfer(Lochness, general_only=False)
+    print(os.popen('tree').read())
+    shutil.rmtree('tmp_lochness')
+
+    compressed_file = list(Path('.').glob('tmp*tar'))[0]
+    os.popen(f'tar -xf {compressed_file}').read()
+    os.remove(str(compressed_file))
+    print(os.popen('tree').read())
+    shutil.rmtree('PHOENIX')
+
