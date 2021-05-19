@@ -41,7 +41,10 @@ def create_lochness_template(args):
     # create PHOENIX directory
     for study in args.studies:
         argsForPheonix = ArgsForPheonix(study, phoenix_root)
-        pg(argsForPheonix)
+        try:
+            pg(argsForPheonix)
+        except SystemExit:
+            pass
         metadata = phoenix_root / 'GENERAL' / study / f'{study}_metadata.csv'
 
         # create example metadata

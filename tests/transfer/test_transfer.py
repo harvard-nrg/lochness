@@ -2,6 +2,7 @@ import lochness
 import os
 import shutil
 from lochness.transfer import get_updated_files, compress_list_of_files
+from lochness.transfer import compress_new_files
 from pathlib import Path
 import sys
 scripts_dir = Path(lochness.__path__[0]).parent / 'scripts'
@@ -84,4 +85,28 @@ def test_compress_list_of_files(args):
     shutil.rmtree('PHOENIX')
     os.remove('prac.tar')
 
+
+def test_compress_new_files(args):
+    print()
+    outdir = 'tmp_lochness'
+    args.outdir = outdir
+    create_lochness_template(args)
+
+    phoenix_root = Path(args.outdir / 'PHOENIX')
+
+    compress_new_files('nodb', phoenix_root, 'prac.tar')
+    shutil.rmtree('tmp_lochness')
+
+    # shutil.rmtree('tmp_lochness')
+    assert Path('prac.tar').is_file()
+    assert Path('nodb').is_file()
+
+    with open('nodb', 'r') as f:
+        print(f.read())
+
+    os.popen('tar -xf prac.tar').read()
+    os.remove('nodb')
+    os.remove('prac.tar')
+    print(os.popen('tree').read())
+    shutil.rmtree('PHOENIX')
 
