@@ -189,7 +189,9 @@ poll_interval: {args.poll_interval}
 ssh_user: {args.ssh_user}
 ssh_host: {args.ssh_host}
 sender: {args.email}
-pii_table: {args.pii_csv}'''
+pii_table: {args.pii_csv}
+lochness_sync_history_csv: {args.lochness_sync_history_csv}
+'''
 
     redcap_lines = f'''
 redcap:
@@ -326,6 +328,9 @@ def get_arguments():
     parser.add_argument('-su', '--ssh_user',
                         required=True,
                         help='ssh id')
+    parser.add_argument('-lsh', '--lochness_sync_history_csv',
+                        default='lochness_sync_history.csv',
+                        help='Lochness sync history database csv path')
     parser.add_argument('-det', '--det_csv',
                         default='data_entry_trigger.csv',
                         help='Redcap data entry trigger database csv path')
