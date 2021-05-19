@@ -5,6 +5,7 @@ import os
 import pandas as pd
 import subprocess
 from time import time
+import tempfile as tf
 
 from typing import List
 
@@ -125,3 +126,18 @@ def compress_new_files(compress_db: str, phoenix_root: str, out_tar_ball: str):
     # save database when the process completes
     compress_df.to_csv(compress_db)
 
+
+def lochness_to_lochness_transfer(Lochness):
+    '''Lochness to Lochness transfer
+
+    TODO: update dir to tmp dir
+    '''
+    with tf.NamedTemporaryFile(suffix='tmp.tar',
+                               delete=False,
+                               dir='.') as tmpfilename:
+        # compress
+        compress_new_files(Lochness['lochness_sync_history_csv'],
+                           Lochness['phoenix_root'],
+                           tmpfilename.name)
+
+        # send to remote server

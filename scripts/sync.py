@@ -22,6 +22,7 @@ import lochness.rpms as RPMS
 import lochness.scheduler as scheduler
 import lochness.icognition as iCognition
 import lochness.onlinescoring as OnlineScoring
+from lochness.transfer import lochness_to_lochness_transfer
 
 SOURCES = {
     'xnat': XNAT,
@@ -44,29 +45,33 @@ logger = logging.getLogger(os.path.basename(__file__))
 def main():
     parser = ap.ArgumentParser(description='PHOENIX data syncer')
     parser.add_argument('-c', '--config', required=True,
-        help='Configuration file')
+                        help='Configuration file')
     parser.add_argument('-a', '--archive-base',
-        help='Base output directory')
+                        help='Base output directory')
     parser.add_argument('--dry', action='store_true',
-        help='Dry run')
+                        help='Dry run')
     parser.add_argument('--skip-inactive', action='store_true',
-        help='Skip inactive subjects')
+                        help='Skip inactive subjects')
     parser.add_argument('-l', '--log-file',
-        help='Log file')
+                        help='Log file')
     parser.add_argument('--hdd', nargs='+', default=[],
-        help='choose hdds to sync')
+                        help='choose hdds to sync')
     parser.add_argument('--source', nargs='+', choices=SOURCES.keys(),
-        default=SOURCES.keys(), help='Sources to sync')
+                        default=SOURCES.keys(), help='Sources to sync')
     parser.add_argument('--continuous', action='store_true',
-        help='Continuously download data')
+                        help='Continuously download data')
     parser.add_argument('--studies', nargs='+', default=[],
-        help='Study to sync')
+                        help='Study to sync')
     parser.add_argument('--fork', action='store_true',
-        help='Daemonize the process')
+                        help='Daemonize the process')
     parser.add_argument('--until', type=scheduler.parse,
-        help='Pause execution until specified date e.g., 2017-01-01T15:00:00')
+                        help='Pause execution until specified date e.g., '
+                             '2017-01-01T15:00:00')
+    parser.add_argument('-ls', '--lochness_sync',
+                        action='store_true',
+                        help='Enable lochness to lochness transfer')
     parser.add_argument('--debug', action='store_true',
-        help='Enable debug messages')
+                        help='Enable debug messages')
     args = parser.parse_args()
 
     # configure logging for this application
@@ -125,6 +130,10 @@ def do(args):
         else:
             for Module in args.source:
                 lochness.attempt(Module.sync, Lochness, subject, dry=args.dry)
+
+    # after all sync
+    if args.lochness_sync:
+        lochness_to_lochness_transfer(Lochness)
 
 
 if __name__ == '__main__':
