@@ -24,6 +24,8 @@ for debugging ::
 
     cd ~
     git clone https://github.com/PREDICT-DPACC/lochness
+    pip install -r ~/lochness/requirements.txt
+
     export PATH=${PATH}:~/lochness/scripts  # add to ~/.bashrc
     export PYTHONPATH=${PYTHONPATH}:~/lochness  # add to ~/.bashrc
 

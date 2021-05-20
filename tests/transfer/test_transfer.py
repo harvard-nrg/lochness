@@ -186,7 +186,7 @@ def test_lochness_to_lochness_transfer_all(args):
     #pull all
     lochness_to_lochness_transfer(Lochness, general_only=False)
     print(os.popen('tree').read())
-    shutil.rmtree('tmp_lochness')
+    # shutil.rmtree('tmp_lochness')
 
     compressed_file = list(Path('.').glob('tmp*tar'))[0]
     os.popen(f'tar -xf {compressed_file}').read()

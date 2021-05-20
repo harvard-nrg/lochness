@@ -175,6 +175,16 @@ def create_keyring_template(keyring_loc: Path, args: object) -> None:
                 "TOKEN": "******",
                 }
 
+    if args.lochness_to_lochness:
+        # lower part of the keyring
+        template_dict[f'lochness_to_lochness'] = {
+            "HOST": "phslxftp2.partners.org",
+            "USERNAME": "USERNAME",
+            "PASSWORD": "*******",
+            "PATH_IN_HOST": "/PATH/IN/HOST",
+            "PORT": "2222",
+            }
+
     with open(keyring_loc, 'w') as f:
         json.dump(template_dict, f,
                   sort_keys=False,
@@ -333,6 +343,10 @@ def get_arguments():
     parser.add_argument('-su', '--ssh_user',
                         required=True,
                         help='ssh id')
+    parser.add_argument('-ltl', '--lochness_to_lochness',
+                        default=True,
+                        action='store_true',
+                        help='Sync Lochness to Lochness')
     parser.add_argument('-lsh', '--lochness_sync_history_csv',
                         default='lochness_sync_history.csv',
                         help='Lochness sync history database csv path')

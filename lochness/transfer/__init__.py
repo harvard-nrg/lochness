@@ -7,6 +7,7 @@ import subprocess
 from time import time
 import tempfile as tf
 import sys
+import paramiko
 
 from typing import List
 
@@ -116,7 +117,24 @@ def compress_list_of_files(phoenix_root: str,
 
 def compress_new_files(compress_db: str, phoenix_root: str,
                        out_tar_ball: str, general_only: bool = True) -> None:
-    '''Compress from to end'''
+    '''Find a list of new files from the last lochness to lochness sync
+
+    Key arguments:
+        compress_db: path of a csv file, which contains timestamp of each
+                     lochness to lochness sync attempt (compression), str.
+
+            eg) lochness_sync_history.csv
+
+            timestamp
+            1621470407.030176
+            1621470455.6350138
+        phoenix_root: PHOENIX root, str.
+        out_tar_ball: compressed tarball output path, str.
+        general_only: only compress the data under GENERAL if True, bool.
+
+    Returns:
+        None
+    '''
     tmp_timestamp = 590403600
 
     if Path(compress_db).is_file():
@@ -143,13 +161,14 @@ def compress_new_files(compress_db: str, phoenix_root: str,
     compress_list_of_files(phoenix_root, new_file_lists, out_tar_ball)
 
     # save database when the process completes
-    compress_df.to_csv(compress_db)
+    compress_df.to_csv(compress_db, index=False)
 
 
 def lochness_to_lochness_transfer(Lochness, general_only: bool = True):
     '''Lochness to Lochness transfer
 
     TODO: update dir to tmp dir
+        general_only: only searches new files under GENERAL directory, bool.
     '''
     with tf.NamedTemporaryFile(suffix='tmp.tar',
                                delete=False,
@@ -161,3 +180,21 @@ def lochness_to_lochness_transfer(Lochness, general_only: bool = True):
                            general_only)
 
         # send to remote server
+
+def send_data_over_sftp(Lochness, file_to_send: str):
+    '''Send data over sftp'''
+
+    sftp_keyring = Lochness['keyring']['lochness_to_lochness']
+    host = sftp_keyring['HOST']
+    username = sftp_keyring['USERNAME']
+    password = sftp_keyring['PASSWORD']
+    path_in_host = sftp_keyring['PATH_IN_HOST']
+    port = sftp_keyring['PORT']
+
+    transport = paramiko.Transport((host, int(port)))
+    transport.connect(username=username, password=password)
+    sftp = paramiko.SFTPClient.from_transport(transport)
+
+    sftp.put(file_to_send, str(Path(path_in_host) / Path(file_to_send).name))
+    sftp.close()
+    transport.close()
