@@ -40,8 +40,6 @@ def get_tokens():
 
     if token_and_url_file.is_file():
         df = pd.read_csv(token_and_url_file, index_col=0)
-        print(df)
-        print(df.columns)
         host = df.loc['host', 'value']
         username = df.loc['username', 'value']
         password = df.loc['password', 'value']
@@ -125,8 +123,8 @@ def test_compress_list_of_files(lochness_test):
 
     posttime = time()
 
-    phoenix_root = Path(args.outdir / 'PHOENIX')
-    file_lists = get_updated_files(lochness_test['phoenix_root'],
+    phoenix_root = lochness_test['phoenix_root']
+    file_lists = get_updated_files(phoenix_root,
                                    timestamp_a_day_ago,
                                    posttime)
     compress_list_of_files(phoenix_root, file_lists, 'prac.tar')
