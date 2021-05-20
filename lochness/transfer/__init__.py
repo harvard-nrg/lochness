@@ -8,8 +8,10 @@ from time import time
 import tempfile as tf
 import sys
 import paramiko
+import tarfile
+import shutil
 
-from typing import List
+from typing import List, Tuple
 
 
 def get_updated_files(phoenix_root: str,
@@ -19,7 +21,7 @@ def get_updated_files(phoenix_root: str,
     '''Return list of file paths updated betwee time window using GNU find
 
     In order to compress the new files with the original structure from the
-    PHOENIX root, the absolute paths returned by GNU find is changed to 
+    PHOENIX root, the absolute paths returned by GNU find is changed to
     relative path from the PHOENIX root.
 
     Key arguments:
@@ -115,30 +117,28 @@ def compress_list_of_files(phoenix_root: str,
     os.chdir(pwd)
 
 
-def compress_new_files(compress_db: str, phoenix_root: str,
-                       out_tar_ball: str, general_only: bool = True) -> None:
-    '''Find a list of new files from the last lochness to lochness sync
+def get_ts_and_db(timestamp_db: str) -> Tuple[float, float, pd.DataFrame]:
+    '''Get timestamp for the last data compression, current time and database
 
     Key arguments:
-        compress_db: path of a csv file, which contains timestamp of each
-                     lochness to lochness sync attempt (compression), str.
-
-            eg) lochness_sync_history.csv
-
-            timestamp
-            1621470407.030176
-            1621470455.6350138
-        phoenix_root: PHOENIX root, str.
-        out_tar_ball: compressed tarball output path, str.
-        general_only: only compress the data under GENERAL if True, bool.
-
+        timestamp_db: path of a csv file, which contains timestamp of each
+                      lochness to lochness sync attempt (compression), str.
+                      eg) lochness_sync_history.csv
+                      timestamp
+                      1621470407.030176
+                      1621470455.6350138
     Returns:
-        None
+        last_compress_timestamp: the timestamp for the last data compression.
+                                 If the compress_db does not exist, a pseudo-
+                                 random timestamp is returned to execute sync
+                                 for all of the data under PHOENIX.
+        now: timestamp for the current time
+        compress_df: table with the history of data compression including
+                     the current time stamp.
     '''
     tmp_timestamp = 590403600
-
-    if Path(compress_db).is_file():
-        compress_df = pd.read_csv(compress_db, index_col=0)
+    if Path(timestamp_db).is_file():
+        compress_df = pd.read_csv(timestamp_db, index_col=0)
         try:
             last_compress_timestamp = compress_df['timestamp'].max()
         except KeyError:
@@ -152,6 +152,29 @@ def compress_new_files(compress_db: str, phoenix_root: str,
     compress_df = pd.concat([compress_df,
                              pd.DataFrame({'timestamp': [now]})])
 
+    return last_compress_timestamp, now, compress_df
+
+
+def compress_new_files(compress_db: str, phoenix_root: str,
+                       out_tar_ball: str, general_only: bool = True) -> None:
+    '''Find a list of new files from the last lochness to lochness sync
+
+    Key arguments:
+        compress_db: path of a csv file, which contains timestamp of each
+                     lochness to lochness sync attempt (compression), str.
+                     eg) lochness_sync_history.csv
+                     timestamp
+                     1621470407.030176
+                     1621470455.6350138
+        phoenix_root: PHOENIX root, str.
+        out_tar_ball: compressed tarball output path, str.
+        general_only: only compress the data under GENERAL if True, bool.
+
+    Returns:
+        None
+    '''
+    last_compress_timestamp, now, compress_df = get_ts_and_db(compress_db)
+
     # find new files and zip them
     new_file_lists = get_updated_files(phoenix_root,
                                        last_compress_timestamp,
@@ -163,23 +186,6 @@ def compress_new_files(compress_db: str, phoenix_root: str,
     # save database when the process completes
     compress_df.to_csv(compress_db, index=False)
 
-
-def lochness_to_lochness_transfer(Lochness, general_only: bool = True):
-    '''Lochness to Lochness transfer
-
-    TODO: update dir to tmp dir
-        general_only: only searches new files under GENERAL directory, bool.
-    '''
-    with tf.NamedTemporaryFile(suffix='tmp.tar',
-                               delete=False,
-                               dir='.') as tmpfilename:
-        # compress
-        compress_new_files(Lochness['lochness_sync_history_csv'],
-                           Lochness['phoenix_root'],
-                           tmpfilename.name,
-                           general_only)
-
-        # send to remote server
 
 def send_data_over_sftp(Lochness, file_to_send: str):
     '''Send data over sftp'''
@@ -198,3 +204,93 @@ def send_data_over_sftp(Lochness, file_to_send: str):
     sftp.put(file_to_send, str(Path(path_in_host) / Path(file_to_send).name))
     sftp.close()
     transport.close()
+
+
+def lochness_to_lochness_transfer(Lochness, general_only: bool = True):
+    '''Lochness to Lochness transfer
+
+    TODO: update dir to tmp dir
+        general_only: only searches new files under GENERAL directory, bool.
+    '''
+    with tf.NamedTemporaryFile(suffix='tmp.tar',
+                               delete=False,
+                               dir='.') as tmpfilename:
+        # compress
+        compress_new_files(Lochness['lochness_sync_history_csv'],
+                           Lochness['phoenix_root'],
+                           tmpfilename.name,
+                           general_only)
+
+        # send to remote server
+        send_data_over_sftp(Lochness, tmpfilename.name)
+
+
+def lochness_to_lochness_transfer_receive(Lochness):
+    '''Get newly transferred file and decompress to PHOENIX
+
+    Key arguments:
+        Lochness: Lochness object loaded from the config.load, object.
+
+    Structure needed in the Lochness['keyring']
+        Lochness['keyring'] = {
+            'lochness_to_lochness_receive': {
+                'PATH_IN_HOST': '/SFTP/DATA/REPO'
+            }
+        }
+        Lochness['lochness_sync_history_csv']: '/SYNC/HISTORY.csv'
+
+    TODO: move PATH_IN_HOST to config?
+    '''
+
+    # sftp_keyring = Lochness['keyring']['lochness_to_lochness']
+    # host = sftp_keyring['HOST']
+    # path_in_host = sftp_keyring['PATH_IN_HOST']
+
+    sftp_keyring = Lochness['keyring']['lochness_to_lochness_receive']
+    path_in_host = sftp_keyring['PATH_IN_HOST']
+
+    target_phoenix_root = Lochness['phoenix_root']
+    sync_db = Lochness['lochness_sync_history_csv']
+
+    last_sync_timestamp, _, sync_df = get_ts_and_db(sync_db)
+
+    for root, _, files in os.walk(path_in_host):
+        for file in files:
+            file_p = Path(root) / file
+            # if the file is transferred after the last transfer
+            if file_p.stat().st_mtime > last_sync_timestamp \
+                    and file.endswith('.tar'):
+                decompress_transferred_file_and_copy(target_phoenix_root,
+                                                     file_p)
+
+    sync_df.to_csv(sync_db, index=False)
+
+
+def decompress_transferred_file_and_copy(target_phoenix_root: str,
+                                         tar_file_trasferred: str):
+    '''Decompress the tar file and arrange the new data into PHOENIX structure
+
+    Decompress the tar file transferred and arrange the new data into the
+    corresponding structure under the PHOENIX structure.
+
+    Key arguments:
+        target_phoenix_root: path of the PHOENIX directory, str.
+        tar_file_trasferred: path of the tar file transferred from another
+                             lochness using lochness_to_lochness_transfer, str.
+    '''
+    tar = tarfile.open(tar_file_trasferred)
+
+    with tf.TemporaryDirectory(suffix='tmp', dir='.') as tmpdir:
+        tar.extractall(path=tmpdir)
+
+        for root, _, files in os.walk(tmpdir):
+            for file in files:
+                relative_root = root.split(tmpdir + '/PHOENIX/')[1]
+                target_path = Path(target_phoenix_root) / relative_root / file
+                target_path.parent.mkdir(exist_ok=True, parents=True)
+
+                # this overwrites exsiting file
+                shutil.copy(Path(root) / file, target_path)
+
+                # permission change
+                os.chmod(target_path, 0o0644)

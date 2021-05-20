@@ -23,6 +23,7 @@ import lochness.scheduler as scheduler
 import lochness.icognition as iCognition
 import lochness.onlinescoring as OnlineScoring
 from lochness.transfer import lochness_to_lochness_transfer
+from lochness.transfer import lochness_to_lochness_transfer_receive
 
 SOURCES = {
     'xnat': XNAT,
@@ -69,7 +70,13 @@ def main():
                              '2017-01-01T15:00:00')
     parser.add_argument('-ls', '--lochness_sync',
                         action='store_true',
+                        default=True,
                         help='Enable lochness to lochness transfer')
+    parser.add_argument('-lsr', '--lochness_sync_receive',
+                        action='store_true',
+                        default=False,
+                        help='Enable lochness to lochness transfer on the '
+                             'receiving side')
     parser.add_argument('--debug', action='store_true',
                         help='Enable debug messages')
     args = parser.parse_args()
@@ -116,6 +123,11 @@ def do(args):
     # reload config every time
     Lochness = config.load(args.config, args.archive_base)
 
+    # Lochness to Lochness transfer on the receiving side
+    if args.lochness_sync_receive:
+        lochness_to_lochness_transfer_receive(Lochness)
+        return True  # break the do function here for the receiving side
+
     # initialize (overwrite) metadata.csv using either REDCap or RPMS database
     lochness.initialize_metadata(Lochness, args)
 
@@ -131,7 +143,7 @@ def do(args):
             for Module in args.source:
                 lochness.attempt(Module.sync, Lochness, subject, dry=args.dry)
 
-    # after all sync
+    # transfer new files after all sync attempts are done
     if args.lochness_sync:
         lochness_to_lochness_transfer(Lochness)
 

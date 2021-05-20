@@ -15,12 +15,12 @@ Just use ``pip`` ::
     pip install lochness
 
 
-or for most recent DPACC-lochness ::
+For most recent DPACC-lochness ::
 
     pip install git+https://github.com/PREDICT-DPACC/lochness
 
 
-for debugging ::
+For debugging ::
 
     cd ~
     git clone https://github.com/PREDICT-DPACC/lochness

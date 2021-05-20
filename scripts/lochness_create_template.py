@@ -185,6 +185,12 @@ def create_keyring_template(keyring_loc: Path, args: object) -> None:
             "PORT": "2222",
             }
 
+    if args.lochness_sync_receive:
+        # lower part of the keyring
+        template_dict[f'lochness_to_lochness_receive'] = {
+            "PATH_IN_HOST": "/PATH/IN/HOST",
+            }
+
     with open(keyring_loc, 'w') as f:
         json.dump(template_dict, f,
                   sort_keys=False,
@@ -207,7 +213,6 @@ sender: {args.email}
 pii_table: {args.pii_csv}
 lochness_sync_history_csv: {args.lochness_sync_history_csv}
 '''
-
     redcap_lines = f'''
 redcap:
     phoenix_project:
@@ -347,6 +352,10 @@ def get_arguments():
                         default=True,
                         action='store_true',
                         help='Sync Lochness to Lochness')
+    parser.add_argument('-lsr', '--lochness_sync_receive',
+                        default=True,
+                        action='store_true',
+                        help='Sync Lochness to Lochness on the receiving side')
     parser.add_argument('-lsh', '--lochness_sync_history_csv',
                         default='lochness_sync_history.csv',
                         help='Lochness sync history database csv path')
