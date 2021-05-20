@@ -90,7 +90,7 @@ def compress_list_of_files(phoenix_root: str,
     file_list = ['PHOENIX/GENERAL/StudyA/StudyA_metadata.csv',
                  'PHOENIX/GENERAL/StudyB/StudyB_metadata.csv']
     ```
-    
+
     PHOENIX/
     └── GENERAL
         ├── StudyA
@@ -108,10 +108,10 @@ def compress_list_of_files(phoenix_root: str,
     pwd = os.getcwd()
     os.chdir(Path(phoenix_root).parent)
 
-    file_list_str = ' '.join([str(x) for x in file_list])
-    find_command = f'tar zcvf {out_tar_ball_absolute} {file_list_str}'
-    proc = subprocess.Popen(find_command, shell=True, stdout=subprocess.PIPE)
-    proc.wait()
+    tar = tarfile.open(out_tar_ball_absolute, "w")
+    for file_path in file_list:
+        tar.add(file_path)
+    tar.close()
 
     # move back to original directory
     os.chdir(pwd)
