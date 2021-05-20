@@ -21,6 +21,7 @@ import pandas as pd
 import cryptease as crypt
 import tempfile as tf
 import tarfile
+import paramiko
 
 
 class Args:
@@ -93,12 +94,8 @@ def Lochness():
     return lochness
 
 
-def test_using_base_function(Lochness):
-    print(Lochness)
-
 
 def test_get_updated_files(Lochness):
-    print(Lochness)
 
     timestamp_a_day_ago = datetime.timestamp(
             datetime.fromtimestamp(time()) - timedelta(days=1))
@@ -176,30 +173,6 @@ def test_compress_new_files(Lochness):
 
 
 
-def test_lochness_to_lochness_transfer(Lochness):
-    print()
-    protected_dir = Path(Lochness['phoenix_root']) / 'PROTECTED'
-
-    for i in range(10):
-        with tf.NamedTemporaryFile(suffix='tmp.text',
-                                   delete=False,
-                                   dir=protected_dir) as tmpfilename:
-
-            with open(tmpfilename.name, 'w') as f:
-                f.write('ha')
-
-
-    lochness_to_lochness_transfer(Lochness)
-    print(os.popen('tree').read())
-    shutil.rmtree('tmp_lochness')
-
-    compressed_file = list(Path('.').glob('tmp*tar'))[0]
-    os.popen(f'tar -xf {compressed_file}').read()
-    os.remove(str(compressed_file))
-
-    show_tree_then_delete('PHOENIX')
-
-
 def test_lochness_to_lochness_transfer_all(Lochness):
     print()
 
@@ -261,21 +234,6 @@ class DpaccArgs:
         self.pii_csv = ''
 
 
-def update_keyring_and_encrypt_DPACC(tmp_lochness_dir: str):
-    keyring_loc = Path(tmp_lochness_dir) / 'lochness.json'
-    with open(keyring_loc, 'r') as f:
-        keyring = json.load(f)
-
-    keyring['lochness_to_lochness_receive']['PATH_IN_HOST'] = '.'
-
-    with open(keyring_loc, 'w') as f:
-        json.dump(keyring, f)
-    
-    keyring_content = open(keyring_loc, 'rb')
-    key = crypt.kdf('')
-    crypt.encrypt(keyring_content, key,
-                  filename=Path(tmp_lochness_dir) / '.lochness.enc')
-
 
 def test_lochness_to_lochness_transfer_receive(Lochness):
     print()
@@ -323,3 +281,63 @@ def test_lochness_to_lochness_transfer_receive(Lochness):
 
     show_tree_then_delete('DPACC')
     os.remove(tmpfilename.name)
+
+
+def update_keyring_and_encrypt_DPACC(tmp_lochness_dir: str):
+    keyring_loc = Path(tmp_lochness_dir) / 'lochness.json'
+    with open(keyring_loc, 'r') as f:
+        keyring = json.load(f)
+
+    keyring['lochness_to_lochness_receive']['PATH_IN_HOST'] = '.'
+
+    with open(keyring_loc, 'w') as f:
+        json.dump(keyring, f)
+    
+    keyring_content = open(keyring_loc, 'rb')
+    key = crypt.kdf('')
+    crypt.encrypt(keyring_content, key,
+                  filename=Path(tmp_lochness_dir) / '.lochness.enc')
+
+
+def test_lochness_to_lochness_transfer(Lochness):
+    print()
+    protected_dir = Path(Lochness['phoenix_root']) / 'PROTECTED'
+
+    for i in range(10):
+        with tf.NamedTemporaryFile(suffix='tmp.text',
+                                   delete=False,
+                                   dir=protected_dir) as tmpfilename:
+
+            with open(tmpfilename.name, 'w') as f:
+                f.write('ha')
+
+
+    lochness_to_lochness_transfer(Lochness, False)
+    print(os.popen('tree').read())
+    shutil.rmtree('tmp_lochness')
+
+    compressed_file = list(Path('.').glob('tmp*tar'))[0]
+    os.popen(f'tar -xf {compressed_file}').read()
+    os.remove(str(compressed_file))
+
+    show_tree_then_delete('PHOENIX')
+
+
+
+def test_sftp():
+    host, username, password, path_in_host, port = get_tokens()
+    file_to_send = 'hoho.txt'
+    with open(file_to_send, 'w') as f:
+        f.write('hahahah')
+
+    transport = paramiko.Transport((host, int(port)))
+    transport.connect(username=username, password=password)
+    sftp = paramiko.SFTPClient.from_transport(transport)
+
+    sftp.put(file_to_send, str(Path(path_in_host) / Path(file_to_send).name))
+    sftp.close()
+    transport.close()
+
+    os.remove('hoho.txt')
+
+
