@@ -68,15 +68,16 @@ def main():
     parser.add_argument('--until', type=scheduler.parse,
                         help='Pause execution until specified date e.g., '
                              '2017-01-01T15:00:00')
-    parser.add_argument('-ls', '--lochness_sync',
+    parser.add_argument('-ls', '--lochness_sync_send',
                         action='store_true',
                         default=True,
-                        help='Enable lochness to lochness transfer')
+                        help='Enable lochness to lochness transfer on the '
+                             'sender side')
     parser.add_argument('-lsr', '--lochness_sync_receive',
                         action='store_true',
                         default=False,
                         help='Enable lochness to lochness transfer on the '
-                             'receiving side')
+                             'server side')
     parser.add_argument('--debug', action='store_true',
                         help='Enable debug messages')
     args = parser.parse_args()
