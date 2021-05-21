@@ -127,6 +127,7 @@ def get_ts_and_db(timestamp_db: str) -> Tuple[float, float, pd.DataFrame]:
                       timestamp
                       1621470407.030176
                       1621470455.6350138
+
     Returns:
         last_compress_timestamp: the timestamp for the last data compression.
                                  If the compress_db does not exist, a pseudo-
@@ -136,7 +137,7 @@ def get_ts_and_db(timestamp_db: str) -> Tuple[float, float, pd.DataFrame]:
         compress_df: table with the history of data compression including
                      the current time stamp.
     '''
-    tmp_timestamp = 590403600
+    tmp_timestamp = 590403600   # psedu-random timestamp in the past 1988-09-16
     if Path(timestamp_db).is_file():
         compress_df = pd.read_csv(timestamp_db, index_col=0)
         try:
