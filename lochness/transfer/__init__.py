@@ -294,3 +294,5 @@ def decompress_transferred_file_and_copy(target_phoenix_root: str,
 
                 # permission change
                 os.chmod(target_path, 0o0644)
+
+    os.remove(tar_file_trasferred)
