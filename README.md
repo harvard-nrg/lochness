@@ -161,7 +161,7 @@ In REDCap,
 - "Project Setup"
 - "Enable optional modules and customizations"
 - "Additional customizations"
-- check "Data Entry Trigger" and give address of the server including the port number. eg) http://pnl-t55-7.partners.org:9999
+- Check "Data Entry Trigger" and give address of the server including the port number e.g. http://pnl-t55-7.partners.org:9999
 
 
 In order to use this functionality, the server where lochness is installed
