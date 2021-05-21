@@ -45,7 +45,7 @@ Try using the `lochness_create_template.py` to create a starting point.
 Create an example template to easily structure the lochness system
 
 ```sh
-# PREDICT
+# ProNET
 lochness_create_template.py \
     --outdir /data/lochness_root \
     --studies BWH McLean \
