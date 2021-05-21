@@ -98,7 +98,7 @@ def compress_list_of_files(phoenix_root: str,
         └── StudyB
             └── StudyB_metadata.csv
 
-    Read docstring for get_updated_files.
+    Read docstring for get_updated_files().
     '''
 
     # convert the out_tar_ball to absolute path
