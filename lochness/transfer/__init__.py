@@ -18,7 +18,7 @@ def get_updated_files(phoenix_root: str,
                       timestamp_start: int,
                       timestamp_end: int,
                       general_only: bool = True) -> List[Path]:
-    '''Return list of file paths updated betwee time window using GNU find
+    '''Return list of file paths updated between time window using GNU find
 
     In order to compress the new files with the original structure from the
     PHOENIX root, the absolute paths returned by GNU find is changed to
@@ -98,7 +98,7 @@ def compress_list_of_files(phoenix_root: str,
         └── StudyB
             └── StudyB_metadata.csv
 
-    Read docstring for get_updated_files.
+    Read docstring for get_updated_files().
     '''
 
     # convert the out_tar_ball to absolute path
