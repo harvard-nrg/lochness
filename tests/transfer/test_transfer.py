@@ -6,10 +6,19 @@ from lochness.transfer import compress_new_files, lochness_to_lochness_transfer
 from lochness.transfer import decompress_transferred_file_and_copy
 from lochness.transfer import lochness_to_lochness_transfer_receive
 from pathlib import Path
+
 import sys
-scripts_dir = Path(lochness.__path__[0]).parent / 'scripts'
+lochness_root = Path(lochness.__path__[0]).parent
+scripts_dir = lochness_root / 'scripts'
+test_dir = lochness_root / 'tests'
 sys.path.append(str(scripts_dir))
+sys.path.append(str(test_dir))
+
+from test_lochness import Args, Tokens, KeyringAndEncrypt, args
+from test_lochness import show_tree_then_delete
+
 from lochness_create_template import create_lochness_template
+
 
 import lochness.config as config
 import pytest
@@ -24,75 +33,30 @@ import tarfile
 import paramiko
 
 
-class Args:
-    def __init__(self, root_dir):
-        self.outdir = root_dir
-        self.studies = ['StudyA', 'StudyB']
-        self.sources = ['Redcap', 'RPMS']
-        self.poll_interval = 10
-        self.ssh_user = 'kc244'
-        self.ssh_host = 'erisone.partners.org'
-        self.email = 'kevincho@bwh.harvard.edu'
-        self.lochness_to_lochness = True
-        self.lochness_sync_receive = False
-        self.lochness_sync_history_csv = 'lochness_sync_history.csv'
-        self.det_csv = 'prac.csv'
-        self.pii_csv = ''
+class KeyringAndEncryptLochnessTransfer(KeyringAndEncrypt):
+    def __init__(self, tmp_dir):
+        super().__init__(tmp_dir)
+        token = Tokens()
+        host, username, password, path_in_host, port = \
+                token.get_lochness_sync_info()
 
+        self.keyring['lochness_sync']['HOST'] = host
+        self.keyring['lochness_sync']['USERNAME'] = username
+        self.keyring['lochness_sync']['PASSWORD'] = password
+        self.keyring['lochness_sync']['PATH_IN_HOST'] = path_in_host
+        self.keyring['lochness_sync']['PORT'] = port
 
-def get_tokens():
-    token_and_url_file = Path('token.txt')
-
-    if token_and_url_file.is_file():
-        df = pd.read_csv(token_and_url_file, index_col=0)
-        host = df.loc['host', 'value']
-        username = df.loc['username', 'value']
-        password = df.loc['password', 'value']
-        path_in_host = df.loc['path_in_host', 'value']
-        port = df.loc['port', 'value']
-    else:
-        host = 'HOST'
-        username = 'USERNAME'
-        password = 'PASSWORD'
-        path_in_host = 'PATH_IN_HOST'
-        port = 'PORT'
-
-    return host, username, password, path_in_host, port
-
-
-def update_keyring_and_encrypt(tmp_lochness_dir: str):
-    keyring_loc = Path(tmp_lochness_dir) / 'lochness.json'
-    with open(keyring_loc, 'r') as f:
-        keyring = json.load(f)
-
-    keyring['rpms.StudyA']['RPMS_PATH'] = str(
-            Path(tmp_lochness_dir).absolute().parent / 'RPMS_repo')
-
-    host, username, password, path_in_host, port = get_tokens()
-    keyring['lochness_to_lochness']['HOST'] = host
-    keyring['lochness_to_lochness']['USERNAME'] = username
-    keyring['lochness_to_lochness']['PASSWORD'] = password
-    keyring['lochness_to_lochness']['PATH_IN_HOST'] = path_in_host
-    keyring['lochness_to_lochness']['PORT'] = port
-
-    with open(keyring_loc, 'w') as f:
-        json.dump(keyring, f)
-    
-    keyring_content = open(keyring_loc, 'rb')
-    key = crypt.kdf('')
-    crypt.encrypt(keyring_content, key,
-            filename=Path(tmp_lochness_dir) / '.lochness.enc')
+        self.write_keyring_and_encrypt()
 
 
 @pytest.fixture
 def Lochness():
     args = Args('tmp_lochness')
     create_lochness_template(args)
-    update_keyring_and_encrypt(args.outdir)
+    KeyringAndEncryptLochnessTransfer(args.outdir)
 
     lochness = config.load('tmp_lochness/config.yml', '')
     return lochness
-
 
 
 def test_get_updated_files(Lochness):
@@ -109,21 +73,7 @@ def test_get_updated_files(Lochness):
     assert Path('PHOENIX/GENERAL/StudyA/StudyA_metadata.csv') in file_lists
     assert Path('PHOENIX/GENERAL/StudyB/StudyB_metadata.csv') in file_lists
 
-    shutil.rmtree('tmp_lochness')
-
-    print(file_lists)
-    print(file_lists)
-
-
-def show_tree_then_delete(tmp_dir):
-    print()
-    print('-'*75)
-    print(f'Temporary directory structure : {tmp_dir}')
-    print('-'*75)
-    print(os.popen(f'tree {tmp_dir}').read())
-    shutil.rmtree(tmp_dir)
-
-
+    show_tree_then_delete('tmp_lochness')
 
 
 def test_compress_list_of_files(Lochness):
@@ -140,7 +90,7 @@ def test_compress_list_of_files(Lochness):
                                    posttime)
     compress_list_of_files(phoenix_root, file_lists, 'prac.tar')
 
-    shutil.rmtree('tmp_lochness')
+    show_tree_then_delete('tmp_lochness')
 
     # shutil.rmtree('tmp_lochness')
     assert Path('prac.tar').is_file()
@@ -203,7 +153,7 @@ def test_lochness_to_lochness_transfer_all(Lochness):
 
     compressed_file = list(Path('.').glob('tmp*tar'))[0]
     os.popen(f'tar -xf {compressed_file}').read()
-    # os.remove(str(compressed_file))
+    os.remove(str(compressed_file))
 
     show_tree_then_delete('PHOENIX')
 
@@ -227,7 +177,7 @@ class DpaccArgs:
         self.ssh_user = 'kc244'
         self.ssh_host = 'erisone.partners.org'
         self.email = 'kevincho@bwh.harvard.edu'
-        self.lochness_to_lochness = False
+        self.lochness_sync_send = False
         self.lochness_sync_receive = True
         self.lochness_sync_history_csv = 'lochness_sync_history.csv'
         self.det_csv = ''
@@ -265,7 +215,7 @@ def test_lochness_to_lochness_transfer_receive(Lochness):
 
     compressed_file = list(Path('.').glob('tmp*tar'))[0]
     os.popen(f'tar -xf {compressed_file}').read()
-    # os.remove(str(compressed_file))
+    os.remove(str(compressed_file))
 
     show_tree_then_delete('PHOENIX')
 
@@ -288,7 +238,7 @@ def update_keyring_and_encrypt_DPACC(tmp_lochness_dir: str):
     with open(keyring_loc, 'r') as f:
         keyring = json.load(f)
 
-    keyring['lochness_to_lochness_receive']['PATH_IN_HOST'] = '.'
+    keyring['lochness_sync']['PATH_IN_HOST'] = '.'
 
     with open(keyring_loc, 'w') as f:
         json.dump(keyring, f)
@@ -325,7 +275,9 @@ def test_lochness_to_lochness_transfer(Lochness):
 
 
 def test_sftp():
-    host, username, password, path_in_host, port = get_tokens()
+    tokens = Tokens()
+    host, username, password, path_in_host, port = \
+            tokens.get_lochness_sync_info()
     file_to_send = 'hoho.txt'
     with open(file_to_send, 'w') as f:
         f.write('hahahah')
