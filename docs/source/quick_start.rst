@@ -14,6 +14,14 @@ Just use ``pip`` ::
 
     pip install lochness
 
+For the most recent DPACC-lochness install and debugging, see `Installation
+<https://github.com/PREDICT-DPACC/lochness/blob/master/README.md#installation>`_.
+
+
+Setup from a template
+------------
+See `Setup from a template
+<https://github.com/PREDICT-DPACC/lochness/blob/master/README.md#Setup-from-a-template>`_.
 
 
 Manual Setup
