@@ -68,7 +68,7 @@ def main():
     parser.add_argument('--until', type=scheduler.parse,
                         help='Pause execution until specified date e.g., '
                              '2017-01-01T15:00:00')
-    parser.add_argument('-ls', '--lochness_sync_send',
+    parser.add_argument('-lss', '--lochness_sync_send',
                         action='store_true',
                         default=True,
                         help='Enable lochness to lochness transfer on the '
@@ -145,7 +145,7 @@ def do(args):
                 lochness.attempt(Module.sync, Lochness, subject, dry=args.dry)
 
     # transfer new files after all sync attempts are done
-    if args.lochness_sync:
+    if args.lochness_sync_send:
         lochness_to_lochness_transfer(Lochness)
 
 
