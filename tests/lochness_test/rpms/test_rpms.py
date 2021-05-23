@@ -1,7 +1,6 @@
 import lochness
 import sys
 from pathlib import Path
-import lochness.config as config
 import lochness.tree as tree
 import time
 import pandas as pd
@@ -14,7 +13,7 @@ sys.path.append(str(test_dir))
 
 from lochness_create_template import create_lochness_template
 from test_lochness import Args, Tokens, KeyringAndEncrypt, args, Lochness
-from test_lochness import show_tree_then_delete
+from test_lochness import show_tree_then_delete, config_load_test
 from lochness.rpms import initialize_metadata, sync, get_rpms_database
 
 
@@ -118,7 +117,7 @@ def test_sync_from_empty(args):
 
     dry=False
     study_name = 'StudyA'
-    Lochness = config.load(f'{args.outdir}/config.yml', '')
+    Lochness = config_load_test(f'{args.outdir}/config.yml', '')
     initialize_metadata(Lochness, study_name, 'record_id1', 'Consent')
 
     for subject in lochness.read_phoenix_metadata(Lochness,
