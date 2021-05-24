@@ -130,7 +130,8 @@ def do(args):
         return True  # break the do function here for the receiving side
 
     # initialize (overwrite) metadata.csv using either REDCap or RPMS database
-    lochness.initialize_metadata(Lochness, args)
+    if 'redcap' in args.source or 'rpms' in args.source:
+        lochness.initialize_metadata(Lochness, args)
 
     for subject in lochness.read_phoenix_metadata(Lochness, args.studies):
         if not subject.active and args.skip_inactive:
