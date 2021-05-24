@@ -79,6 +79,7 @@ def Lochness():
     lochness = config_load_test('tmp_lochness/config.yml', '')
     return lochness
 
+
 def test_daris_download():
     daris_uid = 'subject01'
     latest_pull_mtime = 0
@@ -111,7 +112,6 @@ def test_daris_download():
     shutil.rmtree(tmpdir)
 
 
-
 def initialize_metadata(Lochness, study_name):
     df = pd.DataFrame({'Active': [1],
         'Consent': '1988.-09-16',
@@ -124,10 +124,6 @@ def initialize_metadata(Lochness, study_name):
 
 
 def test_sync_from_empty(Lochness):
-    # outdir = 'tmp_lochness'
-    # args.outdir = outdir
-    # create_lochness_template(args)
-    # update_keyring_and_encrypt(args.outdir)
     dry=False
     study_name = 'StudyA'
     initialize_metadata(Lochness, study_name)

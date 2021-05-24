@@ -15,12 +15,11 @@ sys.path.append(str(scripts_dir))
 sys.path.append(str(test_dir))
 
 from test_lochness import Args, Tokens, KeyringAndEncrypt, args
-from test_lochness import show_tree_then_delete
+from test_lochness import show_tree_then_delete, config_load_test
 
 from lochness_create_template import create_lochness_template
 
 
-import lochness.config as config
 import pytest
 from time import time
 from datetime import timedelta
@@ -55,7 +54,7 @@ def Lochness():
     create_lochness_template(args)
     KeyringAndEncryptLochnessTransfer(args.outdir)
 
-    lochness = config.load('tmp_lochness/config.yml', '')
+    lochness = config_load_test('tmp_lochness/config.yml', '')
     return lochness
 
 
@@ -225,7 +224,7 @@ def test_lochness_to_lochness_transfer_receive(Lochness):
     create_lochness_template(args)
     update_keyring_and_encrypt_DPACC(args.outdir)
 
-    lochness = config.load(f'{out_dir}/config.yml', '')
+    lochness = config_load_test(f'{out_dir}/config.yml', '')
     lochness_to_lochness_transfer_receive(lochness)
 
 
