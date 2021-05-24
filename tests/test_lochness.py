@@ -20,6 +20,26 @@ sys.path.append(str(test_dir))
 
 from lochness_test.config.test_config import create_config
 from lochness_create_template import create_lochness_template
+from sync import SOURCES
+
+
+class SyncArgs(object):
+    def __init__(self, root_dir):
+        self.source = ['xnat', 'box', 'redcap']
+        self.studies = ['StudyA', 'StudyB']
+        self.config = f'{root_dir}/config.yml'
+        self.lochness_sync_receive = False
+        self.lochness_sync_send = False
+        self.archive_base = None
+        self.hdd = None
+        self.dry = False
+
+        self.source = [SOURCES[x] for x in self.source]
+    def __str__(self):
+        return 'sync arg in {root_dir}'
+
+    def update_source(self, sources):
+        self.source = [SOURCES[x] for x in sources]
 
 
 class Args:
@@ -102,7 +122,7 @@ class KeyringAndEncrypt():
                 filename=self.tmp_lochness_dir / '.lochness.enc')
 
 
-def test_load(f: 'location', archive_base=None):
+def config_load_test(f: 'location', archive_base=None):
     '''load configuration file and keyring'''
     config.logger.debug('loading configuration')
 
@@ -144,7 +164,7 @@ def test_load(f: 'location', archive_base=None):
 
 @pytest.fixture
 def args():
-    return Args('test_lochness')
+    return Args('tmp_lochness')
 
 
 @pytest.fixture
@@ -153,7 +173,7 @@ def Lochness():
     create_lochness_template(args)
     _ = KeyringAndEncrypt(args.outdir)
 
-    lochness = test_load('tmp_lochness/config.yml', '')
+    lochness = config_load_test('tmp_lochness/config.yml', '')
     return lochness
 
 
@@ -246,3 +266,53 @@ def test_mindlamp_module():
         for module in subject.mindlamp:
             assert module == 'mindlamp.StudyA'
             mindlamp.sync(Lochness, subject, dry=True)
+
+
+def initialize_metadata_test(phoenix_root: 'phoenix root',
+                             study_name: str,
+                             sources_id_dict: dict) -> None:
+    '''Initialize metadata.csv by populating data
+
+    Key arguments:
+        phoenix_root: Root of the PHOENIX, str.
+        study_name: Name of the study, str.
+        sources_id_dict: Source information to test, dict of dict
+                         eg. {'xnat': {'subject_id':1001,
+                                       'source_id':'1001'}}
+    '''
+    df = pd.DataFrame()
+
+    # for each record in pulled information, extract subject ID and source IDs
+    for source, id_dict in sources_id_dict.items():
+        subject_dict = {'Subject ID': id_dict['subject_id']}
+
+        # Consent date
+        subject_dict['Consent'] = '1988-09-16'
+
+        subject_dict[source.capitalize()] = \
+                f'{source}.{study_name}:{id_dict["source_id"]}'
+        df_tmp = pd.DataFrame.from_dict(subject_dict, orient='index')
+        df = pd.concat([df, df_tmp.T])
+
+    # Each subject may have more than one arms, which will result in more than
+    # single item for the subject in the RPMS pulled `content`
+    # remove empty lables
+    df_final = pd.DataFrame()
+    for _, table in df.groupby(['Subject ID']):
+        pad_filled = table.fillna(
+                method='ffill').fillna(method='bfill').iloc[0]
+        df_final = pd.concat([df_final, pad_filled], axis=1)
+    df_final = df_final.T
+
+    # register all of the lables as active
+    df_final['Active'] = 1
+
+    # reorder columns
+    main_cols = ['Active', 'Consent', 'Subject ID']
+    df_final = df_final[main_cols + \
+            [x for x in df_final.columns if x not in main_cols]]
+
+    general_path = Path(phoenix_root) / 'GENERAL'
+    metadata_study = general_path / study_name / f"{study_name}_metadata.csv"
+
+    df_final.to_csv(metadata_study, index=False)
