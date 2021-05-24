@@ -82,7 +82,6 @@ def create_lochness_template(args):
     encrypt_keyring_loc = args.outdir / '.lochness.enc'
     create_keyring_template(keyring_loc, args)
 
-
     # write commands for the user to run after editing config and keyring
     write_commands_needed(args.outdir, config_loc,
                           keyring_loc, encrypt_keyring_loc, args.sources)
@@ -110,7 +109,7 @@ def write_commands_needed(outdir: Path,
         f.write('# run this command to run sync.py\n')
         f.write('# eg) bash 2_sync_command.sh\n')
         command = f"sync.py -c {config_loc} --source {' '.join(sources)} " \
-                "--debug --continuous\n"
+                   "--debug --continuous\n"
         f.write(command)
 
 
@@ -175,9 +174,9 @@ def create_keyring_template(keyring_loc: Path, args: object) -> None:
                 "TOKEN": "******",
                 }
 
-    if args.lochness_to_lochness:
+    if args.lochness_sync_send:
         # lower part of the keyring
-        template_dict[f'lochness_to_lochness'] = {
+        template_dict[f'lochness_sync'] = {
             "HOST": "phslxftp2.partners.org",
             "USERNAME": "USERNAME",
             "PASSWORD": "*******",
@@ -187,7 +186,7 @@ def create_keyring_template(keyring_loc: Path, args: object) -> None:
 
     if args.lochness_sync_receive:
         # lower part of the keyring
-        template_dict[f'lochness_to_lochness_receive'] = {
+        template_dict[f'lochness_sync'] = {
             "PATH_IN_HOST": "/PATH/IN/HOST",
             }
 
@@ -348,14 +347,16 @@ def get_arguments():
     parser.add_argument('-su', '--ssh_user',
                         required=True,
                         help='ssh id')
-    parser.add_argument('-ltl', '--lochness_to_lochness',
+    parser.add_argument('-lss', '--lochness_sync_send',
                         default=True,
                         action='store_true',
-                        help='Sync Lochness to Lochness')
+                        help='Enable lochness to lochness transfer on the '
+                             'sender side')
     parser.add_argument('-lsr', '--lochness_sync_receive',
-                        default=True,
+                        default=False,
                         action='store_true',
-                        help='Sync Lochness to Lochness on the receiving side')
+                        help='Enable lochness to lochness transfer on the '
+                             'server side')
     parser.add_argument('-lsh', '--lochness_sync_history_csv',
                         default='lochness_sync_history.csv',
                         help='Lochness sync history database csv path')
