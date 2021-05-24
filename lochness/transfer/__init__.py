@@ -191,7 +191,7 @@ def compress_new_files(compress_db: str, phoenix_root: str,
 def send_data_over_sftp(Lochness, file_to_send: str):
     '''Send data over sftp'''
 
-    sftp_keyring = Lochness['keyring']['lochness_to_lochness']
+    sftp_keyring = Lochness['keyring']['lochness_sync']
     host = sftp_keyring['HOST']
     username = sftp_keyring['USERNAME']
     password = sftp_keyring['PASSWORD']
@@ -234,7 +234,7 @@ def lochness_to_lochness_transfer_receive(Lochness):
 
     Structure needed in the Lochness['keyring']
         Lochness['keyring'] = {
-            'lochness_to_lochness_receive': {
+            'lochness_sync': {
                 'PATH_IN_HOST': '/SFTP/DATA/REPO'
             }
         }
@@ -243,11 +243,7 @@ def lochness_to_lochness_transfer_receive(Lochness):
     TODO: move PATH_IN_HOST to config?
     '''
 
-    # sftp_keyring = Lochness['keyring']['lochness_to_lochness']
-    # host = sftp_keyring['HOST']
-    # path_in_host = sftp_keyring['PATH_IN_HOST']
-
-    sftp_keyring = Lochness['keyring']['lochness_to_lochness_receive']
+    sftp_keyring = Lochness['keyring']['lochness_sync']
     path_in_host = sftp_keyring['PATH_IN_HOST']
 
     target_phoenix_root = Lochness['phoenix_root']
@@ -277,7 +273,7 @@ def decompress_transferred_file_and_copy(target_phoenix_root: str,
     Key arguments:
         target_phoenix_root: path of the PHOENIX directory, str.
         tar_file_trasferred: path of the tar file transferred from another
-                             lochness using lochness_to_lochness_transfer, str.
+                             lochness using lochness_sync, str.
     '''
     tar = tarfile.open(tar_file_trasferred)
 
