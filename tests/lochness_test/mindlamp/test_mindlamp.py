@@ -33,9 +33,6 @@ import json
 
 
 class TokensMindlamp(Tokens):
-    def __init__(self):
-        super().__init__()
-
     def get_mindlamp_token(self):
         if self.token_and_url_file.is_file():
             df = pd.read_csv(self.token_and_url_file)
@@ -55,7 +52,7 @@ class TokensMindlamp(Tokens):
 class KeyringAndEncryptMindlamp(KeyringAndEncrypt):
     def __init__(self, tmp_dir):
         super().__init__(tmp_dir)
-        token = TokensMindlamp()
+        token = TokensMindlamp(test_dir / 'lochness_test' / 'transfer')
         mindlamp_token, access_key, secret_key, api_url = \
                 token.get_mindlamp_token()
 
@@ -68,7 +65,7 @@ class KeyringAndEncryptMindlamp(KeyringAndEncrypt):
 
 
 def test_lamp_modules():
-    token = TokensMindlamp()
+    token = TokensMindlamp(test_dir / 'lochness_test' / 'transfer')
     mindlamp_token, access_key, secret_key, api_url = token.get_mindlamp_token()
     LAMP.connect(access_key, secret_key)
     study_id, study_name = get_study_lamp(LAMP)

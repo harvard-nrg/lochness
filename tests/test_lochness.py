@@ -61,25 +61,33 @@ class Args:
 
 class Tokens():
     '''class used to load sensitive information for lochness.tests'''
-    def __init__(self):
-        self.token_and_url_file = Path('token.txt')
+    def __init__(self, root):
+        self.token_and_url_file = Path(root) / 'token.txt'
 
-    def get_lochness_sync_info(self):
+    def get_redcap_info(self):
         if self.token_and_url_file.is_file():
             df = pd.read_csv(self.token_and_url_file, index_col=0)
-            host = df.loc['host', 'value']
-            username = df.loc['username', 'value']
-            password = df.loc['password', 'value']
-            path_in_host = df.loc['path_in_host', 'value']
-            port = df.loc['port', 'value']
+            API_TOKEN = df.loc['API_TOKEN', 'value']
+            URL = df.loc['URL', 'value']
         else:
-            host = 'HOST'
-            username = 'USERNAME'
-            password = 'PASSWORD'
-            path_in_host = 'PATH_IN_HOST'
-            port = 'PORT'
+            API_TOKEN = 'API_TOKEN'
+            URL = 'URL'
 
-        return host, username, password, path_in_host, port
+        return API_TOKEN, URL
+
+    def read_token_or_get_input(self):
+        items_to_return = []
+        if self.token_and_url_file.is_file():
+            df = pd.read_csv(self.token_and_url_file, index_col=0)
+            for index, row in df.iterrows():
+                items_to_return.append(row['value'])
+
+        else:
+            for index, row in df.iterrows():
+                user_input_value = input(f'Enter {row["var"]}: ')
+                items_to_return.append(user_input_value)
+
+        return items_to_return
 
 
 class KeyringAndEncrypt():
@@ -99,15 +107,24 @@ class KeyringAndEncrypt():
         self.write_keyring_and_encrypt()
 
     def update_for_lochness_sync(self):
-        token = Tokens()
+        token = Tokens(test_dir / 'lochness_test' / 'transfer')
         host, username, password, path_in_host, port = \
-                token.get_lochness_sync_info()
+                token.read_token_or_get_input()
 
         self.keyring['lochness_sync']['HOST'] = host
         self.keyring['lochness_sync']['USERNAME'] = username
         self.keyring['lochness_sync']['PASSWORD'] = password
         self.keyring['lochness_sync']['PATH_IN_HOST'] = path_in_host
         self.keyring['lochness_sync']['PORT'] = port
+
+        self.write_keyring_and_encrypt()
+
+    def update_for_redcap(self, study):
+        token = Tokens(test_dir / 'lochness_test' / 'redcap')
+        api_token, url = token.read_token_or_get_input()
+
+        self.keyring[f'redcap.{study}']['URL'] = url
+        self.keyring[f'redcap.{study}']['API_TOKEN'] = {study: api_token}
 
         self.write_keyring_and_encrypt()
 
@@ -183,6 +200,10 @@ def show_tree_then_delete(tmp_dir):
     print(f'Temporary directory structure : {tmp_dir}')
     print('-'*75)
     print(os.popen(f'tree {tmp_dir}').read())
+    shutil.rmtree(tmp_dir)
+
+
+def rmtree(tmp_dir):
     shutil.rmtree(tmp_dir)
 
 
@@ -316,3 +337,13 @@ def initialize_metadata_test(phoenix_root: 'phoenix root',
     metadata_study = general_path / study_name / f"{study_name}_metadata.csv"
 
     df_final.to_csv(metadata_study, index=False)
+
+
+def print_header(text):
+    print()
+    print()
+    print('='*79)
+    print('\t' + '\n\t'.join(text.split('\n')))
+    print('='*79)
+
+

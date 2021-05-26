@@ -42,7 +42,7 @@ def args():
 class KeyringAndEncryptDaris(KeyringAndEncrypt):
     def __init__(self, tmp_dir):
         super().__init__(tmp_dir)
-        token = TokensDaris()
+        token = TokensDaris(test_dir / 'lochness_test' / 'transfer')
         token, url, project_cid = token.get_token_daris()
 
         self.keyring['daris.StudyA']['TOKEN'] = token
@@ -53,9 +53,6 @@ class KeyringAndEncryptDaris(KeyringAndEncrypt):
 
 
 class TokensDaris(Tokens):
-    def __init__(self):
-        super().__init__()
-
     def get_token_daris(self):
         print(self.token_and_url_file)
         if self.token_and_url_file.is_file():

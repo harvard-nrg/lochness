@@ -14,7 +14,7 @@ test_dir = lochness_root / 'tests'
 sys.path.append(str(scripts_dir))
 sys.path.append(str(test_dir))
 
-from test_lochness import Args, Tokens, KeyringAndEncrypt, args
+from test_lochness import Args, Tokens, KeyringAndEncrypt, args, SyncArgs
 from test_lochness import show_tree_then_delete, config_load_test
 
 from lochness_create_template import create_lochness_template
@@ -31,13 +31,15 @@ import tempfile as tf
 import tarfile
 import paramiko
 
+from sync import do
+
 
 class KeyringAndEncryptLochnessTransfer(KeyringAndEncrypt):
     def __init__(self, tmp_dir):
         super().__init__(tmp_dir)
-        token = Tokens()
+        token = Tokens(test_dir / 'lochness_test' / 'transfer')
         host, username, password, path_in_host, port = \
-                token.get_lochness_sync_info()
+                token.read_token_or_get_input()
 
         self.keyring['lochness_sync']['HOST'] = host
         self.keyring['lochness_sync']['USERNAME'] = username
@@ -56,6 +58,7 @@ def Lochness():
 
     lochness = config_load_test('tmp_lochness/config.yml', '')
     return lochness
+
 
 
 def test_get_updated_files(Lochness):
@@ -274,9 +277,9 @@ def test_lochness_to_lochness_transfer(Lochness):
 
 
 def test_sftp():
-    tokens = Tokens()
+    tokens = Tokens(test_dir / 'lochness_test' / 'transfer')
     host, username, password, path_in_host, port = \
-            tokens.get_lochness_sync_info()
+            tokens.read_token_or_get_input()
     file_to_send = 'hoho.txt'
     with open(file_to_send, 'w') as f:
         f.write('hahahah')
@@ -292,3 +295,8 @@ def test_sftp():
     os.remove('hoho.txt')
 
 
+def test_using_sync_do_send(Lochness):
+    syncArg = SyncArgs('tmp_lochness')
+    syncArg.lochness_sync_send = True
+    do(syncArg)
+    show_tree_then_delete('tmp_lochness')
