@@ -1,279 +1,210 @@
-import lochness.redcap
+import lochness
 import pandas as pd
-pd.set_option('max_columns', 50)
-from lochness.redcap import check_if_modified, get_data_entry_trigger_df
-import shutil
-from lochness.redcap import iterate, redcap_projects, post_to_redcap
-from lochness.redcap import update_study_metadata
-import json
-import re
-import os
+import json, os, time
 from lochness import tree
-from lochness import config
 from pathlib import Path
-import pandas as pd
-import tempfile
-from typing import List
+
+from lochness.redcap import sync, initialize_metadata
+from lochness.redcap.data_trigger_capture import save_post_from_redcap
 
 import sys
-scripts_dir = Path(lochness.__path__[0]).parent / 'tests'
+lochness_root = Path(lochness.__path__[0]).parent
+scripts_dir = lochness_root / 'scripts'
+test_dir = lochness_root / 'tests'
 sys.path.append(str(scripts_dir))
-from config.test_config import create_config
-from mock_args import LochnessArgs, mock_load
-from lochness import keyring
+sys.path.append(str(test_dir))
+from test_lochness import Args, KeyringAndEncrypt
+from test_lochness import show_tree_then_delete, rmtree, config_load_test
+from lochness_create_template import create_lochness_template
+
+import pytest
+pd.set_option('max_columns', 50)
 
 
-class Args():
-    def __init__(self):
-        self.source = ['xnat', 'box', 'redcap']
-        self.config = scripts_dir / 'config.yml'
-        self.archive_base = None
-    def __str__(self):
-        return 'haha'
+@pytest.fixture
+def args_and_Lochness():
+    args = Args('tmp_lochness')
+    create_lochness_template(args)
+    keyring = KeyringAndEncrypt(args.outdir)
+    for study in args.studies:
+        keyring.update_for_redcap(study)
+
+    lochness_obj = config_load_test('tmp_lochness/config.yml', '')
+
+    return args, lochness_obj
 
 
-class FakeSubject():
-    def __init__(self, subject: 'Lochness.subject'):
-        self.id = subject.id
-        self.metadata_csv = subject.metadata_csv
+def test_initialize_metadata_function_adding_new_data_to_csv(
+        args_and_Lochness):
+    args, Lochness = args_and_Lochness
+
+    # before initializing metadata
+    for study in args.studies:
+        phoenix_path = Path(Lochness['phoenix_root'])
+        general_path = phoenix_path / 'GENERAL'
+        metadata = general_path / study / f"{study}_metadata.csv"
+        assert len(pd.read_csv(metadata)) == 1
+
+        initialize_metadata(Lochness, study, 'record_id1', 'cons_date')
+
+        assert len(pd.read_csv(metadata)) > 3
+
+    rmtree('tmp_lochness')
 
 
-def test_redcap_sync_module():
-    print()
-    args = Args()
-    args.source = ['redcap']
-    args.studies = ['StudyA']
-    args.dry = [False]
-    Lochness = mock_load(args.config, args.archive_base)
-    Lochness['phoenix_root'] = '/Users/kc244/lochness/tests/PHOENIX'
+def test_initialize_metadata_then_sync(args_and_Lochness):
+    args, Lochness = args_and_Lochness
 
-    real_keyring = keyring.load_encrypted_keyring('/Users/kc244/.lochness.enc')
-    Lochness['keyring'] = real_keyring
-
-    for subject in lochness.read_phoenix_metadata(Lochness,
-                                                  studies=['StudyA']):
-        print(subject)
-        for module in subject.redcap:
-            dst_folder = tree.get('surveys', subject.protected_folder)
-            # fname = os.path.join(dst_folder,
-                                 # f'{redcap_subject}.{_redcap_project}.json')
-            fname = os.path.join(dst_folder,
-                                 'a.b.json')
-            dst = os.path.join(dst_folder, fname)
-
-            print(module)
-            print(module)
-            print(fname)
-            print(dst_folder)
-            print(dst)
-            deidentify = lochness.redcap.deidentify_flag(Lochness, subject.study)
-
-            # load dataframe for redcap data entry trigger
-            db_df = get_data_entry_trigger_df(Lochness)
-            for redcap_instance, redcap_subject in iterate(subject):
-                for redcap_project, api_url, api_key in redcap_projects(
-                        Lochness, subject.study, redcap_instance):
-                    # process the response content
-                    _redcap_project = re.sub(r'[\W]+', '_', redcap_project.strip())
-
-                    # default location to protected folder
-                    dst_folder = tree.get('surveys', subject.protected_folder)
-                    fname = f'{redcap_subject}.{_redcap_project}.json'
-                    dst = Path(dst_folder) / fname
-
-
-                    _debug_tup = (redcap_instance, redcap_project, redcap_subject)
-
-                    record_query = {
-                        'token': api_key,
-                        'content': 'record',
-                        'format': 'json',
-                        'records': redcap_subject
-                    }
-
-                    # post query to redcap
-                    content = post_to_redcap(api_url, record_query, _debug_tup)
-                    # print(content)
-
-                    # if not os.path.exists(dst):
-                        # lochness.atomic_write(dst, content)
-                        # process_and_copy_json(Lochness, subject, dst,
-                                              # redcap_subject,
-                                              # _redcap_project)
-
-
-def test_get_data_entry_trigger_df_existing_file():
-    args = Args()
-    args.source = ['redcap']
-    args.studies = ['StudyA']
-    args.dry = [False]
-    Lochness = mock_load(args.config, args.archive_base)
-
-    df = get_data_entry_trigger_df(Lochness)
-    print(df)
-
-
-def test_get_data_entry_trigger_df_missing_file():
-    args = Args()
-    args.source = ['redcap']
-    args.studies = ['StudyA']
-    args.dry = [False]
-    Lochness = mock_load(args.config, args.archive_base)
-
-    Lochness['redcap'].pop('data_entry_trigger_csv')
-    df = get_data_entry_trigger_df(Lochness)
-    print(df)
-
-
-def test_check_if_modified():
-    df = pd.DataFrame({'record':[1001], 'timestamp':10})
-    df['record'] = df['record'].astype(str)
-
-    with tempfile.NamedTemporaryFile(delete=False,
-                                     suffix='tmp.json') as tmpfilename:
-        with open(tmpfilename.name, 'w') as f:
-            f.write('tmp.json')
-        # higher the timestamp -> more recent update
-        # lower the timestamp -> older update
-        df.loc[1, 'record'] = 'hahaha'
-        # redcap updated very recently
-        df.loc[1, 'timestamp'] = Path(tmpfilename.name).stat().st_mtime + 100
-        subject_id = 'hahaha'
-
-        existing_json = tmpfilename.name
-        assert check_if_modified(subject_id, existing_json, df)
-
-    with tempfile.NamedTemporaryFile(delete=False,
-                                     suffix='tmp.json') as tmpfilename:
-        with open(tmpfilename.name, 'w') as f:
-            f.write('tmp.json')
-
-        # higher the timestamp -> more recent update
-        # lower the timestamp -> older update
-        df.loc[1, 'record'] = 'hahaha'
-        # no redcap update after last download
-        df.loc[1, 'timestamp'] = Path(tmpfilename.name).stat().st_mtime - 100
-        subject_id = 'hahaha'
-
-        existing_json = tmpfilename.name
-        assert ~check_if_modified(subject_id, existing_json, df)
-
-
-def test_check_if_modified_with_sync_execution():
-    args = Args()
-    args.source = ['redcap']
-    args.studies = ['StudyA']
-    args.dry = [False]
-    Lochness = mock_load(args.config, args.archive_base)
-
-
-    with tempfile.NamedTemporaryFile(delete=False,
-                                     suffix='tmp.json') as tmpfilename:
-        with open(tmpfilename.name, 'w') as f:
-            f.write('tmp.json')
-
-        df = pd.DataFrame({'record':[1001], 'timestamp':10})
-        df['record'] = df['record'].astype(str)
-        # higher the timestamp -> more recent update
-        # lower the timestamp -> older update
-        df.loc[1, 'record'] = 'hahaha'
-
-        # no redcap update after last download
-        df.loc[1, 'timestamp'] = Path(tmpfilename.name).stat().st_mtime - 100
-        subject_id = 'hahaha'
-
-        Lochness['redcap']['data_entry_trigger_csv']
-        existing_json = tmpfilename.name
-        assert ~check_if_modified(subject_id, existing_json, df)
-
-    # execute sync
-    for subject in lochness.read_phoenix_metadata(Lochness,
-                                                  studies=['StudyA']):
-        # print(subject)
-        for module in subject.redcap:
-            lochness.redcap.sync(Lochness, subject, dry=True)
-
-
-
-def test_update_metadata_after_pool():
-    print()
-    args = Args()
-    args.source = ['redcap']
-    args.studies = ['StudyA']
-    args.dry = [False]
-    Lochness = mock_load(args.config, args.archive_base)
-    Lochness['phoenix_root'] = '/Users/kc244/lochness/tests/PHOENIX'
-
-    real_keyring = keyring.load_encrypted_keyring('/Users/kc244/.lochness.enc')
-    Lochness['keyring'] = real_keyring
+    # before initializing metadata
+    for study in args.studies:
+        phoenix_path = Path(Lochness['phoenix_root'])
+        general_path = phoenix_path / 'GENERAL'
+        metadata = general_path / study / f"{study}_metadata.csv"
+        initialize_metadata(Lochness, study, 'record_id1', 'cons_date')
 
     for subject in lochness.read_phoenix_metadata(Lochness,
                                                   studies=['StudyA']):
-        for module in subject.redcap:
-            dst_folder = tree.get('surveys', subject.protected_folder)
-            # fname = os.path.join(dst_folder,
-                                 # f'{redcap_subject}.{_redcap_project}.json')
-            fname = os.path.join(dst_folder,
-                                 'a.b.json')
-            dst = os.path.join(dst_folder, fname)
+        sync(Lochness, subject, False)
 
-            deidentify = lochness.redcap.deidentify_flag(Lochness, subject.study)
-
-            # load dataframe for redcap data entry trigger
-            db_df = get_data_entry_trigger_df(Lochness)
-            for redcap_instance, redcap_subject in iterate(subject):
-                for redcap_project, api_url, api_key in redcap_projects(
-                        Lochness, subject.study, redcap_instance):
-                    # process the response content
-                    _redcap_project = re.sub(r'[\W]+', '_', redcap_project.strip())
-
-                    # default location to protected folder
-                    dst_folder = tree.get('surveys', subject.protected_folder)
-                    fname = f'{redcap_subject}.{_redcap_project}.json'
-                    dst = Path(dst_folder) / fname
+    show_tree_then_delete('tmp_lochness')
 
 
-                    _debug_tup = (redcap_instance, redcap_project, redcap_subject)
+@pytest.fixture
+def LochnessMetadataInitialized(args_and_Lochness):
+    args, Lochness = args_and_Lochness
 
-                    record_query = {
-                        'token': api_key,
-                        'content': 'record',
-                        'format': 'json',
-                        'records': redcap_subject
-                    }
+    # before initializing metadata
+    for study in args.studies:
+        phoenix_path = Path(Lochness['phoenix_root'])
+        general_path = phoenix_path / 'GENERAL'
+        metadata = general_path / study / f"{study}_metadata.csv"
 
-                    # post query to redcap
-                    content = post_to_redcap(api_url, record_query, _debug_tup)
-                    metadata = json.loads(content)
-                    # print(metadata[0])
-                    # print(metadata[0]['subject_id'])
-                    if Lochness['redcap']['update_metadata']:
-                        metadata[0]['Box_id'] = 'StudyA:1234'
-                        metadata[0]['Mindlamp_id'] = 'StudyA:U12341234'
-                        metadata[0]['Mediaflux_id'] = 'StudyA:haho'
-                        metadata[0]['XNAT_id'] = 'StudyA:HCPEP-BWH:test'
+        initialize_metadata(Lochness, study, 'record_id1', 'cons_date')
 
-                        tmp_metadata_csv_loc = 'tmp.csv'
-                        shutil.copy(subject.metadata_csv,
-                                    tmp_metadata_csv_loc)
-                        fake_subject = FakeSubject(subject)
-                        fake_subject.metadata_csv = tmp_metadata_csv_loc
-                        update_study_metadata(fake_subject, metadata)
+    return Lochness
 
 
-    tmp_created = pd.read_csv('tmp.csv')
-    assert tmp_created.iloc[0]['XNAT'] == \
-            f"xnat.{metadata[0]['XNAT_id']}"
-    assert tmp_created.iloc[0]['Mediaflux'] == \
-            f"mediaflux.{metadata[0]['Mediaflux_id']}"
-    assert tmp_created.iloc[0]['Mindlamp'] == \
-            f"mindlamp.{metadata[0]['Mindlamp_id']}"
-    os.remove('tmp.csv')
+def test_initialize_metadata_update_when_initialized_again(
+        LochnessMetadataInitialized):
+    args = Args('tmp_lochness')
+    for study in args.studies:
+        phoenix_path = Path(LochnessMetadataInitialized['phoenix_root'])
+        general_path = phoenix_path / 'GENERAL'
+        metadata = general_path / study / f"{study}_metadata.csv"
+
+        prev_st_mtime = metadata.stat().st_mtime
+
+        initialize_metadata(LochnessMetadataInitialized, study,
+                            'record_id1', 'cons_date')
+        post_st_mtime = metadata.stat().st_mtime
+
+        assert prev_st_mtime < post_st_mtime
 
 
+@pytest.fixture
+def lochness_subject_raw_json(LochnessMetadataInitialized):
+    for subject in lochness.read_phoenix_metadata(LochnessMetadataInitialized,
+                                                  studies=['StudyA']):
+        if subject.id != 'subject_1':
+            continue
 
-def prac():
-    {'Box_id':'StudyA:1234',
-    'Mindlamp_id':'StudyA:U12341234',
-    'Mediaflux_id':'StudyA:haho'}
-    pass
+        phoenix_path = Path(LochnessMetadataInitialized['phoenix_root'])
+        subject_proc_p = phoenix_path / 'PROTECTED' / 'StudyA' / 'subject_1'
+        raw_json = subject_proc_p / 'surveys' / 'raw' / \
+                f"{subject.id}.StudyA.json"
+
+        return LochnessMetadataInitialized, subject, raw_json
+
+
+def test_sync_init(lochness_subject_raw_json):
+    Lochness, subject, raw_json = lochness_subject_raw_json
+    sync(Lochness, subject, False)
+    assert raw_json.is_file() == True
+    rmtree('tmp_lochness')
+
+
+def test_sync_twice(lochness_subject_raw_json):
+    Lochness, subject, raw_json = lochness_subject_raw_json
+    sync(Lochness, subject, False)
+    # second sync without update in the db
+    sync(Lochness, subject, False)
+    rmtree('tmp_lochness')
+
+
+def test_sync_no_mtime_update_when_no_pull(
+        lochness_subject_raw_json):
+    Lochness, subject, raw_json = lochness_subject_raw_json
+    sync(Lochness, subject, False)
+    init_mtime = raw_json.stat().st_mtime
+
+    # second sync without update in the db
+    sync(Lochness, subject, False)
+    assert init_mtime == raw_json.stat().st_mtime
+    rmtree('tmp_lochness')
+
+
+def test_sync_det_update_no_file_leads_to_pull(
+        lochness_subject_raw_json):
+    Lochness, subject, raw_json = lochness_subject_raw_json
+    sync(Lochness, subject, False)
+    init_mtime = raw_json.stat().st_mtime
+
+    os.remove(raw_json)
+    text_body = "redcap_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2F&project_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2Fredcap_v10.0.30%2Findex.php%3Fpid%3D26709&project_id=26709&username=kc244&record=subject_1&instrument=inclusionexclusion_checklist&inclusionexclusion_checklist_complete=0"
+    save_post_from_redcap(
+            text_body,
+            Lochness['redcap']['data_entry_trigger_csv'])
+
+    # second sync without update in the db
+    sync(Lochness, subject, False)
+    assert raw_json.is_file()
+    rmtree('tmp_lochness')
+
+
+def test_sync_det_update_while_file_leads_to_mtime_update(
+        lochness_subject_raw_json):
+    Lochness, subject, raw_json = lochness_subject_raw_json
+    sync(Lochness, subject, False)
+    init_mtime = raw_json.stat().st_mtime
+
+    text_body = "redcap_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2F&project_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2Fredcap_v10.0.30%2Findex.php%3Fpid%3D26709&project_id=26709&username=kc244&record=subject_1&instrument=inclusionexclusion_checklist&inclusionexclusion_checklist_complete=0"
+    save_post_from_redcap(
+            text_body,
+            Lochness['redcap']['data_entry_trigger_csv'])
+
+    with open(raw_json, 'r') as json_file:
+        init_content_dict = json.load(json_file)
+
+    # second sync without update in the db
+    sync(Lochness, subject, False)
+
+    with open(raw_json, 'r') as json_file:
+        new_content_dict = json.load(json_file)
+
+    assert init_content_dict == new_content_dict
+    assert init_mtime < raw_json.stat().st_mtime
+    rmtree('tmp_lochness')
+
+
+def test_sync_det_update_while_diff_file_leads_to_data_overwrite(
+        lochness_subject_raw_json):
+    Lochness, subject, raw_json = lochness_subject_raw_json
+    sync(Lochness, subject, False)
+    # change the content of the existing json
+    with open(raw_json, 'w') as json_file:
+        json.dump({'test':'test'}, json_file)
+
+    text_body = "redcap_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2F&project_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2Fredcap_v10.0.30%2Findex.php%3Fpid%3D26709&project_id=26709&username=kc244&record=subject_1&instrument=inclusionexclusion_checklist&inclusionexclusion_checklist_complete=0"
+    save_post_from_redcap(
+            text_body,
+            Lochness['redcap']['data_entry_trigger_csv'])
+
+    # second sync without update in the db
+    sync(Lochness, subject, False)
+
+    with open(raw_json, 'r') as json_file:
+        new_content_dict = json.load(json_file)
+    assert {'test':'test'} != new_content_dict
+    rmtree('tmp_lochness')
+
+
