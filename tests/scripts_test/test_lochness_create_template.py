@@ -2,9 +2,14 @@ import lochness
 
 from pathlib import Path
 import sys
-scripts_dir = Path(lochness.__path__[0]).parent / 'scripts'
+lochness_root = Path(lochness.__path__[0]).parent
+scripts_dir = lochness_root / 'scripts'
+test_dir = lochness_root / 'tests'
 sys.path.append(str(scripts_dir))
+sys.path.append(str(test_dir))
 from lochness_create_template import create_lochness_template
+from test_lochness import show_tree_then_delete, args
+
 import pytest
 import shutil
 import pandas as pd
@@ -32,13 +37,13 @@ class Args:
 
 def test_create_lochness_template(args):
     create_lochness_template(args)
-    show_tree_then_delete('test_lochness')
+    show_tree_then_delete('tmp_lochness')
 
 
 def test_create_lochness_template_multiple_study(args):
     args.studies = ['StudyA', 'StudyB']
     create_lochness_template(args)
-    show_tree_then_delete('test_lochness')
+    show_tree_then_delete('tmp_lochness')
 
 
 def test_create_lochness_template_for_documentation(args):
