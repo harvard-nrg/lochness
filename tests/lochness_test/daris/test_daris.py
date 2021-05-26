@@ -42,8 +42,8 @@ def args():
 class KeyringAndEncryptDaris(KeyringAndEncrypt):
     def __init__(self, tmp_dir):
         super().__init__(tmp_dir)
-        token = TokensDaris(test_dir / 'lochness_test' / 'transfer')
-        token, url, project_cid = token.get_token_daris()
+        token = Tokens(test_dir / 'lochness_test' / 'daris')
+        token, url, project_cid = token.read_token_or_get_input()
 
         self.keyring['daris.StudyA']['TOKEN'] = token
         self.keyring['daris.StudyA']['URL'] = url
@@ -51,21 +51,6 @@ class KeyringAndEncryptDaris(KeyringAndEncrypt):
 
         self.write_keyring_and_encrypt()
 
-
-class TokensDaris(Tokens):
-    def get_token_daris(self):
-        print(self.token_and_url_file)
-        if self.token_and_url_file.is_file():
-            df = pd.read_csv(self.token_and_url_file)
-            token = df.iloc[0]['token']
-            url = df.iloc[0]['url']
-            project_cid = df.iloc[0]['project_id']
-        else:
-            token = input('Enter token: ')
-            url = input('Enter URL: ')
-            project_cid = input('Enter project CID: ')
-
-        return token, url, project_cid
 
 @pytest.fixture
 def Lochness():
@@ -80,8 +65,8 @@ def Lochness():
 def test_daris_download():
     daris_uid = 'subject01'
     latest_pull_mtime = 0
-    token = TokensDaris()
-    token, url, project_cid = token.get_token_daris()
+    token = Tokens(test_dir / 'lochness_test' / 'daris')
+    token, url, project_cid = token.read_token_or_get_input()
     dst_zipfile = 'tmp.zip'
 
     daris_download(daris_uid, latest_pull_mtime, token,
