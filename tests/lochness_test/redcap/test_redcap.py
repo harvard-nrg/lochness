@@ -193,7 +193,7 @@ def test_sync_det_update_while_diff_file_leads_to_data_overwrite(
     sync(Lochness, subject, False)
     # change the content of the existing json
     with open(raw_json, 'w') as json_file:
-        json.dump({'test':'test'}, json_file)
+        json.dump({'test': 'test'}, json_file)
 
     text_body = "redcap_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2F&project_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2Fredcap_v10.0.30%2Findex.php%3Fpid%3D26709&project_id=26709&username=kc244&record=subject_1&instrument=inclusionexclusion_checklist&inclusionexclusion_checklist_complete=0"
     save_post_from_redcap(
@@ -205,7 +205,7 @@ def test_sync_det_update_while_diff_file_leads_to_data_overwrite(
 
     with open(raw_json, 'r') as json_file:
         new_content_dict = json.load(json_file)
-    assert {'test':'test'} != new_content_dict
+    assert {'test': 'test'} != new_content_dict
     rmtree('tmp_lochness')
 
 
@@ -213,6 +213,8 @@ def test_save_post_from_redcap():
     text_body = "redcap_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2F&project_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2Fredcap_v10.0.30%2Findex.php%3Fpid%3D26709&project_id=26709&username=kc244&record=1001_1&instrument=inclusionexclusion_checklist&inclusionexclusion_checklist_complete=0"
     save_post_from_redcap(text_body, 'ha.csv')
 
+    print(pd.read_csv('ha.csv'))
+    os.remove('ha.csv')
 
 def test_save_post_from_redcap_no_redcap_post():
     text_body = "hahahoho"
@@ -221,6 +223,8 @@ def test_save_post_from_redcap_no_redcap_post():
     else:
         print('no redcap post')
 
+    print(pd.read_csv('ha.csv'))
+    os.remove('ha.csv')
 
 def test_back_up_db():
     back_up_db('ha.csv')
@@ -228,4 +232,6 @@ def test_back_up_db():
     save_post_from_redcap(text_body, 'ha.csv')
 
     back_up_db('ha.csv')
+    print(pd.read_csv('ha.csv'))
+    os.remove('ha.csv')
 

@@ -9,7 +9,7 @@ test_dir = lochness_root / 'tests'
 sys.path.append(str(scripts_dir))
 sys.path.append(str(test_dir))
 
-from test_lochness import Tokens, KeyringAndEncrypt, args, SyncArgs
+from test_lochness import KeyringAndEncrypt, args, SyncArgs
 from test_lochness import show_tree_then_delete, config_load_test
 from lochness_test.transfer.test_transfer import KeyringAndEncryptLochnessTransfer
 
@@ -25,7 +25,7 @@ def syncArgsForLochnessSync(args):
     syncArgs = SyncArgs('tmp_lochness')
     create_lochness_template(args)
     syncArgs.config = args.outdir / 'config.yml'
-    syncArgs.sources = args.sources
+    syncArgs.update_source(args.sources)
     _ = KeyringAndEncryptLochnessTransfer(args.outdir)
 
     return syncArgs
@@ -41,6 +41,7 @@ def test_do_init(args):
 
 
 def test_do_with_lochness_sync_send(syncArgsForLochnessSync):
+    '''This module fails outside BWH firewall'''
     syncArgsForLochnessSync.lochness_sync_send = True
     do(syncArgsForLochnessSync)
     show_tree_then_delete('tmp_lochness')

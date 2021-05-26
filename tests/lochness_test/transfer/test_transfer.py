@@ -232,7 +232,6 @@ def test_lochness_to_lochness_transfer_receive(Lochness):
 
 
     show_tree_then_delete('DPACC')
-    os.remove(tmpfilename.name)
 
 
 def update_keyring_and_encrypt_DPACC(tmp_lochness_dir: str):

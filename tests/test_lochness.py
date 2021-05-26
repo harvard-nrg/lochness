@@ -7,7 +7,6 @@ import json
 from lochness import config
 from lochness import box
 from lochness import mindlamp
-from mock_args import LochnessArgs, mock_load
 import boxsdk
 
 import sys, os, shutil
@@ -87,6 +86,7 @@ class Tokens():
                 user_input_value = input(f'Enter {row["var"]}: ')
                 items_to_return.append(user_input_value)
 
+        print(items_to_return)
         return items_to_return
 
 
