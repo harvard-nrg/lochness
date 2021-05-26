@@ -31,30 +31,14 @@ from lochness.mindlamp import sync
 import json
 
 
-
-class TokensMindlamp(Tokens):
-    def get_mindlamp_token(self):
-        if self.token_and_url_file.is_file():
-            df = pd.read_csv(self.token_and_url_file)
-            token = df.iloc[0]['token']
-            access_key = df.iloc[0]['access_key']
-            secret_key = df.iloc[0]['secret_key']
-            api_url = df.iloc[0]['api_url']
-        else:
-            token = input('Enter token: ')
-            access_key = input('Enter access_key: ')
-            secret_key = input('Enter secret_key: ')
-            api_url = input('Enter api_url: ')
-
-        return token, access_key, secret_key, api_url
-
-
 class KeyringAndEncryptMindlamp(KeyringAndEncrypt):
     def __init__(self, tmp_dir):
         super().__init__(tmp_dir)
-        token = TokensMindlamp(test_dir / 'lochness_test' / 'transfer')
+        token = Tokens(test_dir / 'lochness_test' / 'mindlamp')
         mindlamp_token, access_key, secret_key, api_url = \
-                token.get_mindlamp_token()
+                token.read_token_or_get_input()
+        # mindlamp_token, access_key, secret_key, api_url = \
+                # token.get_mindlamp_token()
 
         self.keyring['mindlamp.StudyA'] = {}
         self.keyring['mindlamp.StudyA']['ACCESS_KEY'] = access_key
@@ -65,8 +49,9 @@ class KeyringAndEncryptMindlamp(KeyringAndEncrypt):
 
 
 def test_lamp_modules():
-    token = TokensMindlamp(test_dir / 'lochness_test' / 'transfer')
-    mindlamp_token, access_key, secret_key, api_url = token.get_mindlamp_token()
+    token = Tokens(test_dir / 'lochness_test' / 'mindlamp')
+    mindlamp_token, access_key, secret_key, api_url = \
+            token.read_token_or_get_input()
     LAMP.connect(access_key, secret_key)
     study_id, study_name = get_study_lamp(LAMP)
     subject_ids = get_participants_lamp(LAMP, study_id)
