@@ -16,24 +16,45 @@ support new services is also a fairly simple process.
 
 ## Installation
 
-Just use ``pip`` ::
+Just use `pip`
 
-    pip install lochness
-
-
-For most recent DPACC-lochness ::
-
-    pip install git+https://github.com/PREDICT-DPACC/lochness
+```
+pip install lochness
+```
 
 
-For debugging ::
+For most recent DPACC-lochness
 
-    cd ~
-    git clone https://github.com/PREDICT-DPACC/lochness
-    pip install -r ~/lochness/requirements.txt
+```
+pip install git+https://github.com/PREDICT-DPACC/lochness
+```
 
-    export PATH=${PATH}:~/lochness/scripts  # add to ~/.bashrc
-    export PYTHONPATH=${PYTHONPATH}:~/lochness  # add to ~/.bashrc
+
+For debugging
+
+```
+cd ~
+git clone https://github.com/PREDICT-DPACC/lochness
+pip install -r ~/lochness/requirements.txt
+
+export PATH=${PATH}:~/lochness/scripts  # add to ~/.bashrc
+export PYTHONPATH=${PYTHONPATH}:~/lochness  # add to ~/.bashrc
+```
+
+
+## Running test
+
+- Copy the token template, and add the information for each module.
+
+```
+cd lochness/tests
+cp token_template_for_test_template.csv token_template_for_test.csv
+```
+
+- Run test
+```
+bash run_test.sh 
+```
 
 
 ## Setup from a template
@@ -115,7 +136,7 @@ Running one of the commands above will create the structure below
 - `rpms_id`: the field name of the RPMS ID.
 
 
-3. Encrypt the `lochness.json` by running ::
+3. Encrypt the `lochness.json` by running
 
 ```sh
 bash 1_encrypt_command.sh
@@ -174,7 +195,7 @@ has to be either
 
 
 After setting the "Data Entry Trigger" on REDCap settings, run below to update
-the `/data/data_entry_trigger_db.csv` real-time::
+the `/data/data_entry_trigger_db.csv` real-time
 
 ```
 # please specify the same port defined in the REDCap settings
