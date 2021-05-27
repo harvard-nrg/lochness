@@ -6,7 +6,7 @@ import lochness
 import logging
 import tempfile as tf
 import collections as col
-import lochness.net as net 
+import lochness.net as net
 import lochness.tree as tree
 import lochness.config as config
 
@@ -17,14 +17,17 @@ logger = logging.getLogger(__name__)
 @net.retry(max_attempts=5)
 def sync(Lochness, subject, dry=False):
     logger.debug('exploring {0}/{1}'.format(subject.study, subject.id))
+
     for alias,xnat_uids in iter(subject.xnat.items()):
         Keyring = Lochness['keyring'][alias]
-        auth = yaxil.XnatAuth(url=Keyring['URL'], username=Keyring['USERNAME'], 
+        auth = yaxil.XnatAuth(url=Keyring['URL'], username=Keyring['USERNAME'],
                               password=Keyring['PASSWORD'])
         for xnat_uid in xnat_uids:
             for experiment in experiments(auth, xnat_uid):
                 logger.info(experiment)
-                dirname = tree.get('mri', subject.general_folder)
+                dirname = tree.get('mri',
+                                   subject.protected_folder,
+                                   processed=False)
                 dst = os.path.join(dirname, experiment.label)
                 if os.path.exists(dst):
                     try:
@@ -43,13 +46,14 @@ def sync(Lochness, subject, dry=False):
                 if not dry:
                     tmpdir = tf.mkdtemp(dir=dirname, prefix='.')
                     os.chmod(tmpdir, 0o0755)
-                    yaxil.download(auth, experiment.label, 
+                    yaxil.download(auth, experiment.label,
                                    project=experiment.project,
-                                   scan_ids=['ALL'], out_dir=tmpdir, 
+                                   scan_ids=['ALL'], out_dir=tmpdir,
                                    in_mem=False, attempts=3)
                     logger.debug('saving .experiment file')
                     save_experiment_file(tmpdir, auth.url, experiment)
                     os.rename(tmpdir, dst)
+
 
 def check_consistency(d, experiment):
     '''check that local data still matches data in xnat'''
@@ -63,8 +67,10 @@ def check_consistency(d, experiment):
     if local_uid != remote_uid:
         raise ConsistencyError('conflict detected {0} != {1}'.format(local_uid, remote_uid))
 
+
 class ConsistencyError(Exception):
     pass
+
 
 def save_experiment_file(d, url, experiment):
     '''save xnat experiment metadata to a file named .experiment'''
@@ -79,6 +85,7 @@ def save_experiment_file(d, url, experiment):
         os.fsync(fo.fileno())
     os.chmod(fo.name, 0o0644)
     os.rename(fo.name, experiment_file)
+
 
 def experiments(auth, uid):
     '''generator for mr session ids'''
