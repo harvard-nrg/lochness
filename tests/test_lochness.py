@@ -290,7 +290,8 @@ def test_mindlamp_module():
 
 def initialize_metadata_test(phoenix_root: 'phoenix root',
                              study_name: str,
-                             sources_id_dict: dict) -> None:
+                             sources_id_dict: dict,
+                             v_study_name: str=None) -> None:
     '''Initialize metadata.csv by populating data
 
     Key arguments:
@@ -309,8 +310,21 @@ def initialize_metadata_test(phoenix_root: 'phoenix root',
         # Consent date
         subject_dict['Consent'] = '1988-09-16'
 
-        subject_dict[source.capitalize()] = \
-                f'{source}.{study_name}:{id_dict["source_id"]}'
+        if source.capitalize() == 'Xnat':
+            if v_study_name != None:
+                subject_dict['XNAT'] = \
+                        f'xnat.{v_study_name}:{id_dict["source_id"]}'
+            else:
+                subject_dict['XNAT'] = \
+                        f'xnat.{study_name}:{id_dict["source_id"]}'
+        else:
+            if v_study_name != None:
+                subject_dict[source.capitalize()] = \
+                        f'{source}.{v_study_name}:{id_dict["source_id"]}'
+            else:
+                subject_dict[source.capitalize()] = \
+                        f'{source}.{study_name}:{id_dict["source_id"]}'
+
         df_tmp = pd.DataFrame.from_dict(subject_dict, orient='index')
         df = pd.concat([df, df_tmp.T])
 
