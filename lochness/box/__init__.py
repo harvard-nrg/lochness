@@ -295,11 +295,20 @@ def sync_module(Lochness: 'lochness.config',
         bx_base_obj = get_box_object_based_on_name(
                 client, bx_base, '0')
 
+        if bx_base_obj == None:
+            logger.debug('Root of the box is not found')
+            continue
+
         # loop through the items defined for the BOX data
         for datatype, products in iter(
                 Lochness['box'][module_basename]['file_patterns'].items()):
             subject_obj = get_box_object_based_on_name(
                     client, bx_sid, bx_base_obj.id)
+
+            if subject_obj == None:
+                logger.debug(f'{bx_sid} is not found under {bx_base_obj}')
+                continue
+
             datatype_obj = get_box_object_based_on_name(
                     client, datatype, subject_obj.id)
 
@@ -326,14 +335,17 @@ def sync_module(Lochness: 'lochness.config',
 
                     protect = product.get('protect', False)
                     compress = product.get('compress', False)
-                    key = enc_key if protect else None
+                    # key = enc_key if protect else None
+                    # For DPACC, file encryption is deactivated
+                    key = None
                     output_base = subject.protected_folder \
                                   if protect else subject.general_folder
 
-                    if 'processed' in root:
-                        processed = True
-                    else:
-                        processed = False
+                    # For DPACC, files on the source is not preprocessed
+                    # if 'processed' in root:
+                        # processed = True
+                    # else:
+                    processed = False
 
                     # output_base = tree.get(datatype, output_base)
                     output_base = tree.get(
@@ -351,8 +363,10 @@ def sync_module(Lochness: 'lochness.config',
 def _find_product(s, products, **kwargs):
     for product in products:
         pattern = product['pattern'].safe_substitute(**kwargs)
-        if re.match(pattern, s):
+        pattern = re.sub(r'\*', '.*', pattern)
+        if re.search(pattern, s, re.M):
             return product
+
     return None
 
 
