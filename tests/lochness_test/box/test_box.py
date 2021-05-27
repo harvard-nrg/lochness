@@ -90,6 +90,7 @@ def test_box_sync_module_protected(args_and_Lochness):
         new_list = []
         for i in Lochness['box'][study]['file_patterns']['actigraphy']:
             i['protect'] = True
+            i['processed'] = False
             new_list.append(i)
         Lochness['box'][study]['file_patterns']['actigraphy'] = new_list
 
@@ -100,12 +101,12 @@ def test_box_sync_module_protected(args_and_Lochness):
         subject_dir = protected_root / study / '1001'
         assert (subject_dir / 'actigraphy').is_dir()
         assert (subject_dir / 'actigraphy/raw').is_dir()
-        assert len(list((subject_dir / 'actigraphy/raw/').glob('*csv'))) == 1
+        assert len(list((subject_dir / 'actigraphy/raw/').glob('*csv'))) > 1
 
         subject_dir = general_root / study / '1001'
         assert (subject_dir / 'actigraphy').is_dir() == False
         assert (subject_dir / 'actigraphy/raw').is_dir() == False
-        assert len(list((subject_dir / 'actigraphy/raw/').glob('*csv'))) == 1
+        assert len(list((subject_dir / 'actigraphy/raw/').glob('*csv'))) == 0
 
     show_tree_then_delete('tmp_lochness')
 
@@ -179,3 +180,24 @@ def test_box_sync_module_missing_subject(args_and_Lochness):
 
     show_tree_then_delete('tmp_lochness')
 
+
+def test_box_sync_module_no_redownload(args_and_Lochness):
+    args, Lochness = args_and_Lochness
+
+    # change subject name
+    for subject in lochness.read_phoenix_metadata(Lochness):
+        sync(Lochness, subject, dry=False)
+
+    a_file_path = general_root / 'StudyA' / '1001' / 'actigraphy' / \
+            'raw' / 'BLS-F6VVM-GENEActivQC-day22to51.csv'
+
+    init_time = a_file_path.stat().st_mtime
+
+    # change subject name
+    for subject in lochness.read_phoenix_metadata(Lochness):
+        sync(Lochness, subject, dry=False)
+
+    post_time = a_file_path.stat().st_mtime
+    assert init_time == post_time
+
+    show_tree_then_delete('tmp_lochness')
