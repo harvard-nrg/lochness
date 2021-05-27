@@ -215,6 +215,7 @@ def _parse_xnat(value, default_id=None):
     result = col.defaultdict(list)
     # split all values on semicolon
     items = [x.strip() for x in value.split(';') if x]
+
     # return nothing if the value was empty
     if not items:
         return result
