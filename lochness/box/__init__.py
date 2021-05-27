@@ -334,29 +334,25 @@ def sync_module(Lochness: 'lochness.config',
                         continue
 
                     protect = product.get('protect', False)
-                    compress = product.get('compress', False)
-                    # key = enc_key if protect else None
-                    # For DPACC, file encryption is deactivated
-                    key = None
                     output_base = subject.protected_folder \
                                   if protect else subject.general_folder
 
-                    # For DPACC, files on the source is not preprocessed
-                    # if 'processed' in root:
-                        # processed = True
-                    # else:
-                    processed = False
+                    encrypt = product.get('encrypt', False)
+                    key = enc_key if encrypt else None
 
-                    # output_base = tree.get(datatype, output_base)
+                    processed = product.get('processed', False)
+                    # For DPACC, get processed from the config.yml
                     output_base = tree.get(
                             datatype,
                             output_base,
                             processed=processed)
 
+                    compress = product.get('compress', False)
+
                     save(box_file_object,
                          (root, box_file_object.name),
                          output_base, key=key,
-                         compress=False, delete=False,
+                         compress=compress, delete=False,
                          dry=False)
 
 
