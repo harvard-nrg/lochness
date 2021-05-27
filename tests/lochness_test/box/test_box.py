@@ -60,6 +60,15 @@ def args_and_Lochness():
 
 def test_box_sync_module_default(args_and_Lochness):
     args, Lochness = args_and_Lochness
+    # change protect to true for all actigraphy
+    for study in args.studies:
+        new_list = []
+        for i in Lochness['box'][study]['file_patterns']['actigraphy']:
+            i['protect'] = False
+            i['processed'] = False
+            new_list.append(i)
+        Lochness['box'][study]['file_patterns']['actigraphy'] = new_list
+
     for subject in lochness.read_phoenix_metadata(Lochness):
         sync(Lochness, subject, dry=False)
 
@@ -68,7 +77,7 @@ def test_box_sync_module_default(args_and_Lochness):
         print(subject_dir)
         assert (subject_dir / 'actigraphy').is_dir()
         assert (subject_dir / 'actigraphy/raw').is_dir()
-        assert len(list((subject_dir / 'actigraphy/raw/').glob('*csv'))) == 1
+        assert len(list((subject_dir / 'actigraphy/raw/').glob('*csv'))) > 1
 
     show_tree_then_delete('tmp_lochness')
 
