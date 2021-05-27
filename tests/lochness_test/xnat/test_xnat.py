@@ -25,9 +25,8 @@ general_root = phoenix_root/ 'GENERAL'
 
 class KeyringAndEncrypt(KeyringAndEncrypt):
     def update_for_xnat(self, study):
-        token = Tokens(test_dir / 'lochness_test' / 'xnat')
-
-        url, username, password = token.read_token_or_get_input()
+        token = Tokens()
+        url, username, password = token.read_token_or_get_input('xnat')
 
         self.keyring[f'xnat.hcpep'] = {}
         self.keyring[f'xnat.hcpep']['URL'] = url

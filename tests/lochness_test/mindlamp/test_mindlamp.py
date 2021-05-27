@@ -34,9 +34,9 @@ import json
 class KeyringAndEncryptMindlamp(KeyringAndEncrypt):
     def __init__(self, tmp_dir):
         super().__init__(tmp_dir)
-        token = Tokens(test_dir / 'lochness_test' / 'mindlamp')
+        token = Tokens()
         mindlamp_token, access_key, secret_key, api_url = \
-                token.read_token_or_get_input()
+                token.read_token_or_get_input('mindlamp')
         # mindlamp_token, access_key, secret_key, api_url = \
                 # token.get_mindlamp_token()
 
@@ -49,9 +49,9 @@ class KeyringAndEncryptMindlamp(KeyringAndEncrypt):
 
 
 def test_lamp_modules():
-    token = Tokens(test_dir / 'lochness_test' / 'mindlamp')
+    token = Tokens()
     mindlamp_token, access_key, secret_key, api_url = \
-            token.read_token_or_get_input()
+            token.read_token_or_get_input('mindlamp')
     LAMP.connect(access_key, secret_key)
     study_id, study_name = get_study_lamp(LAMP)
     subject_ids = get_participants_lamp(LAMP, study_id)

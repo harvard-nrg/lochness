@@ -17,7 +17,6 @@ test_dir = lochness_root / 'tests'
 sys.path.append(str(scripts_dir))
 sys.path.append(str(test_dir))
 
-from lochness_test.config.test_config import create_config
 from lochness_create_template import create_lochness_template
 from sync import SOURCES
 
@@ -60,8 +59,8 @@ class Args:
 
 class Tokens():
     '''class used to load sensitive information for lochness.tests'''
-    def __init__(self, root):
-        self.token_and_url_file = Path(root) / 'token.txt'
+    def __init__(self):
+        self.all_token_file = test_dir / 'token_template_for_test.csv'
 
     def get_redcap_info(self):
         if self.token_and_url_file.is_file():
@@ -74,15 +73,15 @@ class Tokens():
 
         return API_TOKEN, URL
 
-    def read_token_or_get_input(self):
+    def read_token_or_get_input(self, module_name: str) -> list:
         items_to_return = []
-        if self.token_and_url_file.is_file():
-            df = pd.read_csv(self.token_and_url_file, index_col=0)
-            for index, row in df.iterrows():
-                items_to_return.append(row['value'])
 
+        if self.all_token_file.is_file():
+            df = pd.read_csv(self.all_token_file)
+            for index, row in df[df['module'] == module_name].iterrows():
+                items_to_return.append(row['value'])
         else:
-            for index, row in df.iterrows():
+            for index, row in df[df['module'] == module_name].iterrows():
                 user_input_value = input(f'Enter {row["var"]}: ')
                 items_to_return.append(user_input_value)
 

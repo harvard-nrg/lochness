@@ -37,9 +37,9 @@ from sync import do
 class KeyringAndEncryptLochnessTransfer(KeyringAndEncrypt):
     def __init__(self, tmp_dir):
         super().__init__(tmp_dir)
-        token = Tokens(test_dir / 'lochness_test' / 'transfer')
+        token = Tokens()
         host, username, password, path_in_host, port = \
-                token.read_token_or_get_input()
+                token.read_token_or_get_input('transfer')
 
         self.keyring['lochness_sync']['HOST'] = host
         self.keyring['lochness_sync']['USERNAME'] = username

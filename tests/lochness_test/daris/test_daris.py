@@ -42,8 +42,8 @@ def args():
 class KeyringAndEncryptDaris(KeyringAndEncrypt):
     def __init__(self, tmp_dir):
         super().__init__(tmp_dir)
-        token = Tokens(test_dir / 'lochness_test' / 'daris')
-        token, url, project_cid = token.read_token_or_get_input()
+        token = Tokens()
+        token, url, project_cid = token.read_token_or_get_input('daris')
 
         self.keyring['daris.StudyA']['TOKEN'] = token
         self.keyring['daris.StudyA']['URL'] = url
@@ -65,8 +65,8 @@ def Lochness():
 def test_daris_download():
     daris_uid = 'subject01'
     latest_pull_mtime = 0
-    token = Tokens(test_dir / 'lochness_test' / 'daris')
-    token, url, project_cid = token.read_token_or_get_input()
+    token = Tokens()
+    token, url, project_cid = token.read_token_or_get_input('daris')
     dst_zipfile = 'tmp.zip'
 
     daris_download(daris_uid, latest_pull_mtime, token,

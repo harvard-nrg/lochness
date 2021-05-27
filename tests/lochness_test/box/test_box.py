@@ -25,9 +25,9 @@ general_root = phoenix_root/ 'GENERAL'
 
 class KeyringAndEncrypt(KeyringAndEncrypt):
     def update_for_box(self, study):
-        token = Tokens(test_dir / 'lochness_test' / 'box')
-
-        client_id, client_secret, api_token = token.read_token_or_get_input()
+        token = Tokens()
+        client_id, client_secret, api_token = \
+                token.read_token_or_get_input('box')
 
         self.keyring[f'box.{study}'] = {}
         self.keyring[f'box.{study}']['CLIENT_ID'] = client_id
