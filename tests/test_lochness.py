@@ -86,7 +86,6 @@ class Tokens():
                 user_input_value = input(f'Enter {row["var"]}: ')
                 items_to_return.append(user_input_value)
 
-        print(items_to_return)
         return items_to_return
 
 
