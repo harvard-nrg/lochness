@@ -109,7 +109,7 @@ def write_commands_needed(outdir: Path,
         f.write('# run this command to run sync.py\n')
         f.write('# eg) bash 2_sync_command.sh\n')
         command = f"sync.py -c {config_loc} --source {' '.join(sources)} " \
-                   "--debug --continuous\n"
+                   "--lochness_sync_send --debug --continuous\n"
         f.write(command)
 
 
@@ -142,7 +142,12 @@ def create_keyring_template(keyring_loc: Path, args: object) -> None:
                 'PASSWORD': f'**password_for_xnat_{study}**'}
 
     if 'box' in args.sources:
+        if 'SECRETS' not in template_dict['lochness'].keys():
+            template_dict['lochness']['SECRETS'] = {}
+
         for study in args.studies:
+            template_dict['lochness']['SECRETS'][study] = 'LOCHNESS_SECRETS'
+
             # lower part of the keyring
             template_dict[f'box.{study}'] = {
                 'CLIENT_ID': '**CLIENT_ID_FROM_BOX_APPS**',
@@ -257,21 +262,23 @@ redcap:
         for study in args.studies:
             line_to_add = f'''
     {study}:
-        base: /DATA/ROOT/UNDER/BOX
+        base: codmtg
         delete_on_success: False
         file_patterns:
             actigraphy:
                    - vendor: Philips
                      product: Actiwatch 2
                      pattern: '*.csv'
+                     protect: False
                    - vendor: Activinsights
                      product: GENEActiv
                      pattern: 'GENEActiv/*bin,GENEActive/*csv'
-                     compress: True
+                     protect: True
             mri_eye:
                    - vendor: SR Research
                      product: EyeLink 1000
                      pattern: '*.mov'
+                     protect: True
              '''
 
             config_example += line_to_add
