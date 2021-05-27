@@ -62,17 +62,6 @@ class Tokens():
     def __init__(self):
         self.all_token_file = test_dir / 'token_template_for_test.csv'
 
-    def get_redcap_info(self):
-        if self.token_and_url_file.is_file():
-            df = pd.read_csv(self.token_and_url_file, index_col=0)
-            API_TOKEN = df.loc['API_TOKEN', 'value']
-            URL = df.loc['URL', 'value']
-        else:
-            API_TOKEN = 'API_TOKEN'
-            URL = 'URL'
-
-        return API_TOKEN, URL
-
     def read_token_or_get_input(self, module_name: str) -> list:
         items_to_return = []
 
@@ -118,8 +107,8 @@ class KeyringAndEncrypt():
         self.write_keyring_and_encrypt()
 
     def update_for_redcap(self, study):
-        token = Tokens(test_dir / 'lochness_test' / 'redcap')
-        api_token, url = token.read_token_or_get_input()
+        token = Tokens()
+        api_token, url = token.read_token_or_get_input('redcap')
 
         self.keyring[f'redcap.{study}']['URL'] = url
         self.keyring[f'redcap.{study}']['API_TOKEN'] = {study: api_token}

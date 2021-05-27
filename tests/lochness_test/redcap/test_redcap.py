@@ -216,6 +216,7 @@ def test_save_post_from_redcap():
     print(pd.read_csv('ha.csv'))
     os.remove('ha.csv')
 
+
 def test_save_post_from_redcap_no_redcap_post():
     text_body = "hahahoho"
     if 'redcap' in text_body:
@@ -225,6 +226,7 @@ def test_save_post_from_redcap_no_redcap_post():
 
     print(pd.read_csv('ha.csv'))
     os.remove('ha.csv')
+
 
 def test_back_up_db():
     back_up_db('ha.csv')
