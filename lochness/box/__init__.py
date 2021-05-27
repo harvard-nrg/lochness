@@ -360,7 +360,7 @@ def _find_product(s, products, **kwargs):
     for product in products:
         pattern = product['pattern'].safe_substitute(**kwargs)
         pattern = re.sub(r'\*', '.*', pattern)
-        if re.search(pattern, s, re.M):
+        if re.match(pattern, s):
             return product
 
     return None
