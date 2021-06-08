@@ -150,9 +150,7 @@ information in json, remove the `lochness.json` after running the encryption.
 
 You can still extract keyring structure without sensitive information by running
 
-```sh
-lochness_check_config.py -ke /data/lochness_root/.lochness.enc
-```
+> lochness_check_config.py -ke /data/lochness_root/.lochness.enc
 
 
 4. Set up REDCap Data Entry Trigger if using REDCap. Please see below 
@@ -162,16 +160,12 @@ lochness_check_config.py -ke /data/lochness_root/.lochness.enc
 5. Edit Personally identifiable information mapping table. Please seee below
    "Personally identifiable information removal from REDCap and RPMS data"
 
-```
-/data/lochness_root/pii_convert.csv
-```
+> /data/lochness_root/pii_convert.csv
 
 
-5. Run the `sync.py` or use the example command in `2_synch_command.sh`
+5. Run the `sync.py` or use the example command in `2_sync_command.sh`
 
-```
-bash 2_sync_command.sh
-```
+> bash 2_sync_command.sh
 
 
 ### REDCap Data Entry Trigger capture
@@ -217,9 +211,9 @@ each PII fields.
 
 For example
 
-```table
-#/data/personally_identifiable_process_mappings.csv
+> /data/personally_identifiable_process_mappings.csv
 
+```table
 pii_label_string | process
 -----------------|---------------
 address          | remove
