@@ -139,6 +139,7 @@ Running one of the commands above will create the structure below
 3. Encrypt the `lochness.json` by running
 
 ```sh
+cd /data/lochness_root
 bash 1_encrypt_command.sh
 ```
 
