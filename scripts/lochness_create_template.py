@@ -207,6 +207,7 @@ def create_config_template(config_loc: Path, args: object) -> None:
 
     config_example = f'''keyring_file: {args.outdir}/.lochness.enc
 phoenix_root: {args.outdir}/PHOENIX
+BIDS: True
 pid: {args.outdir}/lochness.pid
 stderr: {args.outdir}/lochness.stderr
 stdout: {args.outdir}/lochness.stdout
