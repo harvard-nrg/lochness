@@ -27,7 +27,8 @@ def sync(Lochness, subject, dry=False):
                 logger.info(experiment)
                 dirname = tree.get('mri',
                                    subject.protected_folder,
-                                   processed=False)
+                                   processed=False,
+                                   BIDS=Lochness['BIDS'])
                 dst = os.path.join(dirname, experiment.label)
                 if os.path.exists(dst):
                     try:
