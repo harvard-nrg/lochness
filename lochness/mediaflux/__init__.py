@@ -19,6 +19,7 @@ import tempfile
 import pandas as pd
 from numpy import nan
 from distutils.spawn import find_executable
+import lochness.tree as tree
 
 logger = logging.getLogger(__name__)
 Module = lochness.lchop(__name__, 'lochness.')
@@ -127,19 +128,25 @@ def sync_module(Lochness: 'lochness.config',
 
                             # construct local path
                             protect = prod.get('protect', False)
+                            processed =  prod.get('processed', False)
                             key = enc_key if protect else None
                             subj_dir = subject.protected_folder \
                                 if protect else subject.general_folder
 
-                            mf_local= pjoin(subj_dir, datatype, dirname(patt), basename(remote))
+                            # mf_local= pjoin(subj_dir, datatype, dirname(patt), basename(remote))
+                            mf_local = tree.get(datatype,
+                                                subj_dir,
+                                                processed=processed,
+                                                BIDS=Lochness['BIDS'])
+
                             # ENH set different permissions
                             # GENERAL: 0o755, PROTECTED: 0700
-                            os.makedirs(dirname(mf_local),exist_ok=True)
+                            os.makedirs(mf_local, exist_ok=True)
 
                             # subprocess call unimelb-mf-download
                             cmd = (' ').join(['unimelb-mf-download',
                                               '--mf.config', mflux_cfg,
-                                              '-o', dirname(mf_local),
+                                              '-o', mf_local,
                                               '--nb-retries 5',
                                               f'\"{remote}\"'])
 
@@ -149,7 +156,7 @@ def sync_module(Lochness: 'lochness.config',
                             # verify checksum after download completes
                             # if checksum does not match, data will be downloaded again
                             # ENH should we verify checksum 5 times?
-                            cmd+= ' --csum-check'
+                            cmd += ' --csum-check'
                             p = Popen(cmd, shell=True)
                             p.wait()
 
