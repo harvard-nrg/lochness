@@ -110,9 +110,8 @@ def lochness_subject_raw_json(LochnessMetadataInitialized):
             continue
 
         phoenix_path = Path(LochnessMetadataInitialized['phoenix_root'])
-        subject_proc_p = phoenix_path / 'PROTECTED' / 'StudyA' / 'subject_1'
-        raw_json = subject_proc_p / 'surveys' / 'raw' / \
-                f"{subject.id}.StudyA.json"
+        subject_proc_p = phoenix_path / 'PROTECTED' / 'StudyA' / 'raw' / 'subject_1'
+        raw_json = subject_proc_p / 'surveys' / f"{subject.id}.StudyA.json"
 
         return LochnessMetadataInitialized, subject, raw_json
 
@@ -207,33 +206,4 @@ def test_sync_det_update_while_diff_file_leads_to_data_overwrite(
         new_content_dict = json.load(json_file)
     assert {'test': 'test'} != new_content_dict
     rmtree('tmp_lochness')
-
-
-def test_save_post_from_redcap():
-    text_body = "redcap_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2F&project_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2Fredcap_v10.0.30%2Findex.php%3Fpid%3D26709&project_id=26709&username=kc244&record=1001_1&instrument=inclusionexclusion_checklist&inclusionexclusion_checklist_complete=0"
-    save_post_from_redcap(text_body, 'ha.csv')
-
-    print(pd.read_csv('ha.csv'))
-    os.remove('ha.csv')
-
-
-def test_save_post_from_redcap_no_redcap_post():
-    text_body = "hahahoho"
-    if 'redcap' in text_body:
-        save_post_from_redcap(text_body, 'ha.csv')
-    else:
-        print('no redcap post')
-
-    print(pd.read_csv('ha.csv'))
-    os.remove('ha.csv')
-
-
-def test_back_up_db():
-    back_up_db('ha.csv')
-    text_body = "redcap_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2F&project_url=https%3A%2F%2Fredcap.partners.org%2Fredcap%2Fredcap_v10.0.30%2Findex.php%3Fpid%3D26709&project_id=26709&username=kc244&record=1001_1&instrument=inclusionexclusion_checklist&inclusionexclusion_checklist_complete=0"
-    save_post_from_redcap(text_body, 'ha.csv')
-
-    back_up_db('ha.csv')
-    print(pd.read_csv('ha.csv'))
-    os.remove('ha.csv')
 

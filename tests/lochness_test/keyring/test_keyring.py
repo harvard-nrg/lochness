@@ -9,7 +9,9 @@ test_dir = lochness_root / 'tests'
 sys.path.append(str(scripts_dir))
 sys.path.append(str(test_dir))
 
-from test_lochness import Lochness
+from test_lochness import Lochness, show_tree_then_delete
 
 def test_read_phoenix_data(Lochness):
     print_keyring(Lochness)
+    show_tree_then_delete('tmp_lochness')
+

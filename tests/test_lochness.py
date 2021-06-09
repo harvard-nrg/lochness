@@ -135,9 +135,14 @@ def config_load_test(f: 'location', archive_base=None):
 
     if archive_base:
         Lochness['phoenix_root'] = archive_base
+
     if 'phoenix_root' not in Lochness:
         raise config.ConfigError('need either --archive-base or '
                           '\'phoenix_root\' in config file')
+
+    if 'BIDS' not in Lochness:
+        Lochness['BIDS'] = False
+
     Lochness['phoenix_root'] = os.path.expanduser(Lochness['phoenix_root'])
     Lochness['keyring_file'] = os.path.expanduser(Lochness['keyring_file'])
 

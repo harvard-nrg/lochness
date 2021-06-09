@@ -61,6 +61,8 @@ def args_and_Lochness():
 
 def test_box_sync_module_default(args_and_Lochness):
     args, Lochness = args_and_Lochness
+
+    Lochness['BIDS'] = False
     # change protect to true for all actigraphy
     for study in args.studies:
         new_list = []
@@ -83,6 +85,30 @@ def test_box_sync_module_default(args_and_Lochness):
     show_tree_then_delete('tmp_lochness')
 
 
+def test_box_sync_module_default_BIDS(args_and_Lochness):
+    args, Lochness = args_and_Lochness
+
+    # change protect to true for all actigraphy
+    for study in args.studies:
+        new_list = []
+        for i in Lochness['box'][study]['file_patterns']['actigraphy']:
+            i['protect'] = False
+            i['processed'] = False
+            new_list.append(i)
+        Lochness['box'][study]['file_patterns']['actigraphy'] = new_list
+
+    for subject in lochness.read_phoenix_metadata(Lochness):
+        sync(Lochness, subject, dry=False)
+
+    for study in args.studies:
+        subject_dir = general_root / study / 'raw' / '1001'
+        print(subject_dir)
+        assert (subject_dir / 'actigraphy').is_dir()
+        assert len(list((subject_dir / 'actigraphy').glob('*csv'))) > 1
+
+    show_tree_then_delete('tmp_lochness')
+
+
 def test_box_sync_module_protected(args_and_Lochness):
     args, Lochness = args_and_Lochness
 
@@ -99,15 +125,13 @@ def test_box_sync_module_protected(args_and_Lochness):
         sync(Lochness, subject, dry=False)
 
     for study in args.studies:
-        subject_dir = protected_root / study / '1001'
+        subject_dir = protected_root / study / 'raw' / '1001'
         assert (subject_dir / 'actigraphy').is_dir()
-        assert (subject_dir / 'actigraphy/raw').is_dir()
-        assert len(list((subject_dir / 'actigraphy/raw/').glob('*csv'))) > 1
+        assert len(list((subject_dir / 'actigraphy').glob('*csv'))) > 1
 
         subject_dir = general_root / study / '1001'
         assert (subject_dir / 'actigraphy').is_dir() == False
-        assert (subject_dir / 'actigraphy/raw').is_dir() == False
-        assert len(list((subject_dir / 'actigraphy/raw/').glob('*csv'))) == 0
+        assert len(list((subject_dir / 'actigraphy').glob('*csv'))) == 0
 
     show_tree_then_delete('tmp_lochness')
 
@@ -128,15 +152,13 @@ def test_box_sync_module_protect_processed(args_and_Lochness):
         sync(Lochness, subject, dry=False)
 
     for study in args.studies:
-        subject_dir = protected_root / study / '1001'
+        subject_dir = protected_root / study / 'processed' / '1001'
         assert (subject_dir / 'actigraphy').is_dir()
-        assert (subject_dir / 'actigraphy/processed').is_dir()
         assert len(list((subject_dir /
-                        'actigraphy/processed/').glob('*csv'))) > 1
+                        'actigraphy').glob('*csv'))) > 1
 
-        subject_dir = general_root / study / '1001'
+        subject_dir = general_root / study / 'processed' / '1001'
         assert not (subject_dir / 'actigraphy').is_dir()
-        assert not (subject_dir / 'actigraphy/processed').is_dir()
         assert len(list((subject_dir /
                          'actigraphy/processed/').glob('*csv'))) == 0
 
@@ -153,9 +175,8 @@ def test_box_sync_module_missing_root(args_and_Lochness):
         sync(Lochness, subject, dry=False)
 
     study = 'StudyA'
-    subject_dir = protected_root / study / '1001'
+    subject_dir = protected_root / study / 'raw' / '1001'
     assert (subject_dir / 'actigraphy').is_dir() == False
-    assert (subject_dir / 'actigraphy/raw').is_dir() == False
 
     show_tree_then_delete('tmp_lochness')
 
@@ -189,8 +210,8 @@ def test_box_sync_module_no_redownload(args_and_Lochness):
     for subject in lochness.read_phoenix_metadata(Lochness):
         sync(Lochness, subject, dry=False)
 
-    a_file_path = general_root / 'StudyA' / '1001' / 'actigraphy' / \
-            'raw' / 'BLS-F6VVM-GENEActivQC-day22to51.csv'
+    a_file_path = general_root / 'StudyA' / 'raw' / '1001' / 'actigraphy' / \
+            'BLS-F6VVM-GENEActivQC-day22to51.csv'
 
     init_time = a_file_path.stat().st_mtime
 
@@ -204,19 +225,17 @@ def test_box_sync_module_no_redownload(args_and_Lochness):
     show_tree_then_delete('tmp_lochness')
 
 
-
-
 def test_box_with_given_structure():
     site_subject = {
             'PronetLA': ['LA123456',
-                            'LA132457',
-                            'LA124358'],
+                         'LA132457',
+                         'LA124358'],
             'PronetSL': ['SL124352',
-                             'SL123453',
-                             'SL124539'],
+                         'SL123453',
+                         'SL124539'],
             'PronetWU': ['WU142358',
-                             'WU124351',
-                             'WU142531']
+                         'WU124351',
+                         'WU142531']
             }
 
     modalities = {
@@ -277,14 +296,14 @@ def test_box_with_given_structure():
 def test_mediaflux_with_given_structure():
     site_subject = {
             'PrescientME': ['ME123456',
-                         'ME132457',
-                         'ME124358'],
+                            'ME132457',
+                            'ME124358'],
             'PrescientAD': ['AD124352',
-                          'AD123453',
-                          'AD124539'],
+                            'AD123453',
+                            'AD124539'],
             'PrescientPE': ['PE142358',
-                          'PE124351',
-                          'PE142531']
+                            'PE124351',
+                            'PE142531']
             }
 
     modalities = {
@@ -337,19 +356,3 @@ def test_mediaflux_with_given_structure():
 
                         with open(final_dir / file_name, 'w') as f:
                             f.write('')
-
-
-
-
-
-
-
-
-
-
-            
-
-
-
-
-
