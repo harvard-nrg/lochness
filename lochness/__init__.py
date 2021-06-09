@@ -43,6 +43,48 @@ Subject = col.namedtuple('Subject', [
 ])
 
 
+class Subject(object):
+    def __init__(self, active, phoenix_study, phoenix_id, consent, beiwe,
+                 icognition, saliva, xnat, redcap, dropbox,
+                 box, mediaflux, mindlamp, daris, rpms,
+                 general, protected, metadata_file):
+        self.active = active
+        self.study = phoenix_study
+        self.id = phoenix_id
+        self.consent = consent
+        self.beiwe = beiwe
+        self.icognition = icognition
+        self.saliva = saliva
+        self.xnat = xnat
+        self.redcap = redcap
+        self.dropbox = dropbox
+        self.box = box
+        self.mediaflux = mediaflux
+        self.mindlamp = mindlamp
+        self.daris = daris
+        self.rpms = rpms
+        self.general_folder = general
+        self.protected_folder = protected
+        self.metadata_csv = metadata_file
+
+    def asdict(self):
+        '''emulating collection._asdict()'''
+        return {'active': self.active, 'study': self.study,
+                'id': self.id, 'consent': self.consent,
+                'beiwe': self.beiwe, 'icognition': self.icognition,
+                'saliva': self.saliva, 'xnat': self.xnat,
+                'redcap': self.redcap, 'dropbox': self.dropbox,
+                'box': self.box, 'mediaflux': self.mediaflux,
+                'mindlamp': self.mindlamp, 'daris': self.daris,
+                'rpms': self.rpms, 'general_folder': self.general_folder,
+                'protected_folder': self.protected_folder,
+                'metadata_csv': self.metadata_csv}
+        
+    def to_bids(self):
+        self.general_folder = os.path.join(self.general_folder, self.study)
+        self.protected_folder = os.path.join(self.protected_folder, self.study)
+
+
 def initialize_metadata(Lochness, args) -> None:
     '''Create (overwrite) metadata.csv using either REDCap or RPMS database'''
     for study_name in args.studies:
@@ -182,7 +224,11 @@ def _subjects(Lochness, study, general_folder, protected_folder, metadata_file):
                           icognition, saliva, xnat, redcap, dropbox,
                           box, mediaflux, mindlamp, daris, rpms,
                           general, protected, metadata_file)
-        logger.debug('subject metadata blob:\n{0}'.format(json.dumps(subject._asdict(), indent=2)))
+
+        if Lochness['BIDS']:
+            subject.to_bids()
+
+        logger.debug('subject metadata blob:\n{0}'.format(json.dumps(subject.asdict(), indent=2)))
         yield subject
 
 
