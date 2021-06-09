@@ -1,5 +1,7 @@
 import os
+import sys
 import logging
+from pathlib import Path
 from string import Template
 
 Templates = {
@@ -74,18 +76,37 @@ def get(data_type, base, **kwargs):
     raw_folder = None
     processed_folder = None
 
-    if 'raw' in Templates[data_type]:
-        raw_folder = Templates[data_type]['raw'].substitute(base=base, **kwargs)
+    if kwargs.get('BIDS', True):   # PHOENIX to BIDS
+        phoenix_id = Path(base).parent.name   # get SUBJECT
+        if 'raw' in Templates[data_type]:
+            # restructure root
+            base = Path(base).parent.parent / 'raw' / phoenix_id
+            raw_folder = Templates[data_type]['raw'].substitute(
+                    base=str(base), **kwargs)
+            raw_folder = Path(raw_folder).parent  # remove the 'raw' at the end
 
-    if 'processed' in Templates[data_type]:
-        processed_folder = Templates[data_type]['processed'].substitute(base=base, **kwargs)
+        if 'processed' in Templates[data_type]:
+            # restructure root
+            base = Path(base).parent.parent / 'processed' / phoenix_id
+            processed_folder = Templates[data_type]['processed'].substitute(
+                    base=base, **kwargs)
+            # remove the 'processed' at the end
+            processed_folder = Path(processed_folder).parent
+    else:
+        if 'raw' in Templates[data_type]:
+            raw_folder = Templates[data_type]['raw'].substitute(
+                    base=base, **kwargs)
+
+        if 'processed' in Templates[data_type]:
+            processed_folder = Templates[data_type]['processed'].substitute(
+                    base=base, **kwargs)
 
     if kwargs.get('makedirs', True):
         if raw_folder and not os.path.exists(raw_folder):
-            logger.debug('creating raw folder {0}'.format(raw_folder))
+            logger.debug(f'creating raw folder {raw_folder}')
             os.makedirs(raw_folder)
         if processed_folder and not os.path.exists(processed_folder):
-            logger.debug('creating processed folder {0}'.format(processed_folder))
+            logger.debug(f'creating processed folder {processed_folder}')
             os.makedirs(processed_folder)
             os.chmod(processed_folder, 0o01777)
 
