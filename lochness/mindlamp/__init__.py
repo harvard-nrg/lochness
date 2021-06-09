@@ -35,7 +35,8 @@ def sync(Lochness: 'lochness.config',
                                                         subject.mindlamp)
 
     # connect to mindlamp API sdk
-    LAMP.connect(access_key, secret_key, api_url)
+    # LAMP.connect(access_key, secret_key, api_url)
+    LAMP.connect(access_key, secret_key)
 
     # Extra information for future version
     # study_id, study_name = get_study_lamp(LAMP)
@@ -49,7 +50,7 @@ def sync(Lochness: 'lochness.config',
 
     # set destination folder
     # dst_folder = tree.get('mindlamp', subject.general_folder)
-    dst_folder = tree.get('mindlamp', subject.protected_folder)
+    dst_folder = tree.get('mindlamp', subject.protected_folder, processed=False)
 
     # store both data types
     for data_name, data_dict in zip(['activity', 'sensor'],
@@ -92,7 +93,7 @@ def mindlamp_projects(Lochness: 'lochness.config',
     '''get mindlamp api_url and api_key for a phoenix study'''
     Keyring = Lochness['keyring']
 
-    key_name = list(mindlamp_instance.keys())[0] # mindlamp.StudyA
+    key_name = list(mindlamp_instance.keys())[0]  # mindlamp.StudyA
     # Assertations
     # check for mandatory keyring items
     # if 'mindlamp' not in Keyring['lochness']:
@@ -112,9 +113,7 @@ def mindlamp_projects(Lochness: 'lochness.config',
         raise KeyringError(f"{mindlamp_instance} > SECRET_KEY "
                             "not found in keyring")
 
-
     api_url = Keyring[key_name]['URL'].rstrip('/')
-
     access_key = Keyring[key_name]['ACCESS_KEY']
     secret_key = Keyring[key_name]['SECRET_KEY']
 

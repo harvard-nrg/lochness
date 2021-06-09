@@ -41,7 +41,10 @@ def create_lochness_template(args):
     # create PHOENIX directory
     for study in args.studies:
         argsForPheonix = ArgsForPheonix(study, phoenix_root)
-        pg(argsForPheonix)
+        try:
+            pg(argsForPheonix)
+        except SystemExit:
+            pass
         metadata = phoenix_root / 'GENERAL' / study / f'{study}_metadata.csv'
 
         # create example metadata
@@ -65,6 +68,11 @@ def create_lochness_template(args):
             })
         df.to_csv(args.pii_csv)
 
+    # link lochness_sycn_history timestamp db
+    if not Path(args.lochness_sync_history_csv).is_file():
+        args.lochness_sync_history_csv = args.outdir / \
+                'lochness_sync_history.csv'
+
     # create config
     config_loc = args.outdir / 'config.yml'
     create_config_template(config_loc, args)
@@ -73,7 +81,6 @@ def create_lochness_template(args):
     keyring_loc = args.outdir / 'lochness.json'
     encrypt_keyring_loc = args.outdir / '.lochness.enc'
     create_keyring_template(keyring_loc, args)
-
 
     # write commands for the user to run after editing config and keyring
     write_commands_needed(args.outdir, config_loc,
@@ -102,7 +109,7 @@ def write_commands_needed(outdir: Path,
         f.write('# run this command to run sync.py\n')
         f.write('# eg) bash 2_sync_command.sh\n')
         command = f"sync.py -c {config_loc} --source {' '.join(sources)} " \
-                "--debug --continuous\n"
+                   "--lochness_sync_send --debug --continuous\n"
         f.write(command)
 
 
@@ -135,7 +142,12 @@ def create_keyring_template(keyring_loc: Path, args: object) -> None:
                 'PASSWORD': f'**password_for_xnat_{study}**'}
 
     if 'box' in args.sources:
+        if 'SECRETS' not in template_dict['lochness'].keys():
+            template_dict['lochness']['SECRETS'] = {}
+
         for study in args.studies:
+            template_dict['lochness']['SECRETS'][study] = 'LOCHNESS_SECRETS'
+
             # lower part of the keyring
             template_dict[f'box.{study}'] = {
                 'CLIENT_ID': '**CLIENT_ID_FROM_BOX_APPS**',
@@ -167,6 +179,22 @@ def create_keyring_template(keyring_loc: Path, args: object) -> None:
                 "TOKEN": "******",
                 }
 
+    if args.lochness_sync_send:
+        # lower part of the keyring
+        template_dict[f'lochness_sync'] = {
+            "HOST": "phslxftp2.partners.org",
+            "USERNAME": "USERNAME",
+            "PASSWORD": "*******",
+            "PATH_IN_HOST": "/PATH/IN/HOST",
+            "PORT": "2222",
+            }
+
+    if args.lochness_sync_receive:
+        # lower part of the keyring
+        template_dict[f'lochness_sync'] = {
+            "PATH_IN_HOST": "/PATH/IN/HOST",
+            }
+
     with open(keyring_loc, 'w') as f:
         json.dump(template_dict, f,
                   sort_keys=False,
@@ -186,8 +214,9 @@ poll_interval: {args.poll_interval}
 ssh_user: {args.ssh_user}
 ssh_host: {args.ssh_host}
 sender: {args.email}
-pii_table: {args.pii_csv}'''
-
+pii_table: {args.pii_csv}
+lochness_sync_history_csv: {args.lochness_sync_history_csv}
+'''
     redcap_lines = f'''
 redcap:
     phoenix_project:
@@ -233,21 +262,23 @@ redcap:
         for study in args.studies:
             line_to_add = f'''
     {study}:
-        base: /DATA/ROOT/UNDER/BOX
+        base: codmtg
         delete_on_success: False
         file_patterns:
             actigraphy:
                    - vendor: Philips
                      product: Actiwatch 2
                      pattern: '*.csv'
+                     protect: False
                    - vendor: Activinsights
                      product: GENEActiv
                      pattern: 'GENEActiv/*bin,GENEActive/*csv'
-                     compress: True
+                     protect: True
             mri_eye:
                    - vendor: SR Research
                      product: EyeLink 1000
                      pattern: '*.mov'
+                     protect: True
              '''
 
             config_example += line_to_add
@@ -323,6 +354,19 @@ def get_arguments():
     parser.add_argument('-su', '--ssh_user',
                         required=True,
                         help='ssh id')
+    parser.add_argument('-lss', '--lochness_sync_send',
+                        default=True,
+                        action='store_true',
+                        help='Enable lochness to lochness transfer on the '
+                             'sender side')
+    parser.add_argument('-lsr', '--lochness_sync_receive',
+                        default=False,
+                        action='store_true',
+                        help='Enable lochness to lochness transfer on the '
+                             'server side')
+    parser.add_argument('-lsh', '--lochness_sync_history_csv',
+                        default='lochness_sync_history.csv',
+                        help='Lochness sync history database csv path')
     parser.add_argument('-det', '--det_csv',
                         default='data_entry_trigger.csv',
                         help='Redcap data entry trigger database csv path')

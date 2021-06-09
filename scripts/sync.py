@@ -22,6 +22,8 @@ import lochness.rpms as RPMS
 import lochness.scheduler as scheduler
 import lochness.icognition as iCognition
 import lochness.onlinescoring as OnlineScoring
+from lochness.transfer import lochness_to_lochness_transfer
+from lochness.transfer import lochness_to_lochness_transfer_receive
 
 SOURCES = {
     'xnat': XNAT,
@@ -44,29 +46,40 @@ logger = logging.getLogger(os.path.basename(__file__))
 def main():
     parser = ap.ArgumentParser(description='PHOENIX data syncer')
     parser.add_argument('-c', '--config', required=True,
-        help='Configuration file')
+                        help='Configuration file')
     parser.add_argument('-a', '--archive-base',
-        help='Base output directory')
+                        help='Base output directory')
     parser.add_argument('--dry', action='store_true',
-        help='Dry run')
+                        help='Dry run')
     parser.add_argument('--skip-inactive', action='store_true',
-        help='Skip inactive subjects')
+                        help='Skip inactive subjects')
     parser.add_argument('-l', '--log-file',
-        help='Log file')
+                        help='Log file')
     parser.add_argument('--hdd', nargs='+', default=[],
-        help='choose hdds to sync')
+                        help='choose hdds to sync')
     parser.add_argument('--source', nargs='+', choices=SOURCES.keys(),
-        default=SOURCES.keys(), help='Sources to sync')
+                        default=SOURCES.keys(), help='Sources to sync')
     parser.add_argument('--continuous', action='store_true',
-        help='Continuously download data')
+                        help='Continuously download data')
     parser.add_argument('--studies', nargs='+', default=[],
-        help='Study to sync')
+                        help='Study to sync')
     parser.add_argument('--fork', action='store_true',
-        help='Daemonize the process')
+                        help='Daemonize the process')
     parser.add_argument('--until', type=scheduler.parse,
-        help='Pause execution until specified date e.g., 2017-01-01T15:00:00')
+                        help='Pause execution until specified date e.g., '
+                             '2017-01-01T15:00:00')
+    parser.add_argument('-lss', '--lochness_sync_send',
+                        action='store_true',
+                        default=True,
+                        help='Enable lochness to lochness transfer on the '
+                             'sender side')
+    parser.add_argument('-lsr', '--lochness_sync_receive',
+                        action='store_true',
+                        default=False,
+                        help='Enable lochness to lochness transfer on the '
+                             'server side')
     parser.add_argument('--debug', action='store_true',
-        help='Enable debug messages')
+                        help='Enable debug messages')
     args = parser.parse_args()
 
     # configure logging for this application
@@ -111,8 +124,14 @@ def do(args):
     # reload config every time
     Lochness = config.load(args.config, args.archive_base)
 
+    # Lochness to Lochness transfer on the receiving side
+    if args.lochness_sync_receive:
+        lochness_to_lochness_transfer_receive(Lochness)
+        return True  # break the do function here for the receiving side
+
     # initialize (overwrite) metadata.csv using either REDCap or RPMS database
-    lochness.initialize_metadata(Lochness, args)
+    if 'redcap' in args.source or 'rpms' in args.source:
+        lochness.initialize_metadata(Lochness, args)
 
     for subject in lochness.read_phoenix_metadata(Lochness, args.studies):
         if not subject.active and args.skip_inactive:
@@ -125,6 +144,10 @@ def do(args):
         else:
             for Module in args.source:
                 lochness.attempt(Module.sync, Lochness, subject, dry=args.dry)
+
+    # transfer new files after all sync attempts are done
+    if args.lochness_sync_send:
+        lochness_to_lochness_transfer(Lochness)
 
 
 if __name__ == '__main__':

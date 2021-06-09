@@ -78,7 +78,7 @@ def initialize_metadata(Lochness: 'Lochness object',
         'fields[0]': redcap_id_colname,
     }
 
-    # # only pull source_names
+    # only pull source_names
     field_num = 2
     for source, source_name in source_source_name_dict.items():
         record_query[f"fields[{field_num}]"] = f"source_id"
@@ -115,6 +115,9 @@ def initialize_metadata(Lochness: 'Lochness object',
         except:
             subject_dict['Consent'] = '1988-09-16'
 
+        # Redcap default information
+        subject_dict['REDCap'] = f'redcap.{study_name}:{item[redcap_id_colname]}'
+
         for source, source_name in source_source_name_dict.items():
             try:
                 subject_dict[source_name] = item[f'{source}_id']
@@ -123,6 +126,7 @@ def initialize_metadata(Lochness: 'Lochness object',
 
         df_tmp = pd.DataFrame.from_dict(subject_dict, orient='index')
         df = pd.concat([df, df_tmp.T])
+
 
     # Each subject may have more than one arms, which will result in more than
     # single item for the subject in the redcap pulled `content`
@@ -180,7 +184,10 @@ def get_data_entry_trigger_df(Lochness: 'Lochness') -> pd.DataFrame:
             db_loc = Lochness['redcap']['data_entry_trigger_csv']
             if Path(db_loc).is_file():
                 db_df = pd.read_csv(db_loc)
-                db_df['record'] = db_df['record'].astype(str)
+                try:
+                    db_df['record'] = db_df['record'].astype(str)
+                except KeyError:
+                    db_df = pd.DataFrame({'record':[]})
                 return db_df
 
     db_df = pd.DataFrame({'record':[]})
@@ -286,6 +293,12 @@ def sync(Lochness, subject, dry=False):
                         lochness.atomic_write(dst, content)
                         process_and_copy_db(Lochness, subject, dst, proc_dst)
                         # update_study_metadata(subject, json.loads(content))
+                    else:
+                        print('it is the same file (crc32). '
+                              'Not saving the data')
+                        # update the dst file's mtime so it can prevent the
+                        # same file being pulled from REDCap
+                        os.utime(dst)
 
 
 class REDCapError(Exception):
