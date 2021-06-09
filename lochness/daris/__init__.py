@@ -81,10 +81,12 @@ def sync(Lochness, subject, dry=False):
         for daris_uid in daris_uids:
             dirname = tree.get('mri',
                                subject.protected_folder,
-                               processed=False)
+                               processed=False,
+                               BIDS=Lochness['BIDS'])
             metadata_dst_dir = tree.get('mri',
                                         subject.protected_folder,
-                                        processed=True)
+                                        processed=True,
+                                        BIDS=Lochness['BIDS'])
             metadata_dst = Path(metadata_dst_dir) / f'{daris_uid}_metadata.csv'
 
             dst_zipfile = os.path.join(dirname, 'tmp.zip')

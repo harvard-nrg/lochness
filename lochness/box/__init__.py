@@ -341,11 +341,13 @@ def sync_module(Lochness: 'lochness.config',
                     key = enc_key if encrypt else None
 
                     processed = product.get('processed', False)
+
                     # For DPACC, get processed from the config.yml
                     output_base = tree.get(
                             datatype,
                             output_base,
-                            processed=processed)
+                            processed=processed,
+                            BIDS=Lochness['BIDS'])
 
                     compress = product.get('compress', False)
 

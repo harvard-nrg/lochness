@@ -41,8 +41,14 @@ def sync(Lochness, subject, dry=False):
             study_frag,beiwe_id = uid
             study_name,study_id = mano.expand_study_id(Keyring, study_frag)
             study_name_enc = study_name.encode('utf-8')
-            dst_general_folder = tree.get('phone', subject.general_folder, beiwe_id=beiwe_id)
-            dst_protected_folder = tree.get('phone', subject.protected_folder, beiwe_id=beiwe_id)
+            dst_general_folder = tree.get('phone',
+                                          subject.general_folder,
+                                          beiwe_id=beiwe_id,
+                                          BIDS=Lochness['BIDS'])
+            dst_protected_folder = tree.get('phone',
+                                            subject.protected_folder,
+                                            beiwe_id=beiwe_id,
+                                            BIDS=Lochness['BIDS'])
             # save a hidden file with the study id, original name, and sanitized name
             save_study_file(dst_general_folder, study_id, study_name)
             protected_streams = set(PROTECT)

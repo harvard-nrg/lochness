@@ -50,7 +50,10 @@ def sync(Lochness: 'lochness.config',
 
     # set destination folder
     # dst_folder = tree.get('mindlamp', subject.general_folder)
-    dst_folder = tree.get('mindlamp', subject.protected_folder, processed=False)
+    dst_folder = tree.get('mindlamp',
+                          subject.protected_folder,
+                          processed=False,
+                          BIDS=Lochness['BIDS'])
 
     # store both data types
     for data_name, data_dict in zip(['activity', 'sensor'],

@@ -143,12 +143,14 @@ def sync(Lochness, subject, dry=False):
         # target data
         dirname = tree.get('surveys',
                            subject.protected_folder,
-                           processed=False)
+                           processed=False,
+                           BIDS=Lochness['BIDS'])
         target_df_loc = Path(dirname) / f"{subject_id}_{measure}.csv"
 
         proc_folder = tree.get('surveys',
                                subject.general_folder,
-                               processed=True)
+                               processed=True,
+                               BIDS=Lochness['BIDS'])
         proc_dst = Path(proc_folder) / f"{subject_id}_{measure}.csv"
 
         # load the time of the lastest data pull from daris

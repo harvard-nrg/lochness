@@ -55,7 +55,7 @@ def sync(Lochness, subject, dry=False):
                 if content_len != expected_len:
                     raise OnlineScoringError('content length {0} does not match expected length {1}'.format(content_len, expected_len))
             # save the file atomically
-            dst = tree.get('retroquest', subject.general_folder)
+            dst = tree.get('retroquest', subject.general_folder, BIDS=Lochness['BIDS'])
             dst = os.path.join(dst, fname)
             if os.path.exists(dst):
                 return

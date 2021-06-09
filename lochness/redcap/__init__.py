@@ -215,14 +215,17 @@ def sync(Lochness, subject, dry=False):
             # default location to protected folder
             dst_folder = tree.get('surveys',
                                   subject.protected_folder,
-                                  processed=False)
+                                  processed=False,
+                                  BIDS=Lochness['BIDS'])
             fname = f'{redcap_subject}.{_redcap_project}.json'
             dst = Path(dst_folder) / fname
 
             # PII processed content to general processed
             proc_folder = tree.get('surveys',
                                    subject.general_folder,
-                                   processed=True)
+                                   processed=True,
+                                   BIDS=Lochness['BIDS'])
+
             proc_dst = Path(proc_folder) / fname
 
             # check if the data has been updated by checking the redcap data

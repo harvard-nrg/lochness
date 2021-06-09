@@ -38,7 +38,7 @@ def sync(Lochness, subject, dry=False, datatypes=None):
                     logger.warn('subject not in PHOENIX {0}/{1}'.format(study, sid))
                     continue
                 src = os.path.join(study_dir, sid)
-                _dst = tree.get(datatype, general_folder, subject, makedirs=False)
+                _dst = tree.get(datatype, general_folder, subject, makedirs=False, BIDS=Lochness['BIDS'])
                 ssh.makedirs(Lochness, _dst)
                 dst = '{0}@{1}:{2}'.format(Lochness['ssh_user'], Lochness['ssh_host'], _dst)
                 hdd.rsync(src, dst, dry=dry)
