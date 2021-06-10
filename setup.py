@@ -13,7 +13,8 @@ requires = [
     'yaxil',
     'six',
     'pytz',
-    'pandas'
+    'pandas',
+    'jsonpath_ng'
 ]
 
 test_requirements = [
