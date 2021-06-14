@@ -233,26 +233,31 @@ redcap:
         for study in args.studies:
             line_to_add = f'''
     {study}:
-        namespace: /DATA/ROOT/UNDER/BOX
+        namespace: /DATA/ROOT/UNDER/MEDIAFLUX
         delete_on_success: False
         file_patterns:
             actigraphy:
                 - vendor: Philips
                   product: Actiwatch 2
-                  data_dir: all_BWH_actigraphy
-                  pattern: 'accel/*csv'
+                  data_dir: actigraphy
+                  pattern: '*csv'
                   protect: True
                 - vendor: Activinsights
                   product: GENEActiv
-                  data_dir: all_BWH_actigraphy
-                  pattern: 'GENEActiv/*bin,GENEActiv/*csv'
+                  data_dir: actigraphy
+                  pattern: '*csv'
                 - vendor: Insights
                   product: GENEActivQC
-                  data_dir: all_BWH_actigraphy
-                  pattern: 'GENEActivQC/*csv'
-            phone:
-                - data_dir: all_phone
-                  pattern: 'processed/accel/*csv'
+                  data_dir: actigraphy
+                  pattern: '*csv'
+            eeg:
+                   - product: eeg
+                     data_dir: eeg
+                     pattern: '*.csv'
+            interviews:
+                   - product: offsite_interview
+                     data_dir: interviews
+                     pattern: '*.mp4'
               '''
 
             config_example += line_to_add
@@ -263,23 +268,31 @@ redcap:
         for study in args.studies:
             line_to_add = f'''
     {study}:
-        base: codmtg
+        base: /DATA/ROOT/UNDER/BOX
         delete_on_success: False
         file_patterns:
             actigraphy:
-                   - vendor: Philips
-                     product: Actiwatch 2
+                - vendor: Philips
+                  product: Actiwatch 2
+                  data_dir: actigraphy
+                  pattern: '*csv'
+                  protect: True
+                - vendor: Activinsights
+                  product: GENEActiv
+                  data_dir: actigraphy
+                  pattern: '*csv'
+                - vendor: Insights
+                  product: GENEActivQC
+                  data_dir: actigraphy
+                  pattern: '*csv'
+            eeg:
+                   - product: eeg
+                     data_dir: eeg
                      pattern: '*.csv'
-                     protect: False
-                   - vendor: Activinsights
-                     product: GENEActiv
-                     pattern: 'GENEActiv/*bin,GENEActive/*csv'
-                     protect: True
-            mri_eye:
-                   - vendor: SR Research
-                     product: EyeLink 1000
-                     pattern: '*.mov'
-                     protect: True
+            interviews:
+                   - product: offsite_interview
+                     data_dir: interviews
+                     pattern: '*.mp4'
              '''
 
             config_example += line_to_add
