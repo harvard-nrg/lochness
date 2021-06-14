@@ -22,7 +22,7 @@ sys.path.append(str(scripts_dir))
 sys.path.append(str(test_dir))
 from lochness_create_template import create_lochness_template
 
-from test_lochness import Args, Tokens, KeyringAndEncrypt, args, Lochness
+from test_lochness import Args, Tokens, KeyringAndEncrypt, args
 from test_lochness import show_tree_then_delete, config_load_test
 
 
