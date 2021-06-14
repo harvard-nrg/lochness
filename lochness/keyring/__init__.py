@@ -103,7 +103,7 @@ def mediaflux_api_token(Lochness, key):
     if 'TOKEN' in Lochness['keyring'][key]:
         credentials = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN']
     else:
-        credentials = ['HOST', 'PORT', 'TRANSPORT', 'TOKEN', 'DOMAIN', 'USER', 'PASSWORD']
+        credentials = ['HOST', 'PORT', 'TRANSPORT', 'DOMAIN', 'USER', 'PASSWORD']
 
     auths= Lochness['keyring'][key]
     mflux_cfg= os.path.join(Lochness['phoenix_root'], 'mflux.cfg')
