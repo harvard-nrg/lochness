@@ -9,6 +9,10 @@ Templates = {
         'raw': Template('${base}/actigraphy/raw'),
         'processed': Template('${base}/actigraphy/processed')
     },
+    'eeg': {
+        'raw': Template('${base}/eeg/raw'),
+        'processed': Template('${base}/eeg/processed')
+    },
     'mri': {
         'raw': Template('${base}/mri/raw'),
         'processed': Template('${base}/mri/processed')
@@ -55,6 +59,10 @@ Templates = {
     'onsite_interview': {
         'raw': Template('${base}/onsite_interview/raw'),
         'processed': Template('${base}/onsite_interview/processed')
+    },
+    'interviews': {
+        'raw': Template('${base}/interviews/raw'),
+        'processed': Template('${base}/interviews/processed')
     },
     'surveys': {
         'raw': Template('${base}/surveys/raw'),
