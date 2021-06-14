@@ -127,17 +127,17 @@ def sync_module(Lochness: 'lochness.config',
                                 remote= remote.split(':')[1]
 
                             # construct local path
-                            protect = prod.get('protect', False)
+                            protect = prod.get('protect', True)
                             processed =  prod.get('processed', False)
                             key = enc_key if protect else None
                             subj_dir = subject.protected_folder \
                                 if protect else subject.general_folder
 
                             # mf_local= pjoin(subj_dir, datatype, dirname(patt), basename(remote))
-                            mf_local = tree.get(datatype,
+                            mf_local = str(tree.get(datatype,
                                                 subj_dir,
                                                 processed=processed,
-                                                BIDS=Lochness['BIDS'])
+                                                BIDS=Lochness['BIDS']))
 
                             # ENH set different permissions
                             # GENERAL: 0o755, PROTECTED: 0700
